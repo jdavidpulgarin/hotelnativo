@@ -87,4 +87,13 @@ public class NotificationUtil {
 
         popup.getContent().add(contenedor);
     }
+    
+    // Posición: esquina inferior derecha
+        // Usé estos valores después de varias pruebas manuales
+        double x = HotelApp.getPrimaryStage().getX()
+                 + HotelApp.getPrimaryStage().getWidth() - 400;
+        double y = HotelApp.getPrimaryStage().getY()
+                 + HotelApp.getPrimaryStage().getHeight() - 80;
+
+        popup.show(HotelApp.getPrimaryStage(), x, y);
 }
