@@ -154,3 +154,37 @@ private static volatile boolean constraintVerificado = false;
             return habitacion;
         });
     }
+@Override
+    public boolean actualizar(Habitacion habitacion) {
+        return enTransaccion(conn -> {
+            try (PreparedStatement stmt = conn.prepareStatement(SQL_ACTUALIZAR)) {
+                stmt.setString(1, habitacion.getNumero());
+                stmt.setString(2, fmt("TIP", habitacion.getTipoHabitacion().getId()));
+                stmt.setString(3, fmt("PIS", habitacion.getPiso().getId()));
+                stmt.setDouble(4, habitacion.getPrecioBase());
+                stmt.setString(5, fmt("HAB", habitacion.getId()));
+                return stmt.executeUpdate() > 0;
+            }
+        });
+    }
+
+    @Override
+    public boolean eliminar(int idHabitacion) {
+        return enTransaccion(conn -> {
+            try (PreparedStatement stmt = conn.prepareStatement(SQL_ELIMINAR)) {
+                stmt.setString(1, fmt("HAB", idHabitacion));
+                return stmt.executeUpdate() > 0;
+            }
+        });
+    }
+
+    @Override
+    public boolean actualizarEstado(int idHabitacion, String nuevoEstado) {
+        return enTransaccion(conn -> {
+            try (PreparedStatement stmt = conn.prepareStatement(SQL_ACTUALIZAR_ESTADO)) {
+                stmt.setString(1, nuevoEstado);
+                stmt.setString(2, fmt("HAB", idHabitacion));
+                return stmt.executeUpdate() > 0;
+            }
+        });
+    }
