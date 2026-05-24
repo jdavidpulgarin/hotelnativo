@@ -101,4 +101,23 @@ public class ChatbotService {
         this.reservaBusqueda = reservaBusqueda;
         this.clienteDAO      = clienteDAO;
     }
+    
+        // ── API pública ───────────────────────────────────────────────────────────
+
+    public String obtenerMensajeBienvenida() {
+        LocalDate hoy = LocalDate.now();
+        String ej1 = hoy.plusDays(3).toString();
+        String ej2 = hoy.plusDays(6).toString();
+        return "¡Hola! Soy tu asistente de recepción del Hotel Nativo 🏨\n" +
+               "Consulto la base de datos en tiempo real para darte información precisa.\n\n" +
+               "¿Qué necesitas saber?\n" +
+               "  🔑 'check-in hoy'           → llegadas del día\n" +
+               "  🔓 'checkout hoy'           → salidas del día\n" +
+               "  🛏 'estado habitaciones'    → mapa de ocupación actual\n" +
+               "  📅 'disponibilidad " + ej1 + " " + ej2 + "'\n" +
+               "  📋 'reserva #123'           → detalle de una reserva\n" +
+               "  📋 'reservas pendientes'    → todas las reservas activas\n" +
+               "  👤 'buscar cliente García'  → datos del cliente\n\n" +
+               "Escribe 'ayuda' para ver todos los comandos disponibles. 😊";
+    }
 }
