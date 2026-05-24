@@ -534,4 +534,49 @@ public class ChatbotService {
             return "⚠ No pude obtener las reservas activas.";
         }
     }
+
+    // ── Handler: buscar cliente ───────────────────────────────────────────────
+    private String manejarBuscarCliente(String mensaje) {
+        String termino = mensaje
+                .replaceAll("(?i)buscar cliente|buscar huesped|cliente llamado|cliente con nombre|datos del cliente|informacion del cliente|quien es el cliente", "")
+                .trim();
+
+        if (termino.isEmpty()) {
+            return "Indica el nombre o la cédula del huésped.\n"
+                    + "Ejemplo: 'buscar cliente Juan García'  o  'buscar cliente 1001234567'";
+        }
+
+        try {
+            String terminoNorm = normalizar(termino);
+            List<Cliente> encontrados = clienteDAO.listarTodos().stream()
+                    .filter(c -> {
+                        String nombre = normalizar(c.obtenerNombreCompleto());
+                        String doc = c.getDocumento() != null ? c.getDocumento() : "";
+                        return nombre.contains(terminoNorm) || doc.contains(termino);
+                    })
+                    .collect(Collectors.toList());
+
+            if (encontrados.isEmpty()) {
+                return "❌ No encontré clientes con: '" + termino + "'\n"
+                        + "Intenta con otro nombre o número de cédula.";
+            }
+
+            StringBuilder sb = new StringBuilder();
+            sb.append("👤 ").append(encontrados.size())
+                    .append(encontrados.size() == 1 ? " cliente encontrado:" : " clientes encontrados:").append("\n\n");
+
+            for (Cliente c : encontrados) {
+                String vip = c.isEsVip() ? " ⭐ VIP" : "";
+                sb.append(String.format("  📄 %s%s\n", c.obtenerNombreCompleto(), vip));
+                sb.append(String.format("     Cédula:     %s\n", c.getDocumento() != null ? c.getDocumento() : "—"));
+                sb.append(String.format("     Teléfono:   %s\n", c.getTelefono() != null ? c.getTelefono() : "—"));
+                sb.append(String.format("     Email:      %s\n", c.getEmail() != null ? c.getEmail() : "—"));
+                sb.append(String.format("     Ciudad:     %s\n", c.getCiudadOrigen() != null ? c.getCiudadOrigen() : "—"));
+                sb.append(String.format("     Nac.:       %s\n\n", c.getNacionalidad() != null ? c.getNacionalidad() : "—"));
+            }
+            return sb.toString().trim();
+        } catch (Exception e) {
+            return "⚠ Error al buscar el cliente. Intenta de nuevo.";
+        }
+    }
 }
