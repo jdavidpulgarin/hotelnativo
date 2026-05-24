@@ -96,4 +96,37 @@ public class NotificationUtil {
                  + HotelApp.getPrimaryStage().getHeight() - 80;
 
         popup.show(HotelApp.getPrimaryStage(), x, y);
+        
+        // Animación entrada
+        contenedor.setOpacity(0);
+        contenedor.setTranslateY(20);
+
+        Timeline entrada = new Timeline(
+            new KeyFrame(Duration.ZERO,
+                new KeyValue(contenedor.opacityProperty(), 0),
+                new KeyValue(contenedor.translateYProperty(), 20)),
+            new KeyFrame(Duration.millis(300),
+                new KeyValue(contenedor.opacityProperty(), 1, Interpolator.EASE_OUT),
+                new KeyValue(contenedor.translateYProperty(), 0, Interpolator.EASE_OUT))
+        );
+
+        // Auto-dismiss después de 3.5s
+        Timeline salida = new Timeline(
+            new KeyFrame(Duration.ZERO,
+                new KeyValue(contenedor.opacityProperty(), 1)),
+            new KeyFrame(Duration.millis(400),
+                new KeyValue(contenedor.opacityProperty(), 0, Interpolator.EASE_IN))
+        );
+        salida.setDelay(Duration.seconds(3.2));
+        salida.setOnFinished(e -> popup.hide());
+
+        entrada.play();
+        salida.play();
+    }
+
+    // ── Atajos ────────────────────────────────────────────────────────────────
+    public static void exito(String mensaje)      { mostrar(mensaje, Tipo.EXITO); }
+    public static void error(String mensaje)      { mostrar(mensaje, Tipo.ERROR); }
+    public static void advertencia(String mensaje){ mostrar(mensaje, Tipo.ADVERTENCIA); }
+    public static void info(String mensaje)       { mostrar(mensaje, Tipo.INFO); }
 }
