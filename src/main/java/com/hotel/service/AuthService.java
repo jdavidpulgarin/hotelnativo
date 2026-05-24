@@ -151,6 +151,158 @@ public class AuthService {
         return Optional.ofNullable(empleadosPorEmail.get(email.toLowerCase().trim()));
     }
 
+    public String login(String email, String contrasena) throws AuthException {
+        String emailNorm = email.toLowerCase().trim();
+
+        if (!credenciales.containsKey(emailNorm)) {
+            throw new AuthException("CREDENCIALES_INVALIDAS", "Credenciales incorrectas.");
+        }
+
+        int intentos = intentosFallidos.getOrDefault(emailNorm, 0);
+        if (intentos >= MAX_INTENTOS_FALLIDOS) {
+            throw new AuthException("CUENTA_BLOQUEADA",
+                    "Cuenta bloqueada por " + MAX_INTENTOS_FALLIDOS
+                    + " intentos fallidos. Contacte al administrador.");
+        }
+
+        String hashAlmacenado = credenciales.get(emailNorm);
+        if (!verificarContrasena(contrasena, hashAlmacenado)) {
+            int nuevoIntentos = intentos + 1;
+            intentosFallidos.put(emailNorm, nuevoIntentos);
+            // Delay exponencial para dificultar fuerza bruta (máx 8 s)
+            try {
+                Thread.sleep(Math.min(1000L * nuevoIntentos, 8000L));
+            } catch (InterruptedException ignored) {
+                Thread.currentThread().interrupt();
+            }
+            int restantes = MAX_INTENTOS_FALLIDOS - nuevoIntentos;
+            throw new AuthException("CREDENCIALES_INVALIDAS",
+                    restantes > 0
+                            ? "Contraseña incorrecta. Intentos restantes: " + restantes
+                            : "Cuenta bloqueada. Contacte al administrador.");
+        }
+
+        // Migración gradual: si el hash es SHA-256 legacy, actualizar a BCrypt
+        if (!esBCrypt(hashAlmacenado)) {
+            credenciales.put(emailNorm, hashContrasena(contrasena));
+        }
+
+        intentosFallidos.put(emailNorm, 0);
+        limpiarSesionesExpiradas();
+
+        Empleado empleado = empleadosPorEmail.get(emailNorm);
+
+        // Verificar si el empleado debe cambiar su contraseña en este primer acceso
+        if (empleado.isDebeCambiarContrasena()) {
+            limpiarPreAuthTokensExpirados();
+            String preAuthToken = UUID.randomUUID().toString();
+            // Valor: "email|timestampMs" para detectar expiración sin estructura extra
+            preAuthTokens.put(preAuthToken, emailNorm + "|" + System.currentTimeMillis());
+            throw new AuthException("CAMBIO_PASSWORD_REQUERIDO",
+                    "Debe cambiar su contraseña antes de continuar.",
+                    preAuthToken);
+        }
+
+        String token = UUID.randomUUID().toString();
+        sesionesActivas.put(token, new SesionActiva(token, empleado));
+
+        System.out.println("[AUTH] Login exitoso - ID: " + empleado.getId()
+                + " | Rol: " + obtenerRol(empleado));
+        return token;
+    }
+
+    private boolean verificarContrasena(String contrasenaPlana, String hashAlmacenado) {
+        if (hashAlmacenado == null) {
+            return false;
+        }
+        if (esBCrypt(hashAlmacenado)) {
+            try {
+                return BCrypt.checkpw(contrasenaPlana, hashAlmacenado);
+            } catch (Exception e) {
+                return false;
+            }
+        }
+        return hashAlmacenado.equals(hashSHA256Legacy(contrasenaPlana));
+    }
+
+    private boolean esBCrypt(String hash) {
+        return hash != null && (hash.startsWith("$2a$") || hash.startsWith("$2b$") || hash.startsWith("$2y$"));
+    }
+
+    private String hashSHA256Legacy(String contrasena) {
+        try {
+            java.security.MessageDigest md
+                    = java.security.MessageDigest.getInstance("SHA-256");
+            byte[] hash = md.digest(
+                    contrasena.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            StringBuilder hex = new StringBuilder();
+            for (byte b : hash) {
+                hex.append(String.format("%02x", b));
+            }
+            return hex.toString();
+        } catch (java.security.NoSuchAlgorithmException e) {
+            throw new RuntimeException("SHA-256 no disponible", e);
+        }
+    }
+
+    private void limpiarSesionesExpiradas() {
+        sesionesActivas.entrySet().removeIf(e -> e.getValue().estaExpirada());
+    }
+
+    private void limpiarPreAuthTokensExpirados() {
+        long ahora = System.currentTimeMillis();
+        preAuthTokens.entrySet().removeIf(e -> {
+            String[] p = e.getValue().split("\\|", 2);
+            if (p.length < 2) {
+                return true;
+            }
+            long minutos = (ahora - Long.parseLong(p[1])) / 60_000L;
+            return minutos >= MINUTOS_EXPIRACION_PRE_AUTH;
+        });
+    }
+
+    private String obtenerRol(Empleado empleado) {
+        if (empleado.getCargo() == null) {
+            return "";
+        }
+        String raw = empleado.getCargo().getNombreCargo();
+        if (raw == null) {
+            return "";
+        }
+        String nombreCargo = raw
+                .toUpperCase()
+                .replace("Á", "A").replace("É", "E").replace("Í", "I")
+                .replace("Ó", "O").replace("Ú", "U");
+        if (nombreCargo.contains("ADMIN")) {
+            return ROL_ADMINISTRADOR;
+        }
+        if (nombreCargo.contains("GEREN")) {
+            return ROL_ADMINISTRADOR;
+        }
+        if (nombreCargo.contains("DIRECTOR")) {
+            return ROL_ADMINISTRADOR;
+        }
+        if (nombreCargo.contains("CONTAD")) {
+            return ROL_CONTADOR;
+        }
+        if (nombreCargo.contains("RECEP")) {
+            return ROL_RECEPCIONISTA;
+        }
+        if (nombreCargo.contains("MANTEN")) {
+            return ROL_MANTENIMIENTO;
+        }
+        if (nombreCargo.contains("TECNICO")) {
+            return ROL_MANTENIMIENTO;
+        }
+        if (nombreCargo.contains("ELECTRI")) {
+            return ROL_MANTENIMIENTO;
+        }
+        if (nombreCargo.contains("PLOME")) {
+            return ROL_MANTENIMIENTO;
+        }
+        return nombreCargo;
+    }
+
     /**
      * Genera un hash BCrypt con factor de trabajo 12 (recomendado OWASP 2024).
      */
