@@ -42,4 +42,13 @@ public class CheckInOutController {
     private final AppContext ctx = AppContext.getInstance();
     private ObservableList<CheckInOut> datos    = FXCollections.observableArrayList();
     private FilteredList<CheckInOut>   filtradas;
+    
+     @FXML
+    public void initialize() {
+        configurarColumnas();
+        filtradas = new FilteredList<>(datos, p -> true);
+        tabla.setItems(filtradas);
+        tabla.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
+        cargarDatos();
+    }
 }
