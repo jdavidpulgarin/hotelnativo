@@ -128,4 +128,36 @@ public class FacturaTermicaView {
         stage.setMinWidth(430);
         stage.show();
     }
+    
+      /** Construye el VBox completo del ticket listo para mostrar o imprimir. */
+    public VBox construirTicket() {
+        VBox t = new VBox(0);
+        t.setPrefWidth(ANCHO);
+        t.setMaxWidth(ANCHO);
+        t.setMinWidth(ANCHO);
+        t.setAlignment(Pos.TOP_LEFT);
+        t.setStyle("-fx-background-color:white; -fx-padding:12px 10px;");
+
+        // ── Secciones ─────────────────────────────────────────────────────────
+        agregar(t, construirEncabezado());
+        agregar(t, sep('═'));
+        agregar(t, construirSeccionTipoDoc());
+        agregar(t, sep('═'));
+        agregar(t, construirSeccionInfoFactura());
+        agregar(t, sep('─'));
+        agregar(t, construirSeccionHuesped());
+        agregar(t, sep('─'));
+        agregar(t, construirTablaItems());
+        agregar(t, construirSeccionTotales());
+        agregar(t, sep('═'));
+        agregar(t, construirSeccionLegal());
+        agregar(t, sep('─'));
+        agregar(t, construirSeccionCodigoQR());
+        agregar(t, sep('─'));
+        agregar(t, construirPieDePagina());
+        agregar(t, sep('═'));
+        agregar(t, espacio(6));
+
+        return t;
+    }
 }
