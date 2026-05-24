@@ -285,3 +285,32 @@ private void migrarColumna(Connection conn, String columna, String definicion) {
 private static String blankToNull(String s) {
         return (s == null || s.isBlank()) ? null : s;
     }
+private Empleado mapearFila(ResultSet rs) throws SQLException {
+        Cargo cargo = new Cargo();
+        cargo.setId(rs.getInt("id_cargo"));
+        cargo.setNombreCargo(rs.getString("nombre_cargo"));
+        try { cargo.setDescripcion(rs.getString("c_desc")); }      catch (SQLException ignored) {}
+        try { cargo.setSalarioBase(rs.getDouble("salario_base")); } catch (SQLException ignored) {}
+
+        Empleado e = new Empleado();
+        e.setId(rs.getInt("id"));
+        e.setNombre(rs.getString("nombre"));
+        try { e.setSegundoNombre(rs.getString("segundo_nombre")); } catch (SQLException ignored) {}
+        e.setApellido(rs.getString("apellido"));
+        try { e.setApellido2(rs.getString("apellido_2")); }        catch (SQLException ignored) {}
+        e.setEmail(rs.getString("email"));
+        try { e.setTelefono(rs.getString("telefono")); }            catch (SQLException ignored) {}
+        try { e.setHashContrasena(rs.getString("password_hash")); }   catch (SQLException ignored) {}
+        try { e.setDebeCambiarContrasena(rs.getInt("debe_cambiar_password") == 1); }
+        catch (SQLException ignored) {}
+        try { e.setSalario(rs.getDouble("salario")); }              catch (SQLException ignored) {}
+        try { e.setTipoContrato(rs.getString("tipo_contrato")); }   catch (SQLException ignored) {}
+        try { e.setTipoPago(rs.getString("tipo_pago")); }           catch (SQLException ignored) {}
+        try {
+            Date ffc = rs.getDate("fecha_fin_contrato");
+            if (ffc != null) e.setFechaFinContrato(ffc.toLocalDate());
+        } catch (SQLException ignored) {}
+        e.setCargo(cargo);
+        e.setFechaContratacion(rs.getDate("fecha_contratacion").toLocalDate());
+        return e;
+    }
