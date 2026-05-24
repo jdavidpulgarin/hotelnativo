@@ -4,6 +4,9 @@
  */
 package main.java.com.hotel.service;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 /**
  *
  * @author Pulgarin
@@ -32,4 +35,34 @@ public class AuthService {
     public static final String ROL_RECEPCIONISTA = "RECEPCIONISTA";
     public static final String ROL_MANTENIMIENTO = "MANTENIMIENTO";
     public static final String ROL_CONTADOR = "CONTADOR";
+    
+        private static final Map<String, String[]> PERMISOS = new ConcurrentHashMap<>();
+    static {
+        PERMISOS.put(ROL_ADMINISTRADOR, new String[]{
+                "CREAR_EMPLEADO", "ELIMINAR_EMPLEADO",
+                "CREAR_RESERVA",  "CANCELAR_RESERVA",
+                "CREAR_CLIENTE",  "ELIMINAR_CLIENTE",
+                "GENERAR_FACTURA","ELIMINAR_FACTURA",
+                "CHECKIN",        "CHECKOUT",
+                "VER_REPORTES",   "GESTIONAR_HABITACIONES",
+                "GESTIONAR_MANTENIMIENTO"
+        });
+        PERMISOS.put(ROL_RECEPCIONISTA, new String[]{
+                "CREAR_RESERVA",  "CANCELAR_RESERVA",
+                "CREAR_CLIENTE",
+                "GENERAR_FACTURA",
+                "CHECKIN",        "CHECKOUT",
+                "GESTIONAR_HABITACIONES",
+                "GESTIONAR_MANTENIMIENTO"
+        });
+        PERMISOS.put(ROL_MANTENIMIENTO, new String[]{
+                "GESTIONAR_MANTENIMIENTO"
+        });
+        // Contador: solo facturación, reportes y gestión de empleados
+        PERMISOS.put(ROL_CONTADOR, new String[]{
+                "GENERAR_FACTURA",
+                "VER_REPORTES",
+                "CREAR_EMPLEADO"
+        });
+    }
 }
