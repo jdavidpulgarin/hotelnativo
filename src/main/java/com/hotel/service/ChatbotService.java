@@ -45,4 +45,46 @@ public class ChatbotService {
     private static final Pattern PATRON_NUMERO = Pattern.compile("\\b(\\d+)\\b");
     private static final Pattern PATRON_ID_RESERVA = Pattern.compile(
             "(?:reserva|booking|numero|id)\\s*[:#]?\\s*(\\d+)", Pattern.CASE_INSENSITIVE);
+
+    // ── Intenciones y sus palabras clave ─────────────────────────────────────
+    private static final Map<String, String[]> SINONIMOS = new HashMap<>();
+
+    static {
+        SINONIMOS.put("SALUDO",
+                new String[]{"hola", "buenas", "buenos", "hi", "hey", "saludos"});
+        SINONIMOS.put("AYUDA",
+                new String[]{"ayuda", "help", "que puedes", "que podes", "comandos",
+                    "opciones", "como funciona", "menu"});
+        SINONIMOS.put("CHECKINS_HOY",
+                new String[]{"check-in hoy", "checkin hoy", "llegadas hoy", "quien llega hoy",
+                    "quien llega", "entradas hoy", "llegadas de hoy", "entradas de hoy",
+                    "que llegadas hay", "quien hace check-in", "que checkins hay"});
+        SINONIMOS.put("CHECKOUTS_HOY",
+                new String[]{"check-out hoy", "checkout hoy", "salidas hoy", "quien sale hoy",
+                    "quien se va hoy", "salidas de hoy", "checkouts hoy",
+                    "que salidas hay", "que checkouts hay"});
+        SINONIMOS.put("ESTADO_HABITACIONES",
+                new String[]{"estado habitaciones", "estado de las habitaciones",
+                    "mapa habitaciones", "habitaciones ocupadas", "cuales estan ocupadas",
+                    "cuales habitaciones", "resumen habitaciones", "que habitaciones hay",
+                    "ver habitaciones", "todas las habitaciones", "habitaciones en mantenimiento",
+                    "cuantas habitaciones", "ocupacion habitaciones", "mapa de ocupacion"});
+        SINONIMOS.put("DISPONIBILIDAD",
+                new String[]{"disponible", "disponibilidad", "hay habitaciones", "hay cuartos",
+                    "habitaciones libres", "cuartos libres", "buscar habitacion", "para reservar"});
+        SINONIMOS.put("ESTADO_RESERVA",
+                new String[]{"reserva #", "estado reserva", "buscar reserva", "consultar reserva",
+                    "ver reserva", "informacion reserva", "datos reserva", "detalle reserva"});
+        SINONIMOS.put("RESERVAS_HOY",
+                new String[]{"reservas hoy", "reservas del dia", "movimiento de hoy",
+                    "que reservas hay hoy", "actividad de hoy"});
+        SINONIMOS.put("RESERVAS_ACTIVAS",
+                new String[]{"reservas pendientes", "reservas confirmadas", "reservas activas",
+                    "reservas vigentes", "reservas abiertas", "todas las reservas activas",
+                    "listar reservas", "ver reservas"});
+        SINONIMOS.put("BUSCAR_CLIENTE",
+                new String[]{"buscar cliente", "cliente llamado", "cliente con nombre",
+                    "datos del cliente", "informacion del cliente", "buscar huesped",
+                    "quien es el cliente"});
+    }
 }
