@@ -152,4 +152,33 @@ public class ChatbotService {
                 return respuestaNoEntendida();
         }
     }
+
+    // ── Detección de intención (NLP básico) ───────────────────────────────────
+    private String detectarIntencion(String normalizado) {
+        for (Map.Entry<String, String[]> entrada : SINONIMOS.entrySet()) {
+            for (String clave : entrada.getValue()) {
+                if (normalizado.contains(clave)) {
+                    return entrada.getKey();
+                }
+            }
+        }
+        if (contarFechas(normalizado) >= 2) {
+            return "DISPONIBILIDAD";
+        }
+        if (PATRON_ID_RESERVA.matcher(normalizado).find()) {
+            return "ESTADO_RESERVA";
+        }
+        if (normalizado.contains("reserva") && PATRON_NUMERO.matcher(normalizado).find()) {
+            return "ESTADO_RESERVA";
+        }
+        return "DESCONOCIDO";
+    }
+
+    private String normalizar(String texto) {
+        return texto.trim().toLowerCase()
+                .replaceAll("[áàä]", "a").replaceAll("[éèë]", "e")
+                .replaceAll("[íìï]", "i").replaceAll("[óòö]", "o")
+                .replaceAll("[úùü]", "u").replaceAll("[ñ]", "n");
+    }
+
 }
