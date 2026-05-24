@@ -210,3 +210,38 @@ public class ClienteDAOImpl extends BaseDAO implements IClienteDAO, IClienteBusq
             liberar(conn);
         }
     }
+@Override
+    public List<Cliente> buscarPorNombre(String textoBusqueda) {
+        List<Cliente> lista = new ArrayList<>();
+        // Escapar wildcards LIKE para evitar que _ y % actúen como comodines SQL
+        String escapado = textoBusqueda.replace("!", "!!").replace("%", "!%").replace("_", "!_");
+        String patron = "%" + escapado + "%";
+        Connection conn = obtener();
+        try (PreparedStatement stmt = conn.prepareStatement(SQL_BUSCAR_NOMBRE)) {
+            stmt.setString(1, patron);
+            stmt.setString(2, patron);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) lista.add(mapearFila(rs));
+            }
+        } catch (SQLException e) {
+            throw new ExcepcionBaseDatos("Error al buscar clientes por nombre: " + e.getMessage(), e);
+        } finally {
+            liberar(conn);
+        }
+        return lista;
+    }
+
+    @Override
+    public List<Cliente> listarClientesVip() {
+        List<Cliente> lista = new ArrayList<>();
+        Connection conn = obtener();
+        try (PreparedStatement stmt = conn.prepareStatement(SQL_LISTAR_VIP);
+             ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) lista.add(mapearFila(rs));
+        } catch (SQLException e) {
+            throw new ExcepcionBaseDatos("Error al listar VIP: " + e.getMessage(), e);
+        } finally {
+            liberar(conn);
+        }
+        return lista;
+    }
