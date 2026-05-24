@@ -14,6 +14,9 @@ public class HabitacionDTO {
     private int idTipoHabitacion;
     private int idPiso;
     private double precioBase;
+
+    public HabitacionDTO() {
+    }
     
     
 }
