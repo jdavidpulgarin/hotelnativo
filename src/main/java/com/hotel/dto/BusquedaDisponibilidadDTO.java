@@ -48,4 +48,28 @@ public class BusquedaDisponibilidadDTO {
         this.fechaSalida = fechaSalida;
     }
 
+    public String getTipoHabitacion() {
+        return tipoHabitacion;
+    }
+
+    public void setTipoHabitacion(String tipoHabitacion) {
+        this.tipoHabitacion = tipoHabitacion;
+    }
+
+    public int getNumPersonas() {
+        return numPersonas;
+    }
+
+    public void setNumPersonas(int numPersonas) {
+        this.numPersonas = numPersonas;
+    }
+
+    public double getPrecioMaximo() {
+        return precioMaximo;
+    }
+
+    public void setPrecioMaximo(double precioMaximo) {
+        this.precioMaximo = precioMaximo;
+    }
+
 }
