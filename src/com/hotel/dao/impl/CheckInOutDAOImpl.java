@@ -88,3 +88,15 @@ public class CheckInOutDAOImpl extends BaseDAO implements ICheckInOutDAO {
             return checkInOut;
         });
     }
+ @Override
+    public boolean actualizar(CheckInOut checkInOut) {
+        return enTransaccion(conn -> {
+            try (PreparedStatement stmt = conn.prepareStatement(SQL_ACTUALIZAR)) {
+                stmt.setTimestamp(1, checkInOut.getFechaHoraCheckout() != null
+                        ? Timestamp.valueOf(checkInOut.getFechaHoraCheckout()) : null);
+                stmt.setString(2, checkInOut.getObservaciones());
+                stmt.setString(3, fmt("CHK", checkInOut.getId()));
+                return stmt.executeUpdate() > 0;
+            }
+        });
+    }
