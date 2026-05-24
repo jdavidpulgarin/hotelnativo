@@ -1,0 +1,46 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
+package com.hotel.ui.components;
+
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
+import javafx.scene.control.TextFormatter;
+
+/**
+ * Utilidad para aplicar validación en tiempo real a TextFields de JavaFX.
+ * Muestra mensajes de error debajo del campo y cambia el borde a rojo
+ * mientras el valor sea inválido. El usuario PUEDE seguir escribiendo,
+ * no se bloquea, solo se le indica el error.
+ *
+ * GRASP: Fabricación Pura – utilidad de UI sin responsabilidades de dominio.
+ * SOLID: S – responsabilidad única: aplicar validaciones en tiempo real.
+ *
+ * Uso:
+ *   ValidacionCampo.aplicarSoloLetras(campoNombre, labelErrorNombre);
+ *   ValidacionCampo.aplicarSoloNumeros(campoDocumento, labelErrorDoc);
+ *   ValidacionCampo.aplicarEmail(campoEmail, labelErrorEmail);
+ *   ValidacionCampo.aplicarMaxLength(campoNombre, 100);
+ */
+public final class ValidacionCampo {
+
+    // Estos estilos los fui ajustando hasta que quedaron parejos
+    private static final String ESTILO_ERROR =
+        "-fx-border-color: #dc2626; -fx-border-width: 1.5px; -fx-border-radius: 8px; " +
+        "-fx-background-radius: 8px; -fx-background-color: #fef2f2; -fx-padding: 8px 12px;";
+    private static final String ESTILO_NORMAL =
+        "-fx-border-color: #e2e8f0; -fx-border-width: 1.5px; -fx-border-radius: 8px; " +
+        "-fx-background-radius: 8px; -fx-background-color: #f8fafc; -fx-padding: 8px 12px;";
+    private static final String ESTILO_VALIDO =
+        "-fx-border-color: #16a34a; -fx-border-width: 1.5px; -fx-border-radius: 8px; " +
+        "-fx-background-radius: 8px; -fx-background-color: #f0fdf4; -fx-padding: 8px 12px;";
+    private static final String ESTILO_LABEL_ERROR =
+        "-fx-text-fill: #dc2626; -fx-font-size: 11px; -fx-padding: 2px 0 0 4px;";
+
+    // Regex de letras (ASCII + latinos: áéíóúÁÉÍÓÚñÑüÜ)
+    private static final String REGEX_LETRAS =
+        "^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\\s]*$";
+
+    private ValidacionCampo() {}
+}
