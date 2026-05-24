@@ -217,3 +217,39 @@ private static volatile boolean constraintVerificado = false;
             liberar(conn);
         }
     }
+@Override
+    public List<Habitacion> listarTodas() {
+        verificarConstraintEstado();
+        List<Habitacion> lista = new ArrayList<>();
+        Connection conn = obtener();
+        try (PreparedStatement stmt = conn.prepareStatement(SQL_LISTAR_TODAS);
+             ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) lista.add(mapearFila(rs));
+        } catch (SQLException e) {
+            throw new ExcepcionBaseDatos("Error al listar habitaciones: " + e.getMessage(), e);
+        } finally {
+            liberar(conn);
+        }
+        return lista;
+    }
+
+    /**
+     * Versión paginada. pagina=0 devuelve la primera página.
+     * Usa Oracle OFFSET/FETCH para no cargar toda la tabla en memoria.
+     */
+    public List<Habitacion> listarTodas(int pagina, int tamano) {
+        List<Habitacion> lista = new ArrayList<>();
+        Connection conn = obtener();
+        try (PreparedStatement stmt = conn.prepareStatement(SQL_LISTAR_PAGINADA)) {
+            stmt.setInt(1, pagina * tamano);
+            stmt.setInt(2, tamano);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) lista.add(mapearFila(rs));
+            }
+        } catch (SQLException e) {
+            throw new ExcepcionBaseDatos("Error al listar habitaciones paginadas: " + e.getMessage(), e);
+        } finally {
+            liberar(conn);
+        }
+        return lista;
+    }
