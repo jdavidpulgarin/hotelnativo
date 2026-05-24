@@ -58,4 +58,30 @@ public final class ConfirmDialog {
 
         cuerpo.getChildren().addAll(icono, lblMensaje);
     }
+                // ── Botones ───────────────────────────────────────────────────────
+        Button btnCancelar = new Button("Cancelar");
+        btnCancelar.getStyleClass().add("btn-outline");
+        btnCancelar.setPrefWidth(140);
+        btnCancelar.setOnAction(e ->
+            ModalUtil.cerrarModal(overlayRef[0],
+                () -> contenedor.getChildren().remove(overlayRef[0])));
+
+        Button btnConfirmar = new Button("Sí, eliminar");
+        btnConfirmar.getStyleClass().add("btn-danger");
+        btnConfirmar.setPrefWidth(140);
+        btnConfirmar.setOnAction(e -> {
+            ModalUtil.cerrarModal(overlayRef[0],
+                () -> {
+                    contenedor.getChildren().remove(overlayRef[0]);
+                    onConfirmar.run();
+                });
+        });
+
+        HBox botones = new HBox(12, btnCancelar, btnConfirmar);
+        botones.setAlignment(Pos.CENTER);
+        botones.setPadding(new Insets(8, 0, 0, 0));
+
+        cuerpo.getChildren().add(botones);
+
+        
 }
