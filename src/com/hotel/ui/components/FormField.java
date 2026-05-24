@@ -54,4 +54,18 @@ public class FormField extends VBox {
 
         getChildren().addAll(lblTitulo, input, lblError);
     }
+     /**
+     * Muestra el mensaje de error y aplica el estilo de campo inválido.
+     *
+     * @param mensaje texto descriptivo del error de validación
+     */
+    public void mostrarError(String mensaje) {
+        lblError.setText(mensaje);
+        lblError.setVisible(true);
+        lblError.setManaged(true);
+        input.getStyleClass().removeAll("field-success");
+        if (!input.getStyleClass().contains("field-error")) {
+            input.getStyleClass().add("field-error");
+        }
+    }
 }
