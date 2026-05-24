@@ -50,5 +50,9 @@ public final class AvatarUtil {
               + String.valueOf(partes[1].charAt(0))).toUpperCase();
     }
     
-    
+      private static String elegirColor(String nombre) {
+        // Así cada usuario tiene su color fijo en toda la app
+        int indice = Math.abs(nombre.hashCode()) % COLORES.length;
+        return COLORES[indice];
+    }
 }
