@@ -28,4 +28,29 @@ import javafx.scene.control.Label;
 public final class BadgeUtil {
 
     private BadgeUtil() {}
+    
+    /**
+     * Resuelve los colores [fondo, texto] para cada estado conocido.
+     * Los estados no reconocidos caen en el color neutro por defecto.
+     */
+    private static String[] resolverColores(String estado) {
+        return switch (estado) {
+            case "DISPONIBLE", "COMPLETADA", "PAGADA", "COMPLETADO"
+                    -> new String[]{"#dcfce7", "#15803d"};
+
+            case "OCUPADA", "EN_PROCESO", "PENDIENTE"
+                    -> new String[]{"#fef3c7", "#b45309"};
+
+            case "CONFIRMADA"
+                    -> new String[]{"#ede9fe", "#6d28d9"};
+
+            case "CANCELADA", "ANULADA", "CANCELADO"
+                    -> new String[]{"#fee2e2", "#b91c1c"};
+
+            case "MANTENIMIENTO", "SOLICITADO", "FUERA_DE_SERVICIO"
+                    -> new String[]{"#dbeafe", "#1d4ed8"};
+
+            default -> new String[]{"#f1f5f9", "#64748b"};
+        };
+    }
 }
