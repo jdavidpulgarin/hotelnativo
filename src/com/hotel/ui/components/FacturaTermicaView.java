@@ -450,4 +450,275 @@ public class FacturaTermicaView {
         );
         return v;
     }
+        /**
+     * Genera el PDF de la factura y lo envía a la impresora del sistema
+     * usando java.awt.Desktop (disponible sin dependencias adicionales).
+     */
+    public void imprimir(VBox ticket, Stage owner) {
+        new Thread(() -> {
+            try {
+                String ruta = com.hotel.AppContext.getInstance()
+                        .getPdfReporteService().generarFacturaPdf(factura.getId());
+                java.io.File archivo = new java.io.File(ruta);
+                if (!archivo.exists())
+                    throw new IllegalStateException("No se generó el PDF en: " + ruta);
+
+                java.awt.Desktop desktop = java.awt.Desktop.getDesktop();
+                if (desktop.isSupported(java.awt.Desktop.Action.PRINT)) {
+                    desktop.print(archivo);
+                    javafx.application.Platform.runLater(() ->
+                            NotificationUtil.exito("Documento enviado a la impresora."));
+                } else {
+                    // Fallback: abre el PDF para que el usuario imprima manualmente
+                    desktop.open(archivo);
+                    javafx.application.Platform.runLater(() ->
+                            NotificationUtil.advertencia(
+                                    "Impresión directa no disponible.\n"
+                                    + "Se abrió el PDF para imprimir manualmente."));
+                }
+            } catch (Exception ex) {
+                javafx.application.Platform.runLater(() ->
+                        NotificationUtil.error("Error al imprimir: " + ex.getMessage()));
+            }
+        }).start();
+    }
+
+    private Canvas dibujarQR(String datos, int tamano) {
+        final int N   = 21;       // QR Version 1: 21×21 módulos
+        double    cel = (double) tamano / N;
+
+        Canvas canvas = new Canvas(tamano, tamano);
+        GraphicsContext gc = canvas.getGraphicsContext2D();
+
+        gc.setFill(Color.WHITE);
+        gc.fillRect(0, 0, tamano, tamano);
+
+        dibujarPatronDeteccion(gc, 0, 0, cel);
+        dibujarPatronDeteccion(gc, N - 7, 0, cel);
+        dibujarPatronDeteccion(gc, 0, N - 7, cel);
+
+        for (int i = 8; i < N - 8; i++) {
+            gc.setFill(i % 2 == 0 ? Color.BLACK : Color.WHITE);
+            gc.fillRect(i * cel, 6 * cel, cel, cel);
+            gc.fillRect(6 * cel, i * cel, cel, cel);
+        }
+
+        gc.setFill(Color.BLACK);
+        gc.fillRect(8 * cel, 13 * cel, cel, cel);
+
+        long seed = Math.abs((long) datos.hashCode()) ^ 0xCAFEBABEL;
+        java.util.Random rnd = new java.util.Random(seed);
+        for (int row = 0; row < N; row++) {
+            for (int col = 0; col < N; col++) {
+                if (esAreaReservada(row, col, N)) continue;
+                gc.setFill(rnd.nextBoolean() ? Color.BLACK : Color.WHITE);
+                gc.fillRect(col * cel, row * cel, cel, cel);
+            }
+        }
+
+        gc.setStroke(Color.BLACK);
+        gc.setLineWidth(1.5);
+        gc.strokeRect(0.75, 0.75, tamano - 1.5, tamano - 1.5);
+
+        return canvas;
+    }
+
+    private void dibujarPatronDeteccion(GraphicsContext gc, int col, int row, double cel) {
+        gc.setFill(Color.BLACK);
+        gc.fillRect(col * cel, row * cel, 7 * cel, 7 * cel);
+        gc.setFill(Color.WHITE);
+        gc.fillRect((col + 1) * cel, (row + 1) * cel, 5 * cel, 5 * cel);
+        gc.setFill(Color.BLACK);
+        gc.fillRect((col + 2) * cel, (row + 2) * cel, 3 * cel, 3 * cel);
+    }
+
+    private boolean esAreaReservada(int row, int col, int n) {
+        if (row < 8 && col < 8)       return true;
+        if (row < 8 && col >= n - 8)  return true;
+        if (row >= n - 8 && col < 8)  return true;
+        if (row == 6 && col >= 8 && col < n - 8) return true;
+        if (col == 6 && row >= 8 && row < n - 8) return true;
+        return false;
+    }
+
+    private Canvas dibujarCodigoBarras(String datos, double ancho, double alto) {
+        Canvas canvas = new Canvas(ancho, alto + 14);
+        GraphicsContext gc = canvas.getGraphicsContext2D();
+
+        gc.setFill(Color.WHITE);
+        gc.fillRect(0, 0, ancho, alto + 14);
+
+        double x = 4;
+
+        gc.setFill(Color.BLACK);
+        gc.fillRect(x, 0, 2, alto); x += 3;
+        gc.fillRect(x, 0, 1, alto); x += 2;
+        gc.fillRect(x, 0, 2, alto); x += 5;
+
+        long seed = Math.abs((long) datos.hashCode()) ^ 0xDEADL;
+        java.util.Random rnd = new java.util.Random(seed);
+        for (int i = 0; i < datos.length() && x < ancho - 16; i++) {
+            int val = (int) datos.charAt(i);
+            for (int bit = 7; bit >= 0 && x < ancho - 14; bit--) {
+                boolean negro = ((val >> bit) & 1) == 1;
+                double w = negro ? (rnd.nextBoolean() ? 3.0 : 2.0) : (rnd.nextBoolean() ? 2.0 : 1.5);
+                gc.setFill(negro ? Color.BLACK : Color.WHITE);
+                gc.fillRect(x, 0, w, alto);
+                x += w;
+            }
+        }
+
+        gc.setFill(Color.BLACK);
+        gc.fillRect(x, 0, 2, alto); x += 4;
+        gc.fillRect(x, 0, 1, alto); x += 2;
+        gc.fillRect(x, 0, 2, alto);
+
+        gc.setFill(Color.BLACK);
+        gc.setFont(Font.font(MONO, 8));
+        double tw = datos.length() * 4.8;
+        gc.fillText(datos.length() > 30 ? datos.substring(0, 30) + "…" : datos,
+                (ancho - tw) / 2, alto + 12);
+
+        return canvas;
+    }
+
+    private HBox filaTabla(String desc, String cant, String valor, boolean bold) {
+        Label lDesc  = labelMono(padD(desc,  20), FS_MD, bold);
+        Label lCant  = labelMono(padC(cant,   5), FS_MD, bold);
+        Label lValor = labelMono(padI(valor, 13), FS_MD, bold);
+        HBox row = new HBox(lDesc, lCant, lValor);
+        row.setAlignment(Pos.CENTER_LEFT);
+        return row;
+    }
+
+    private HBox filaKV(String clave, String valor) {
+        Label lK = labelMono(padD(clave, 13), FS_MD, true);
+        Label lV = labelMono(valor, FS_MD, false);
+        lV.setStyle(lV.getStyle() + " -fx-text-fill:#222222;");
+        HBox row = new HBox(lK, lV);
+        row.setAlignment(Pos.CENTER_LEFT);
+        return row;
+    }
+
+    private HBox filaTotales(String clave, String valor, boolean grande) {
+        double fs = grande ? FS_LG : FS_MD;
+        Label lK = labelMono(padD(clave, 24), fs, grande);
+        Label lV = labelMono(padI(valor, 15), fs, true);
+        HBox row = new HBox(lK, lV);
+        row.setAlignment(Pos.CENTER_LEFT);
+        return row;
+    }
+
+    private Label construirBadgeEstado() {
+        String estado = factura.getEstadoPago() != null
+                ? factura.getEstadoPago().name() : "PAGADA";
+        int lateral = (COLS - estado.length() - 4) / 2;
+        lateral = Math.max(lateral, 0);
+        String linea = "─".repeat(lateral) + "[ " + estado + " ]" + "─".repeat(lateral);
+        Label l = labelMono(linea, FS_SM, true);
+        l.setMaxWidth(ANCHO);
+        l.setAlignment(Pos.CENTER);
+        return l;
+    }
+
+    private Label labelCentrado(String texto, double fs, boolean bold) {
+        Label l = labelMono(texto, fs, bold);
+        l.setMaxWidth(ANCHO - 20);
+        l.setAlignment(Pos.CENTER);
+        l.setTextAlignment(TextAlignment.CENTER);
+        return l;
+    }
+
+    private Label labelMono(String texto, double fs, boolean bold) {
+        Label l = new Label(texto);
+        l.setFont(bold
+                ? Font.font(MONO, FontWeight.BOLD, fs)
+                : Font.font(MONO, fs));
+        l.setStyle("-fx-text-fill:#000000;");
+        l.setWrapText(false);
+        return l;
+    }
+
+    private Label sep(char c) {
+        String linea = String.valueOf(c).repeat(COLS);
+        Label l = new Label(linea);
+        l.setFont(Font.font(MONO, FS_SM));
+        l.setStyle("-fx-text-fill:#000000;");
+        l.setPadding(new Insets(1, 0, 1, 0));
+        return l;
+    }
+
+    private Region espacio(double h) {
+        Region r = new Region();
+        r.setMinHeight(h);
+        r.setMaxHeight(h);
+        return r;
+    }
+
+    private Button botonAccion(String texto, String fg, String bg) {
+        Button b = new Button(texto);
+        b.setStyle(
+            "-fx-background-color:" + bg + ";" +
+            "-fx-text-fill:" + fg + ";" +
+            "-fx-font-size:12px; -fx-font-weight:bold;" +
+            "-fx-background-radius:8px; -fx-padding:8px 14px;" +
+            "-fx-cursor:hand; -fx-border-color:" + fg + ";" +
+            "-fx-border-width:1.5px; -fx-border-radius:8px;");
+        return b;
+    }
+
+    private void agregar(VBox parent, javafx.scene.Node node) {
+        parent.getChildren().add(node);
+    }
+
+    private String padD(String s, int n) {
+        if (s == null) s = "";
+        return s.length() >= n ? s.substring(0, n) : s + " ".repeat(n - s.length());
+    }
+
+    private String padI(String s, int n) {
+        if (s == null) s = "";
+        return s.length() >= n ? s.substring(0, n) : " ".repeat(n - s.length()) + s;
+    }
+
+    private String padC(String s, int n) {
+        if (s == null) s = "";
+        if (s.length() >= n) return s.substring(0, n);
+        int left = (n - s.length()) / 2;
+        return " ".repeat(left) + s + " ".repeat(n - s.length() - left);
+    }
+
+    private String acortar(String s, int maxLen) {
+        if (s == null) return "";
+        return s.length() > maxLen ? s.substring(0, maxLen - 1) + "." : s;
+    }
+
+    private String fmt(double valor) {
+        return String.format("$%,.0f", valor);
+    }
+
+    private String numeroFactura() {
+        return String.format("FE-%d-%06d", LocalDate.now().getYear(), factura.getId());
+    }
+
+    private long calcularNoches(Reserva r) {
+        if (r == null || r.getFechaEntrada() == null || r.getFechaSalida() == null) return 1;
+        long n = ChronoUnit.DAYS.between(r.getFechaEntrada(), r.getFechaSalida());
+        return n > 0 ? n : 1;
+    }
+
+    private void generarPdfExistente() {
+        new Thread(() -> {
+            try {
+                String ruta = com.hotel.AppContext.getInstance()
+                        .getPdfReporteService().generarFacturaPdf(factura.getId());
+                javafx.application.Platform.runLater(() ->
+                        NotificationUtil.exito("PDF guardado en:\n" + ruta));
+            } catch (Exception ex) {
+                javafx.application.Platform.runLater(() ->
+                        NotificationUtil.error("Error al generar PDF: " + ex.getMessage()));
+            }
+        }).start();
+    }
+    
 }
