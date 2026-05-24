@@ -25,13 +25,27 @@ public class BusquedaDisponibilidadDTO {
     public BusquedaDisponibilidadDTO() {
     }
 
-    public BusquedaDisponibilidadDTO(LocalDate fechaEntrada, LocalDate fechaSalida, String tipoHabitacion, int numPersonas, double precioMaximo) {
+    public BusquedaDisponibilidadDTO(LocalDate fechaEntrada, LocalDate fechaSalida, int numPersonas) {
         this.fechaEntrada = fechaEntrada;
         this.fechaSalida = fechaSalida;
-        this.tipoHabitacion = tipoHabitacion;
         this.numPersonas = numPersonas;
-        this.precioMaximo = precioMaximo;
+        this.precioMaximo = Double.MAX_VALUE;
     }
-    
-    
+
+    public LocalDate getFechaEntrada() {
+        return fechaEntrada;
+    }
+
+    public void setFechaEntrada(LocalDate fechaEntrada) {
+        this.fechaEntrada = fechaEntrada;
+    }
+
+    public LocalDate getFechaSalida() {
+        return fechaSalida;
+    }
+
+    public void setFechaSalida(LocalDate fechaSalida) {
+        this.fechaSalida = fechaSalida;
+    }
+
 }
