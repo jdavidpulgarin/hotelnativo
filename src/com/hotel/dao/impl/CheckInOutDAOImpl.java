@@ -163,3 +163,19 @@ public class CheckInOutDAOImpl extends BaseDAO implements ICheckInOutDAO {
         }
         return lista;
     }
+@Override
+    public List<CheckInOut> buscarCheckinsActivosPendientesCheckout(LocalDate fecha) {
+        List<CheckInOut> lista = new ArrayList<>();
+        Connection conn = obtener();
+        try (PreparedStatement stmt = conn.prepareStatement(SQL_PENDIENTES_CHECKOUT)) {
+            stmt.setDate(1, Date.valueOf(fecha));
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) lista.add(mapearFila(rs));
+            }
+        } catch (SQLException e) {
+            throw new ExcepcionBaseDatos("Error al buscar checkouts pendientes: " + e.getMessage(), e);
+        } finally {
+            liberar(conn);
+        }
+        return lista;
+    }
