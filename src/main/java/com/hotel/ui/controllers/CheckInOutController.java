@@ -51,4 +51,21 @@ public class CheckInOutController {
         tabla.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
         cargarDatos();
     }
+    
+       private void configurarColumnas() {
+        colId.setCellValueFactory(c -> new SimpleStringProperty(
+                "#" + c.getValue().getId()));
+        colCliente.setCellValueFactory(c -> {
+            Reserva r = c.getValue().getReserva();
+            return new SimpleStringProperty(
+                    r != null && r.getCliente() != null
+                            ? r.getCliente().obtenerNombreCompleto() : "—");
+        });
+        colHab.setCellValueFactory(c -> {
+            Reserva r = c.getValue().getReserva();
+            return new SimpleStringProperty(
+                    r != null && r.getHabitacion() != null
+                            ? r.getHabitacion().getNumero() : "—");
+        });
+    }
 }
