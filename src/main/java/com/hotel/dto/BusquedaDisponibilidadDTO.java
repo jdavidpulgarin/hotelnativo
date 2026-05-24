@@ -21,6 +21,17 @@ public class BusquedaDisponibilidadDTO {
     private String tipoHabitacion;
     private int numPersonas;
     private double precioMaximo;
+
+    public BusquedaDisponibilidadDTO() {
+    }
+
+    public BusquedaDisponibilidadDTO(LocalDate fechaEntrada, LocalDate fechaSalida, String tipoHabitacion, int numPersonas, double precioMaximo) {
+        this.fechaEntrada = fechaEntrada;
+        this.fechaSalida = fechaSalida;
+        this.tipoHabitacion = tipoHabitacion;
+        this.numPersonas = numPersonas;
+        this.precioMaximo = precioMaximo;
+    }
     
     
 }
