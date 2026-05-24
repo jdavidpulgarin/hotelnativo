@@ -173,3 +173,24 @@ private void migrarColumna(Connection conn, String columna, String definicion) {
             }
         });
     }
+@Override
+    public boolean actualizarPasswordHash(int idEmpleado, String passwordHash) {
+        return enTransaccion(conn -> {
+            try (PreparedStatement stmt = conn.prepareStatement(SQL_ACTUALIZAR_HASH)) {
+                stmt.setString(1, passwordHash);
+                stmt.setString(2, fmt("EMP", idEmpleado));
+                return stmt.executeUpdate() > 0;
+            }
+        });
+    }
+
+    @Override
+    public boolean actualizarDebeCambiarPassword(int idEmpleado, boolean debe) {
+        return enTransaccion(conn -> {
+            try (PreparedStatement stmt = conn.prepareStatement(SQL_ACTUALIZAR_DEBE_CAMBIAR)) {
+                stmt.setInt(1, debe ? 1 : 0);
+                stmt.setString(2, fmt("EMP", idEmpleado));
+                return stmt.executeUpdate() > 0;
+            }
+        });
+    }
