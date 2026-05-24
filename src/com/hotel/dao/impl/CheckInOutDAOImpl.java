@@ -72,3 +72,19 @@ public class CheckInOutDAOImpl extends BaseDAO implements ICheckInOutDAO {
 
     public CheckInOutDAOImpl() { super(); }
 }
+@Override
+    public CheckInOut insertar(CheckInOut checkInOut) {
+        return enTransaccion(conn -> {
+            int seqVal = siguienteSeq(conn, "seq_checkinout");
+            try (PreparedStatement stmt = conn.prepareStatement(SQL_INSERTAR)) {
+                stmt.setString(1, fmt("CHK", seqVal));
+                stmt.setString(2, fmt("RES", checkInOut.getReserva().getId()));
+                stmt.setString(3, fmt("EMP", checkInOut.getEmpleadoResponsable().getId()));
+                stmt.setTimestamp(4, Timestamp.valueOf(checkInOut.getFechaHoraCheckin()));
+                stmt.setString(5, checkInOut.getObservaciones());
+                stmt.executeUpdate();
+            }
+            checkInOut.setId(seqVal);
+            return checkInOut;
+        });
+    }
