@@ -57,7 +57,7 @@ public class FacturaDAOImpl extends BaseDAO implements IFacturaDAO {
             "UPDATE FACTURA SET estado_pago=?, metodo_pago=? WHERE id_factura=?";
 
     public FacturaDAOImpl() { super(); }
-}
+
 @Override
     public Factura insertar(Factura factura) {
         String sql = "INSERT INTO FACTURA " +
@@ -179,3 +179,35 @@ public class FacturaDAOImpl extends BaseDAO implements IFacturaDAO {
         }
         return lista;
     }
+private Factura mapearFila(ResultSet rs) throws SQLException {
+        Reserva reservaRef = new Reserva();
+        reservaRef.setId(rs.getInt("id_reserva"));
+        try {
+            Date fe = rs.getDate("fecha_entrada");
+            if (fe != null) reservaRef.setFechaEntrada(fe.toLocalDate());
+            Date fs = rs.getDate("fecha_salida");
+            if (fs != null) reservaRef.setFechaSalida(fs.toLocalDate());
+        } catch (SQLException ignored) {}
+
+        Cliente clienteRef = new Cliente();
+        clienteRef.setId(rs.getInt("id_cliente"));
+        clienteRef.setNombre(rs.getString("cl_nombre"));
+        clienteRef.setApellido(rs.getString("cl_apellido"));
+        clienteRef.setEmail(rs.getString("cl_email"));
+        try { clienteRef.setTelefono(rs.getString("cl_telefono")); } catch (SQLException ignored) {}
+
+        Factura f = new Factura();
+        f.setId(rs.getInt("id"));
+        f.setReserva(reservaRef);
+        f.setCliente(clienteRef);
+        f.setFechaEmision(rs.getDate("fecha_emision").toLocalDate());
+        f.setSubtotal(rs.getDouble("subtotal"));
+        f.setImpuestos(rs.getDouble("impuestos"));
+        f.setTotal(rs.getDouble("total"));
+        f.setTasaIva(f.getSubtotal() > 0 ? f.getImpuestos() / f.getSubtotal() : 0.19);
+        f.setEstadoPago(Factura.EstadoPago.valueOf(rs.getString("estado_pago")));
+        String metodo = rs.getString("metodo_pago");
+        if (metodo != null) f.setMetodoPago(Factura.MetodoPago.valueOf(metodo));
+        return f;
+    }
+}
