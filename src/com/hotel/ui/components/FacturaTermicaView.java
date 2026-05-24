@@ -69,4 +69,63 @@ public class FacturaTermicaView {
         this.factura = factura;
         this.cajero  = cajero;
     }
+    
+    
+    
+      /**
+     * Abre la ventana de vista previa con controles de impresión y PDF.
+     * @param owner ventana padre para la modality
+     */
+    public void mostrarVentanaPrevia(Stage owner) {
+        VBox ticket = construirTicket();
+
+        // Fondo gris para simular papel sobre superficie
+        VBox wrapper = new VBox(ticket);
+        wrapper.setAlignment(Pos.TOP_CENTER);
+        wrapper.setPadding(new Insets(24, 20, 24, 20));
+        wrapper.setStyle("-fx-background-color:#6b7280;");
+
+        ScrollPane scroll = new ScrollPane(wrapper);
+        scroll.setFitToWidth(true);
+        scroll.setStyle("-fx-background:#6b7280; -fx-background-color:#6b7280;");
+
+        // ── Toolbar ───────────────────────────────────────────────────────────
+        Button btnPrint  = botonAccion("🖨  Imprimir",    "#1d4ed8", "#eff6ff");
+        Button btnPdf    = botonAccion("📄  Guardar PDF", "#15803d", "#f0fdf4");
+        Button btnCerrar = botonAccion("✕  Cerrar",       "#b91c1c", "#fff1f2");
+
+        btnPrint.setOnAction(e  -> imprimir(ticket, (Stage) btnPrint.getScene().getWindow()));
+        btnPdf.setOnAction(e    -> generarPdfExistente());
+        btnCerrar.setOnAction(e -> ((Stage) btnCerrar.getScene().getWindow()).close());
+
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+
+        HBox toolbar = new HBox(10, btnPrint, btnPdf, spacer, btnCerrar);
+        toolbar.setAlignment(Pos.CENTER_LEFT);
+        toolbar.setPadding(new Insets(12, 18, 12, 18));
+        toolbar.setStyle("-fx-background-color:white;" +
+                "-fx-effect:dropshadow(gaussian,rgba(0,0,0,0.14),8,0,0,-2);");
+
+        // Título de la ventana
+        Label titulo = new Label("Vista previa — Factura Térmica  " + numeroFactura());
+        titulo.setStyle("-fx-font-size:13px; -fx-font-weight:bold; -fx-text-fill:#1e293b;");
+        HBox topBar = new HBox(titulo);
+        topBar.setPadding(new Insets(10, 18, 10, 18));
+        topBar.setStyle("-fx-background-color:#f8fafc;" +
+                "-fx-border-color:#e2e8f0; -fx-border-width:0 0 1px 0;");
+
+        BorderPane root = new BorderPane();
+        root.setTop(topBar);
+        root.setCenter(scroll);
+        root.setBottom(toolbar);
+
+        Stage stage = new Stage();
+        stage.initModality(Modality.WINDOW_MODAL);
+        if (owner != null) stage.initOwner(owner);
+        stage.setTitle("Factura Térmica — Hotel Nativo");
+        stage.setScene(new Scene(root, 470, 730));
+        stage.setMinWidth(430);
+        stage.show();
+    }
 }
