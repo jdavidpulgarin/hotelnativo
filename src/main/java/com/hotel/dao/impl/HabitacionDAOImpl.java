@@ -289,3 +289,20 @@ private Habitacion mapearFila(ResultSet rs) throws SQLException {
         h.setNumCamas(rs.getInt("num_camas"));
         return h;
     }
+private TipoHabitacion resolverTipo(ResultSet rs) throws SQLException {
+        int    idTipo = rs.getInt("id_tipo");
+        String nombre = rs.getString("t_nombre");
+        String desc;
+        String am;
+        try { desc = rs.getString("t_desc"); }   catch (SQLException ignored) { desc = null; }
+        try { am   = rs.getString("amenities"); } catch (SQLException ignored) { am   = null; }
+        String clave = (nombre != null) ? nombre.toUpperCase() : "";
+
+        if (clave.contains("MULTIPLE") || clave.contains("MÚLTIPLE"))
+            return new HabitacionMultiple(idTipo, nombre, desc, am);
+        if (clave.contains("DOBLE"))
+            return new HabitacionDoble(idTipo, nombre, desc, am);
+        if (clave.contains("SUITE"))
+            return new HabitacionSuite(idTipo, nombre, desc, am);
+        return new HabitacionSimple(idTipo, nombre, desc, am);
+    }
