@@ -55,4 +55,20 @@ public final class ModalUtil {
         HBox header = new HBox(lblTitulo, spacer, btnCerrar);
         header.setAlignment(Pos.CENTER_LEFT);
         header.setPadding(new Insets(0, 0, 12, 0));
+        
+        // ── Body con scroll ────────────────────────────────────────────────
+        ScrollPane scroll = new ScrollPane(contenido);
+        scroll.setFitToWidth(true);
+        scroll.setStyle(
+            "-fx-background-color:transparent; -fx-border-color:transparent;");
+        scroll.setMaxHeight(480);
+
+        // ── Card ───────────────────────────────────────────────────────────
+        VBox card = new VBox(header, new Separator(), scroll);
+        card.setPadding(new Insets(24));
+        card.setMaxWidth(520);
+        card.setStyle(
+            "-fx-background-color:white;" +
+            "-fx-background-radius:16px;" +
+            "-fx-effect:dropshadow(gaussian,rgba(0,0,0,0.30),24,0,0,6);");  
 }
