@@ -282,3 +282,6 @@ private void migrarColumna(Connection conn, String columna, String definicion) {
         }
         return lista;
     }
+private static String blankToNull(String s) {
+        return (s == null || s.isBlank()) ? null : s;
+    }
