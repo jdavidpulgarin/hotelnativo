@@ -139,3 +139,37 @@ private void migrarColumna(Connection conn, String columna, String definicion) {
             return empleado;
         });
     }
+@Override
+    public boolean actualizar(Empleado empleado) {
+        return enTransaccion(conn -> {
+            try (PreparedStatement stmt = conn.prepareStatement(SQL_ACTUALIZAR)) {
+                stmt.setString(1, empleado.getNombre());
+                stmt.setString(2, blankToNull(empleado.getSegundoNombre()));
+                stmt.setString(3, empleado.getApellido());
+                stmt.setString(4, blankToNull(empleado.getApellido2()));
+                stmt.setString(5, empleado.getEmail());
+                stmt.setString(6, empleado.getTelefono());
+                stmt.setString(7, fmt("CAR", empleado.getCargo().getId()));
+                stmt.setDate(8, empleado.getFechaContratacion() != null
+                        ? Date.valueOf(empleado.getFechaContratacion()) : null);
+                if (empleado.getSalario() > 0) stmt.setDouble(9, empleado.getSalario());
+                else stmt.setNull(9, java.sql.Types.NUMERIC);
+                stmt.setString(10, empleado.getTipoContrato());
+                stmt.setString(11, empleado.getTipoPago());
+                stmt.setDate(12, empleado.getFechaFinContrato() != null
+                        ? Date.valueOf(empleado.getFechaFinContrato()) : null);
+                stmt.setString(13, fmt("EMP", empleado.getId()));
+                return stmt.executeUpdate() > 0;
+            }
+        });
+    }
+
+    @Override
+    public boolean eliminar(int idEmpleado) {
+        return enTransaccion(conn -> {
+            try (PreparedStatement stmt = conn.prepareStatement(SQL_ELIMINAR)) {
+                stmt.setString(1, fmt("EMP", idEmpleado));
+                return stmt.executeUpdate() > 0;
+            }
+        });
+    }
