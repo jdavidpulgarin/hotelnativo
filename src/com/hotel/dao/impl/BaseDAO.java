@@ -49,3 +49,22 @@ public abstract class BaseDAO {
     protected void liberar(Connection conn) {
         conexionBD.liberarConexion(conn);
     }
+// ── Soporte de transacciones ──────────────────────────────────────────────
+
+    /**
+     * Interfaz funcional para operaciones que se ejecutan dentro de
+     * una transacción gestionada por {@link #enTransaccion}.
+     *
+     * @param <T> tipo del valor retornado por la operación
+     */
+    @FunctionalInterface
+    protected interface TransaccionCallback<T> {
+        /**
+         * Ejecuta la lógica de negocio usando la conexión proporcionada.
+         *
+         * @param conn conexión activa con autocommit desactivado
+         * @return resultado de la operación (puede ser null)
+         * @throws Exception cualquier error que deba provocar rollback
+         */
+        T ejecutar(Connection conn) throws Exception;
+    }
