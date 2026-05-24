@@ -79,4 +79,36 @@ public class ClienteDTO {
         this.apellido2 = v;
     }
 
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String v) {
+        this.email = v;
+    }
+
+    public String getTelefono() {
+        return telefono;
+    }
+
+    public void setTelefono(String v) {
+        this.telefono = v;
+    }
+
+    public String getNacionalidad() {
+        return nacionalidad;
+    }
+
+    public void setNacionalidad(String v) {
+        this.nacionalidad = v;
+    }
+
+    public String getCiudadOrigen() {
+        return ciudadOrigen;
+    }
+
+    public void setCiudadOrigen(String v) {
+        this.ciudadOrigen = v;
+    }
+
 }
