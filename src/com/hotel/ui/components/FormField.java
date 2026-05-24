@@ -29,4 +29,29 @@ public class FormField extends VBox {
 
     private final TextField input;
     private final Label     lblError;
+    
+    
+     /**
+     * @param label       texto de la etiqueta superior (ej: "CORREO ELECTRÓNICO")
+     * @param placeholder texto de ayuda dentro del campo cuando está vacío
+     */
+    public FormField(String label, String placeholder) {
+        super(4);
+
+        Label lblTitulo = new Label(label);
+        lblTitulo.setStyle(
+            "-fx-font-size:11px; -fx-font-weight:bold; -fx-text-fill:#374151;");
+
+        input = new TextField();
+        input.setPromptText(placeholder);
+
+        lblError = new Label();
+        lblError.setStyle(
+            "-fx-text-fill:#dc2626; -fx-font-size:11px; -fx-padding:2px 0 0 4px;");
+        lblError.setWrapText(true);
+        lblError.setVisible(false);
+        lblError.setManaged(false);
+
+        getChildren().addAll(lblTitulo, input, lblError);
+    }
 }
