@@ -347,4 +347,61 @@ public class ChatbotService {
         }
     }
 
+    // ── Handler: disponibilidad por fechas ────────────────────────────────────
+    private String manejarDisponibilidad(String original, String normalizado) {
+        List<LocalDate> fechas = extraerFechas(original);
+
+        // Sin fechas → mostrar mapa de ocupación actual
+        if (fechas.size() < 2) {
+            return manejarEstadoHabitaciones();
+        }
+
+        LocalDate entrada = fechas.get(0);
+        LocalDate salida = fechas.get(1);
+
+        if (!salida.isAfter(entrada)) {
+            return "⚠ La fecha de salida debe ser posterior a la de entrada.\n"
+                    + "Ejemplo: 'disponibilidad 2026-06-01 2026-06-05'";
+        }
+
+        int personas = extraerNumeroPersonas(normalizado, 1);
+
+        try {
+            BusquedaDisponibilidadDTO criterios = new BusquedaDisponibilidadDTO(entrada, salida, personas);
+            List<Habitacion> disponibles = habitacionDAO.buscarDisponibles(criterios);
+            return formatearDisponibilidad(disponibles, entrada, salida, personas);
+        } catch (Exception e) {
+            return "⚠ Error al consultar disponibilidad: " + e.getMessage();
+        }
+    }
+
+    private String formatearDisponibilidad(List<Habitacion> disponibles,
+            LocalDate entrada, LocalDate salida, int personas) {
+        long noches = entrada.until(salida).getDays();
+        StringBuilder sb = new StringBuilder();
+        sb.append("📅 Disponibilidad: ").append(entrada).append(" → ").append(salida)
+                .append("  (").append(noches).append(noches == 1 ? " noche" : " noches")
+                .append(", ").append(personas).append(personas == 1 ? " persona" : " personas").append(")\n\n");
+
+        if (disponibles.isEmpty()) {
+            String alt1 = entrada.plusDays(2).toString();
+            String alt2 = salida.plusDays(2).toString();
+            return sb.append("❌ No hay habitaciones disponibles para esas fechas.\n\n")
+                    .append("Prueba con otras fechas:\n")
+                    .append("  'disponibilidad ").append(alt1).append(" ").append(alt2).append("'")
+                    .toString();
+        }
+
+        sb.append("✅ ").append(disponibles.size())
+                .append(disponibles.size() == 1 ? " habitación disponible:" : " habitaciones disponibles:").append("\n\n");
+        for (Habitacion hab : disponibles) {
+            double precio = hab.calcularPrecioFinal();
+            sb.append(String.format("  🛏 Hab. %-5s │ %-22s │ $%,.0f/noche │ Total: $%,.0f\n",
+                    hab.getNumero(),
+                    hab.getTipoHabitacion() != null ? hab.getTipoHabitacion().obtenerEtiquetaTipo() : "—",
+                    precio, precio * noches));
+        }
+        return sb.toString().trim();
+    }
+
 }
