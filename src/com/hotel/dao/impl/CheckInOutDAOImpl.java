@@ -100,3 +100,17 @@ public class CheckInOutDAOImpl extends BaseDAO implements ICheckInOutDAO {
             }
         });
     }
+ @Override
+    public Optional<CheckInOut> buscarPorId(int id) {
+        Connection conn = obtener();
+        try (PreparedStatement stmt = conn.prepareStatement(SQL_BUSCAR_POR_ID)) {
+            stmt.setString(1, fmt("CHK", id));
+            try (ResultSet rs = stmt.executeQuery()) {
+                return rs.next() ? Optional.of(mapearFila(rs)) : Optional.empty();
+            }
+        } catch (SQLException e) {
+            throw new ExcepcionBaseDatos("Error al buscar check-in/out: " + e.getMessage(), e);
+        } finally {
+            liberar(conn);
+        }
+    }
