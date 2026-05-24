@@ -175,4 +175,14 @@ public final class ValidacionCampo {
             }
         });
     } 
+    
+      /**
+     * Limita la cantidad máxima de caracteres.
+     */
+    public static void aplicarMaxLength(TextField campo, int max) {
+        campo.setTextFormatter(new TextFormatter<>(change -> {
+            if (change.getControlNewText().length() > max) return null;
+            return change;
+        }));
+    }
 }
