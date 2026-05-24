@@ -34,3 +34,18 @@ public abstract class BaseDAO {
         this.conexionBD = ConexionBaseDatos.obtenerInstancia();
     }
 }
+ /**
+     * Obtiene una conexión libre del pool.
+     * SIEMPRE debe llamarse liberar(conn) en un finally.
+     */
+    protected Connection obtener() {
+        return conexionBD.obtenerConexion();
+    }
+
+    /**
+     * Devuelve la conexión al pool.
+     * Llamar siempre en el bloque finally de cada método DAO.
+     */
+    protected void liberar(Connection conn) {
+        conexionBD.liberarConexion(conn);
+    }
