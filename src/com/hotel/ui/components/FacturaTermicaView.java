@@ -160,4 +160,65 @@ public class FacturaTermicaView {
 
         return t;
     }
+    
+    
+    private VBox construirEncabezado() {
+        VBox v = new VBox(2);
+        v.setAlignment(Pos.TOP_CENTER);
+        v.setPadding(new Insets(4, 0, 8, 0));
+
+        // Logo ASCII
+        Label logo = labelMono(
+                "  ╔════════════════════╗\n" +
+                "  ║   H O T E L        ║\n" +
+                "  ║   N A T I V O      ║\n" +
+                "  ╚════════════════════╝",
+                FS_MD, true);
+        logo.setTextAlignment(TextAlignment.CENTER);
+        logo.setAlignment(Pos.CENTER);
+        logo.setMaxWidth(ANCHO);
+        v.getChildren().add(logo);
+        v.getChildren().add(espacio(5));
+
+        for (String linea : HOTEL_INFO) {
+            v.getChildren().add(labelCentrado(linea, FS_SM, false));
+        }
+        v.getChildren().add(espacio(4));
+        Label estrellas = labelCentrado("★  ★  ★  ★  ★   Hotel 5 Estrellas", FS_SM, false);
+        estrellas.setStyle(estrellas.getStyle() + " -fx-text-fill:#444444;");
+        v.getChildren().add(estrellas);
+        v.getChildren().add(espacio(4));
+        return v;
+    }
+
+    private VBox construirSeccionTipoDoc() {
+        VBox v = new VBox(3);
+        v.setAlignment(Pos.TOP_CENTER);
+        v.setPadding(new Insets(6, 0, 6, 0));
+        v.getChildren().add(labelCentrado("FACTURA ELECTRÓNICA DE VENTA", FS_LG, true));
+        v.getChildren().add(labelCentrado("Documento equivalente Régimen Simplificado", FS_SM, false));
+        return v;
+    }
+
+    private VBox construirSeccionInfoFactura() {
+        VBox v = new VBox(2);
+        v.setPadding(new Insets(5, 0, 5, 0));
+
+        String hora    = LocalTime.now().format(FMT_HORA);
+        String fecha   = factura.getFechaEmision() != null
+                ? factura.getFechaEmision().format(FMT_DIA) : LocalDate.now().format(FMT_DIA);
+        String metodo  = factura.getMetodoPago() != null
+                ? factura.getMetodoPago().name().replace("_", " ") : "EFECTIVO";
+        String cajeroN = cajero != null ? cajero.obtenerNombreCompleto() : "Recepción";
+
+        v.getChildren().addAll(
+            filaKV("No. Factura:", numeroFactura()),
+            filaKV("Fecha:",       fecha + "   " + hora),
+            filaKV("Cajero:",      cajeroN),
+            filaKV("Método pago:", metodo),
+            espacio(4),
+            construirBadgeEstado()
+        );
+        return v;
+    }
 }
