@@ -87,4 +87,18 @@ public class ChatbotService {
                     "datos del cliente", "informacion del cliente", "buscar huesped",
                     "quien es el cliente"});
     }
+    
+        // ── Dependencias ──────────────────────────────────────────────────────────
+    private final IHabitacionDAO   habitacionDAO;
+    private final IReservaDAO      reservaDAO;
+    private final IReservaBusqueda reservaBusqueda;
+    private final IClienteDAO      clienteDAO;
+
+    public ChatbotService(IHabitacionDAO habitacionDAO, IReservaDAO reservaDAO,
+                          IReservaBusqueda reservaBusqueda, IClienteDAO clienteDAO) {
+        this.habitacionDAO   = habitacionDAO;
+        this.reservaDAO      = reservaDAO;
+        this.reservaBusqueda = reservaBusqueda;
+        this.clienteDAO      = clienteDAO;
+    }
 }
