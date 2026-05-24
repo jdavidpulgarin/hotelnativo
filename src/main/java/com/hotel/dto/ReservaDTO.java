@@ -52,5 +52,26 @@ public class ReservaDTO {
         return numPersonas;
     }
 
+    public void setIdCliente(int idCliente) {
+        this.idCliente = idCliente;
+    }
+
+    public void setIdHabitacion(int idHabitacion) {
+        this.idHabitacion = idHabitacion;
+    }
+
+    public void setFechaEntrada(LocalDate fechaEntrada) {
+        this.fechaEntrada = fechaEntrada;
+    }
+
+    public void setFechaSalida(LocalDate fechaSalida) {
+        this.fechaSalida = fechaSalida;
+    }
+
+    public void setNumPersonas(int numPersonas) {
+        this.numPersonas = numPersonas;
+    }
+    
+    
     
 }
