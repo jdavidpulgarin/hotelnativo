@@ -27,6 +27,18 @@ public class ClienteDTO {
 
     public ClienteDTO() {
     }
+
+    public ClienteDTO(String cedula, String nombre, String segundoNombre, String apellido, String apellido2, String email, String telefono, String nacionalidad, String ciudadOrigen) {
+        this.cedula = cedula;
+        this.nombre = nombre;
+        this.segundoNombre = segundoNombre;
+        this.apellido = apellido;
+        this.apellido2 = apellido2;
+        this.email = email;
+        this.telefono = telefono;
+        this.nacionalidad = nacionalidad;
+        this.ciudadOrigen = ciudadOrigen;
+    }
     
     
 }
