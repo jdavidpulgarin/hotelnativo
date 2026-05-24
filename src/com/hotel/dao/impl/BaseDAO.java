@@ -99,3 +99,23 @@ public abstract class BaseDAO {
             liberar(conn);
         }
     }
+/**
+     * Obtiene el siguiente valor de una secuencia Oracle.
+     * Usar dentro de un bloque que ya tiene una conexión abierta.
+     */
+    protected int siguienteSeq(Connection conn, String secuencia) throws SQLException {
+        try (PreparedStatement s = conn.prepareStatement(
+                "SELECT " + secuencia + ".NEXTVAL FROM DUAL");
+             java.sql.ResultSet rs = s.executeQuery()) {
+            rs.next();
+            return rs.getInt(1);
+        }
+    }
+
+    /**
+     * Formatea un ID numérico como VARCHAR2 de la BD.
+     * Ej: fmt("CLI", 6) → "CLI06"
+     */
+    protected static String fmt(String prefijo, int n) {
+        return String.format("%s%02d", prefijo, n);
+    }
