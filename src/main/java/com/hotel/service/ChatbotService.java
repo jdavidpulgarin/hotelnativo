@@ -403,5 +403,56 @@ public class ChatbotService {
         }
         return sb.toString().trim();
     }
+    
+       // ── Handler: detalle de una reserva ──────────────────────────────────────
+
+    private String manejarEstadoReserva(String mensaje) {
+        String norm = normalizar(mensaje);
+        Matcher matcher = PATRON_ID_RESERVA.matcher(norm);
+        if (!matcher.find()) {
+            Matcher mNum = PATRON_NUMERO.matcher(mensaje);
+            if (mNum.find()) return consultarReserva(Integer.parseInt(mNum.group(1)));
+            return "Indica el número de la reserva.\n" +
+                   "Ejemplo: 'reserva #123'  o  'consultar reserva 45'";
+        }
+        return consultarReserva(Integer.parseInt(matcher.group(1)));
+    }
+
+    private String consultarReserva(int idReserva) {
+        try {
+            Optional<Reserva> resultado = reservaDAO.buscarPorId(idReserva);
+            if (resultado.isEmpty()) {
+                return "❌ No existe la reserva #" + idReserva + ".\n" +
+                       "Verifica el número e intenta de nuevo.";
+            }
+            Reserva r = resultado.get();
+            long noches = r.getFechaEntrada().until(r.getFechaSalida()).getDays();
+            String vip  = (r.getCliente() != null && r.getCliente().isEsVip()) ? " ⭐ VIP" : "";
+            return String.format(
+                    "📋 Reserva #%d — %s\n" +
+                    "  Cliente:    %s%s\n" +
+                    "  Cédula:     %s\n" +
+                    "  Teléfono:   %s\n" +
+                    "  Habitación: %s  (%s)\n" +
+                    "  Entrada:    %s\n" +
+                    "  Salida:     %s  (%d noche(s))\n" +
+                    "  Total:      $%,.0f\n" +
+                    "  Estado:     %s",
+                    r.getId(), traducirEstado(r.getEstado()),
+                    r.getCliente() != null ? r.getCliente().obtenerNombreCompleto() : "—", vip,
+                    r.getCliente() != null ? r.getCliente().getDocumento() : "—",
+                    r.getCliente() != null && r.getCliente().getTelefono() != null
+                            ? r.getCliente().getTelefono() : "—",
+                    r.getHabitacion() != null ? r.getHabitacion().getNumero() : "—",
+                    r.getHabitacion() != null && r.getHabitacion().getTipoHabitacion() != null
+                            ? r.getHabitacion().getTipoHabitacion().obtenerEtiquetaTipo() : "—",
+                    r.getFechaEntrada(),
+                    r.getFechaSalida(), noches,
+                    r.getPrecioTotal(),
+                    traducirEstado(r.getEstado()));
+        } catch (Exception e) {
+            return "⚠ Error al consultar la reserva #" + idReserva + ". Intenta de nuevo.";
+        }
+    }
 
 }
