@@ -40,6 +40,22 @@ public class HabitacionDTO {
     public double getPrecioBase() {
         return precioBase;
     }
+
+    public void setNumero(String numero) {
+        this.numero = numero;
+    }
+
+    public void setIdTipoHabitacion(int idTipoHabitacion) {
+        this.idTipoHabitacion = idTipoHabitacion;
+    }
+
+    public void setIdPiso(int idPiso) {
+        this.idPiso = idPiso;
+    }
+
+    public void setPrecioBase(double precioBase) {
+        this.precioBase = precioBase;
+    }
     
     
 }
