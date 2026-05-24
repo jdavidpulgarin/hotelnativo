@@ -384,4 +384,69 @@ public class AuthService {
         System.out.println("[AUTH] Contraseña actualizada - ID: "
                 + (empleado != null ? empleado.getId() : "desconocido"));
     }
+
+    // ── Autorización ──────────────────────────────────────────────────────────
+    /**
+     * Verifica permiso y que la sesión no haya expirado.
+     *
+     * CORRECCIÓN WARN #4: ahora lanza AuthException si la sesión superó
+     * MINUTOS_EXPIRACION_SESION minutos desde que fue creada.
+     */
+    public void verificarPermiso(String token, String accion) throws AuthException {
+        Empleado empleado = obtenerEmpleadoDeToken(token);
+        String rol = obtenerRol(empleado);
+
+        String[] permisosDelRol = PERMISOS.getOrDefault(rol, new String[0]);
+        for (String permiso : permisosDelRol) {
+            if (permiso.equalsIgnoreCase(accion)) {
+                return;
+            }
+        }
+
+        throw new AuthException("ACCESO_DENEGADO",
+                "El rol '" + rol + "' no tiene permiso para: " + accion);
+    }
+
+    public Optional<Empleado> obtenerEmpleadoActual(String token) {
+        SesionActiva sesion = sesionesActivas.get(token);
+        if (sesion == null || sesion.estaExpirada()) {
+            return Optional.empty();
+        }
+        return Optional.of(sesion.empleado);
+    }
+
+    public boolean esSesionValida(String token) {
+        if (token == null) {
+            return false;
+        }
+        SesionActiva sesion = sesionesActivas.get(token);
+        return sesion != null && !sesion.estaExpirada();
+    }
+
+    public void desbloquearCuenta(String tokenAdmin, String emailADesbloquear) throws AuthException {
+        verificarPermiso(tokenAdmin, "CREAR_EMPLEADO");
+        intentosFallidos.put(emailADesbloquear.toLowerCase(), 0);
+        System.out.println("[AUTH] Cuenta desbloqueada por admin.");
+    }
+
+    // ── Métodos privados ──────────────────────────────────────────────────────
+    /**
+     * CORRECCIÓN WARN #4: verifica expiración de la sesión antes de retornar el
+     * empleado.
+     */
+    private Empleado obtenerEmpleadoDeToken(String token) throws AuthException {
+        SesionActiva sesion = sesionesActivas.get(token);
+        if (sesion == null) {
+            throw new AuthException("SESION_INVALIDA",
+                    "La sesión no existe o ha expirado. Por favor inicia sesión de nuevo.");
+        }
+        if (sesion.estaExpirada()) {
+            sesionesActivas.remove(token);
+            throw new AuthException("SESION_EXPIRADA",
+                    "Tu sesión ha expirado después de " + MINUTOS_EXPIRACION_SESION
+                    + " minutos. Por favor inicia sesión de nuevo.");
+        }
+        return sesion.empleado;
+    }
+
 }
