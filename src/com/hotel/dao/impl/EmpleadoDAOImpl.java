@@ -74,3 +74,37 @@ public class EmpleadoDAOImpl extends BaseDAO implements IEmpleadoDAO {
 
     public EmpleadoDAOImpl() { super(); }
 }
+private static volatile boolean schemaVerificado = false;
+
+    private void verificarYMigrarSchema() {
+        if (schemaVerificado) return;
+        synchronized (EmpleadoDAOImpl.class) {
+            if (schemaVerificado) return;
+            Connection conn = obtener();
+            try {
+                migrarColumna(conn, "password_hash",        "VARCHAR2(72) DEFAULT NULL");
+                migrarColumna(conn, "debe_cambiar_password","NUMBER(1)    DEFAULT 1");
+                migrarColumna(conn, "salario",              "NUMBER(12,2) DEFAULT NULL");
+                migrarColumna(conn, "tipo_contrato",        "VARCHAR2(30) DEFAULT 'INDEFINIDO'");
+                migrarColumna(conn, "tipo_pago",            "VARCHAR2(20) DEFAULT 'MENSUAL'");
+                migrarColumna(conn, "fecha_fin_contrato",   "DATE         DEFAULT NULL");
+            } finally {
+                liberar(conn);
+                schemaVerificado = true;
+            }
+        }
+    }
+private void migrarColumna(Connection conn, String columna, String definicion) {
+        try (Statement st = conn.createStatement()) {
+            st.executeQuery("SELECT " + columna + " FROM EMPLEADO WHERE ROWNUM = 1").close();
+        } catch (SQLException e) {
+            if (e.getErrorCode() == 904) {
+                try (Statement st = conn.createStatement()) {
+                    st.execute("ALTER TABLE EMPLEADO ADD " + columna + " " + definicion);
+                    System.out.println("[DB] Migración: columna " + columna + " añadida a EMPLEADO.");
+                } catch (SQLException ex) {
+                    System.err.println("[DB] Error añadiendo columna " + columna + ": " + ex.getMessage());
+                }
+            }
+        }
+    }
