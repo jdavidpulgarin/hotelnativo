@@ -81,7 +81,7 @@ public class HabitacionDAOImpl extends BaseDAO implements IHabitacionDAO {
             ") ORDER BY h.precio_base";
 
     public HabitacionDAOImpl() { super(); }
-}
+
 private static volatile boolean constraintVerificado = false;
 
     /**
@@ -307,3 +307,4 @@ private Habitacion mapearFila(ResultSet rs) throws SQLException {
             return new HabitacionSuite(idTipo, nombre, desc, am);
         return new HabitacionSimple(idTipo, nombre, desc, am);
     }
+}
