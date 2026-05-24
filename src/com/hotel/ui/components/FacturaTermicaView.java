@@ -311,4 +311,99 @@ public class FacturaTermicaView {
         v.getChildren().add(espacio(2));
         return v;
     }
+    
+    private VBox construirSeccionTotales() {
+        VBox v = new VBox(2);
+        v.setPadding(new Insets(0, 0, 5, 0));
+
+        v.getChildren().add(sep('─'));
+
+        int pctIva = (int) Math.round(factura.getTasaIva() * 100);
+
+        v.getChildren().add(filaTotales("Subtotal:", fmt(factura.getSubtotal()), false));
+        v.getChildren().add(filaTotales("IVA (" + pctIva + "%):", fmt(factura.getImpuestos()), false));
+
+        Cliente c = factura.getCliente();
+        if (c != null && c.isEsVip()) {
+            v.getChildren().add(filaTotales("Tarifa VIP:", "Aplicada  ✓", false));
+        }
+
+        v.getChildren().add(espacio(5));
+        v.getChildren().add(sep('─'));
+        v.getChildren().add(espacio(3));
+
+        // ── TOTAL A PAGAR (grande, centrado) ─────────────────────────────────
+        Label lblTitTotal = new Label("TOTAL A PAGAR");
+        lblTitTotal.setFont(Font.font(MONO, FontWeight.BOLD, FS_LG));
+        lblTitTotal.setStyle("-fx-text-fill:#000000;");
+
+        Label lblValTotal = new Label(fmt(factura.getTotal()));
+        lblValTotal.setFont(Font.font(MONO, FontWeight.BOLD, FS_XL));
+        lblValTotal.setStyle("-fx-text-fill:#000000;");
+
+        VBox boxTotal = new VBox(3, lblTitTotal, lblValTotal);
+        boxTotal.setAlignment(Pos.CENTER);
+        boxTotal.setMaxWidth(ANCHO);
+        boxTotal.setPadding(new Insets(6, 0, 6, 0));
+        v.getChildren().add(boxTotal);
+
+        v.getChildren().add(espacio(3));
+        v.getChildren().add(sep('─'));
+        v.getChildren().add(espacio(4));
+
+        // Detalles del método de pago
+        Factura.MetodoPago mp = factura.getMetodoPago();
+        String metodo = mp != null ? mp.name().replace("_", " ") : "EFECTIVO";
+        v.getChildren().add(filaTotales("Pagado con:", metodo, false));
+
+        if (mp == Factura.MetodoPago.EFECTIVO) {
+            if (factura.getMontoRecibido() > 0) {
+                v.getChildren().add(filaTotales("Recibido:",
+                        fmt(factura.getMontoRecibido()), false));
+            }
+            v.getChildren().add(filaTotales("Cambio:",
+                    fmt(factura.getCambio()), false));
+
+        } else if (mp == Factura.MetodoPago.TARJETA_CREDITO) {
+            if (factura.getFranquiciaTarjeta() != null)
+                v.getChildren().add(filaTotales("Franquicia:",
+                        factura.getFranquiciaTarjeta(), false));
+            v.getChildren().add(filaTotales("Cuotas:",
+                    factura.getNumCuotas() + (factura.getNumCuotas() == 1
+                            ? " cuota (contado)" : " cuotas"), false));
+
+        } else if (mp == Factura.MetodoPago.TARJETA_DEBITO) {
+            if (factura.getFranquiciaTarjeta() != null)
+                v.getChildren().add(filaTotales("Franquicia:",
+                        factura.getFranquiciaTarjeta(), false));
+
+        } else if (mp == Factura.MetodoPago.TRANSFERENCIA) {
+            String ref = factura.getReferenciaTransferencia();
+            if (ref != null && !ref.isBlank())
+                v.getChildren().add(filaTotales("Referencia:", ref, false));
+        }
+
+        v.getChildren().add(espacio(3));
+
+        return v;
+    }
+
+    private VBox construirSeccionLegal() {
+        VBox v = new VBox(2);
+        v.setAlignment(Pos.TOP_CENTER);
+        v.setPadding(new Insets(5, 0, 5, 0));
+
+        v.getChildren().addAll(
+            labelCentrado("DOCUMENTO SOPORTE FISCAL", FS_SM, true),
+            espacio(3),
+            labelCentrado(RES_DIAN, FS_SM, false),
+            labelCentrado(RANGO, FS_SM, false),
+            labelCentrado("Fecha resolución: 01/01/2026", FS_SM, false),
+            espacio(4),
+            labelCentrado("Conserve esta factura como soporte.", FS_SM, false),
+            labelCentrado("Para quejas y reclamos:", FS_SM, false),
+            labelCentrado("info@hotelnativo.com.co", FS_SM, false)
+        );
+        return v;
+    }
 }
