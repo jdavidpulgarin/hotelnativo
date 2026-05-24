@@ -43,4 +43,29 @@ public final class ValidacionCampo {
         "^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\\s]*$";
 
     private ValidacionCampo() {}
+    
+     /**
+     * Solo letras y espacios. Si el usuario escribe un número o símbolo,
+     * el borde se pone rojo y aparece el mensaje de error.
+     */
+    public static void aplicarSoloLetras(TextField campo, Label labelError) {
+        labelError.setStyle(ESTILO_LABEL_ERROR);
+        labelError.setVisible(false);
+        labelError.setManaged(false);
+
+        campo.textProperty().addListener((obs, viejo, nuevo) -> {
+            if (nuevo == null || nuevo.isEmpty()) {
+                campo.setStyle(ESTILO_NORMAL);
+                ocultar(labelError); return;
+            }
+            if (!nuevo.matches(REGEX_LETRAS)) {
+                campo.setStyle(ESTILO_ERROR);
+                labelError.setText("⚠ Solo se permiten letras y espacios");
+                mostrar(labelError);
+            } else {
+                campo.setStyle(ESTILO_VALIDO);
+                ocultar(labelError);
+            }
+        });
+    }
 }
