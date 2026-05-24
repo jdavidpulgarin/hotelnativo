@@ -58,3 +58,31 @@ public class FacturaDAOImpl extends BaseDAO implements IFacturaDAO {
 
     public FacturaDAOImpl() { super(); }
 }
+@Override
+    public Factura insertar(Factura factura) {
+        String sql = "INSERT INTO FACTURA " +
+                "(id_factura, id_reserva, id_cliente, fecha_emision, subtotal, impuestos, total, " +
+                " estado_pago, metodo_pago) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        return enTransaccion(conn -> {
+            int seqVal = siguienteSeq(conn, "seq_factura");
+            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                // Usar documento real para que el JOIN funcione
+                String idClienteStr = factura.getCliente().getDocumento() != null
+                        ? factura.getCliente().getDocumento()
+                        : String.valueOf(factura.getCliente().getId());
+                stmt.setString(1, fmt("FAC", seqVal));
+                stmt.setString(2, fmt("RES", factura.getReserva().getId()));
+                stmt.setString(3, idClienteStr);
+                stmt.setDate(4, Date.valueOf(factura.getFechaEmision()));
+                stmt.setDouble(5, factura.getSubtotal());
+                stmt.setDouble(6, factura.getImpuestos());
+                stmt.setDouble(7, factura.getTotal());
+                stmt.setString(8, factura.getEstadoPago().name());
+                stmt.setString(9, factura.getMetodoPago() != null
+                        ? factura.getMetodoPago().name() : null);
+                stmt.executeUpdate();
+            }
+            factura.setId(seqVal);
+            return factura;
+        });
+    }
