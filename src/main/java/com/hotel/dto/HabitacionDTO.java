@@ -17,6 +17,13 @@ public class HabitacionDTO {
 
     public HabitacionDTO() {
     }
+
+    public HabitacionDTO(String numero, int idTipoHabitacion, int idPiso, double precioBase) {
+        this.numero = numero;
+        this.idTipoHabitacion = idTipoHabitacion;
+        this.idPiso = idPiso;
+        this.precioBase = precioBase;
+    }
     
     
 }
