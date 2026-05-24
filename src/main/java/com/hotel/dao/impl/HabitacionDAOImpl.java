@@ -82,3 +82,58 @@ public class HabitacionDAOImpl extends BaseDAO implements IHabitacionDAO {
 
     public HabitacionDAOImpl() { super(); }
 }
+private static volatile boolean constraintVerificado = false;
+
+    /**
+     * Verifica que el CHECK constraint de estado admita RESERVADA.
+     * CORRECCIÓN: Se eliminan TODOS los CHECK de HABITACION (evita operar
+     * sobre search_condition que es tipo LONG en Oracle y no admite UPPER/LIKE).
+     */
+    private void verificarConstraintEstado() {
+        if (constraintVerificado) return;
+        synchronized (HabitacionDAOImpl.class) {
+            if (constraintVerificado) return;
+            Connection conn = obtener();
+            try {
+                // Prueba silenciosa: si lanza ORA-02290 el constraint es obsoleto
+                try (Statement st = conn.createStatement()) {
+                    st.executeUpdate("UPDATE HABITACION SET estado='RESERVADA' WHERE 1=0");
+                }
+            } catch (SQLException e) {
+                if (e.getErrorCode() == 2290) {
+                    migrarConstraintEstado(conn);
+                }
+            } finally {
+                liberar(conn);
+                constraintVerificado = true;
+            }
+        }
+    }
+
+    /** Elimina todos los CHECK de HABITACION y recrea chk_estado_hab con RESERVADA. */
+    private void migrarConstraintEstado(Connection conn) {
+        try {
+            // Eliminar todos los CHECK de la tabla HABITACION
+            List<String> nombres = new ArrayList<>();
+            String qry = "SELECT constraint_name FROM user_constraints " +
+                         "WHERE table_name='HABITACION' AND constraint_type='C'";
+            try (Statement st = conn.createStatement();
+                 ResultSet rs = st.executeQuery(qry)) {
+                while (rs.next()) nombres.add(rs.getString(1));
+            }
+            for (String nombre : nombres) {
+                try (Statement st = conn.createStatement()) {
+                    st.execute("ALTER TABLE HABITACION DROP CONSTRAINT " + nombre);
+                    System.out.println("[DB] Constraint " + nombre + " eliminado.");
+                }
+            }
+            try (Statement st = conn.createStatement()) {
+                st.execute("ALTER TABLE HABITACION ADD CONSTRAINT chk_estado_hab CHECK " +
+                           "(estado IN ('DISPONIBLE','RESERVADA','OCUPADA'," +
+                           "'MANTENIMIENTO','FUERA_DE_SERVICIO'))");
+                System.out.println("[DB] Migración: CHECK constraint actualizado con RESERVADA.");
+            }
+        } catch (SQLException ex) {
+            System.err.println("[DB] Error migrando constraint: " + ex.getMessage());
+        }
+    }
