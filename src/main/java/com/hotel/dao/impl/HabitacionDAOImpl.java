@@ -137,3 +137,20 @@ private static volatile boolean constraintVerificado = false;
             System.err.println("[DB] Error migrando constraint: " + ex.getMessage());
         }
     }
+@Override
+    public Habitacion insertar(Habitacion habitacion) {
+        return enTransaccion(conn -> {
+            int seqVal = siguienteSeq(conn, "seq_habitacion");
+            try (PreparedStatement stmt = conn.prepareStatement(SQL_INSERTAR)) {
+                stmt.setString(1, fmt("HAB", seqVal));
+                stmt.setString(2, habitacion.getNumero());
+                stmt.setString(3, fmt("TIP", habitacion.getTipoHabitacion().getId()));
+                stmt.setString(4, fmt("PIS", habitacion.getPiso().getId()));
+                stmt.setDouble(5, habitacion.getPrecioBase());
+                stmt.setInt(6, habitacion.getNumCamas());
+                stmt.executeUpdate();
+            }
+            habitacion.setId(seqVal);
+            return habitacion;
+        });
+    }
