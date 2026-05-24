@@ -286,4 +286,65 @@ public class ChatbotService {
         }
     }
 
+    // ── Handler: estado/mapa de habitaciones ──────────────────────────────────
+    private String manejarEstadoHabitaciones() {
+        try {
+            List<Habitacion> todas = habitacionDAO.listarTodas();
+            Map<Habitacion.EstadoHabitacion, List<Habitacion>> porEstado
+                    = todas.stream().collect(Collectors.groupingBy(Habitacion::getEstado));
+
+            List<Habitacion> disponibles = porEstado.getOrDefault(Habitacion.EstadoHabitacion.DISPONIBLE, List.of());
+            List<Habitacion> ocupadas = porEstado.getOrDefault(Habitacion.EstadoHabitacion.OCUPADA, List.of());
+            List<Habitacion> reservadas = porEstado.getOrDefault(Habitacion.EstadoHabitacion.RESERVADA, List.of());
+            List<Habitacion> mantenimiento = porEstado.getOrDefault(Habitacion.EstadoHabitacion.MANTENIMIENTO, List.of());
+
+            StringBuilder sb = new StringBuilder();
+            sb.append("🏨 Estado de habitaciones (").append(todas.size()).append(" en total):\n\n");
+            sb.append(String.format("  🟢 Disponibles:   %2d\n", disponibles.size()));
+            sb.append(String.format("  🔴 Ocupadas:      %2d\n", ocupadas.size()));
+            sb.append(String.format("  📅 Reservadas:    %2d\n", reservadas.size()));
+            sb.append(String.format("  🔧 Mantenimiento: %2d\n", mantenimiento.size()));
+
+            if (!disponibles.isEmpty()) {
+                sb.append("\n🟢 Disponibles ahora:\n");
+                for (Habitacion h : disponibles) {
+                    sb.append(String.format("   Hab. %-5s │ %-22s │ $%,.0f/noche\n",
+                            h.getNumero(),
+                            h.getTipoHabitacion() != null ? h.getTipoHabitacion().obtenerEtiquetaTipo() : "—",
+                            h.calcularPrecioFinal()));
+                }
+            }
+
+            if (!ocupadas.isEmpty()) {
+                sb.append("\n🔴 Ocupadas actualmente:\n");
+                for (Habitacion h : ocupadas) {
+                    sb.append(String.format("   Hab. %-5s │ %s\n",
+                            h.getNumero(),
+                            h.getTipoHabitacion() != null ? h.getTipoHabitacion().obtenerEtiquetaTipo() : "—"));
+                }
+            }
+
+            if (!reservadas.isEmpty()) {
+                sb.append("\n📅 Reservadas (próximamente ocupadas):\n");
+                for (Habitacion h : reservadas) {
+                    sb.append(String.format("   Hab. %-5s │ %s\n",
+                            h.getNumero(),
+                            h.getTipoHabitacion() != null ? h.getTipoHabitacion().obtenerEtiquetaTipo() : "—"));
+                }
+            }
+
+            if (!mantenimiento.isEmpty()) {
+                sb.append("\n🔧 En mantenimiento:\n");
+                for (Habitacion h : mantenimiento) {
+                    sb.append(String.format("   Hab. %-5s │ %s\n",
+                            h.getNumero(),
+                            h.getTipoHabitacion() != null ? h.getTipoHabitacion().obtenerEtiquetaTipo() : "—"));
+                }
+            }
+            return sb.toString().trim();
+        } catch (Exception e) {
+            return "⚠ No pude consultar el estado de las habitaciones.";
+        }
+    }
+
 }
