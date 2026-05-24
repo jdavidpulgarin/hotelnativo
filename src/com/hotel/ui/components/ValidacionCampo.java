@@ -68,4 +68,52 @@ public final class ValidacionCampo {
             }
         });
     }
+    
+     /**
+     * Solo números. Si el usuario escribe una letra, muestra error.
+     */
+    public static void aplicarSoloNumeros(TextField campo, Label labelError) {
+        labelError.setStyle(ESTILO_LABEL_ERROR);
+        labelError.setVisible(false);
+        labelError.setManaged(false);
+
+        campo.textProperty().addListener((obs, viejo, nuevo) -> {
+            if (nuevo == null || nuevo.isEmpty()) {
+                campo.setStyle(ESTILO_NORMAL);
+                ocultar(labelError); return;
+            }
+            if (!nuevo.matches("^[0-9]*$")) {
+                campo.setStyle(ESTILO_ERROR);
+                labelError.setText("⚠ Solo se permiten números");
+                mostrar(labelError);
+            } else {
+                campo.setStyle(ESTILO_VALIDO);
+                ocultar(labelError);
+            }
+        });
+    }
+
+    /**
+     * Solo números y hasta 2 decimales (para precios).
+     */
+    public static void aplicarDecimal(TextField campo, Label labelError) {
+        labelError.setStyle(ESTILO_LABEL_ERROR);
+        labelError.setVisible(false);
+        labelError.setManaged(false);
+
+        campo.textProperty().addListener((obs, viejo, nuevo) -> {
+            if (nuevo == null || nuevo.isEmpty()) {
+                campo.setStyle(ESTILO_NORMAL);
+                ocultar(labelError); return;
+            }
+            if (!nuevo.matches("^[0-9]*(\\.[0-9]{0,2})?$")) {
+                campo.setStyle(ESTILO_ERROR);
+                labelError.setText("⚠ Solo números y máximo 2 decimales");
+                mostrar(labelError);
+            } else {
+                campo.setStyle(ESTILO_VALIDO);
+                ocultar(labelError);
+            }
+        });
+    }
 }
