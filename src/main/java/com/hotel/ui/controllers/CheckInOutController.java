@@ -106,4 +106,14 @@ public class CheckInOutController {
                 setAlignment(Pos.CENTER);
             }
         });
+        
+         tabla.setRowFactory(tv -> new TableRow<>() {
+            @Override protected void updateItem(CheckInOut ci, boolean empty) {
+                super.updateItem(ci, empty);
+                if (ci == null || empty) { setStyle(""); return; }
+                setStyle(ci.haRealizadoCheckout()
+                        ? "-fx-background-color:#f0fdf4;"
+                        : "-fx-background-color:#fffbeb;");
+            }
+        });
 }
