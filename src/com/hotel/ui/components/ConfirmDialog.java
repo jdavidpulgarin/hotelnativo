@@ -83,5 +83,9 @@ public final class ConfirmDialog {
 
         cuerpo.getChildren().add(botones);
 
-        
+        // ── Crear y mostrar el modal ──────────────────────────────────────
+        overlayRef[0] = ModalUtil.crearModal(cuerpo, titulo,
+                () -> contenedor.getChildren().remove(overlayRef[0]));
+        contenedor.getChildren().add(overlayRef[0]);
+
 }
