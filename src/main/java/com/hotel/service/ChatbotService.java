@@ -23,10 +23,26 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
 /**
  *
  * @author Pulgarin
  */
+/**
+ * Asistente interno de recepción para el Hotel Nativo. Responde consultas
+ * operacionales en tiempo real desde la BD: check-ins/checkouts del día, estado
+ * de habitaciones, reservas, clientes.
+ *
+ * GRASP: Alta Cohesión – responsabilidad única: interpretar y responder
+ * consultas de recepción. SOLID: D – depende de interfaces de DAO, no de
+ * implementaciones concretas.
+ */
 public class ChatbotService {
-    
+    // ── Patrones NLP ──────────────────────────────────────────────────────────
+
+    private static final Pattern PATRON_FECHA_ISO = Pattern.compile("\\d{4}-\\d{2}-\\d{2}");
+    private static final Pattern PATRON_FECHA_DMY = Pattern.compile("\\d{2}/\\d{2}/\\d{4}");
+    private static final Pattern PATRON_NUMERO = Pattern.compile("\\b(\\d+)\\b");
+    private static final Pattern PATRON_ID_RESERVA = Pattern.compile(
+            "(?:reserva|booking|numero|id)\\s*[:#]?\\s*(\\d+)", Pattern.CASE_INSENSITIVE);
 }
