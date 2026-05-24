@@ -23,3 +23,20 @@ public class AuditoriaDAOImpl extends BaseDAO implements IAuditoriaDAO {
             "INSERT INTO AUDITORIA (id_auditoria, id_empleado, accion, entidad, id_entidad, detalles) " +
             "VALUES (?, ?, ?, ?, ?, ?)";
 }
+@Override
+    public void insertar(Auditoria auditoria) {
+        enTransaccion(conn -> {
+            int seqVal = siguienteSeq(conn, "seq_auditoria");
+            try (PreparedStatement ps = conn.prepareStatement(SQL_INSERT)) {
+                ps.setString(1, fmt("AUD", seqVal));
+                ps.setInt(2, auditoria.getIdEmpleado());
+                ps.setString(3, auditoria.getAccion());
+                ps.setString(4, auditoria.getEntidad());
+                ps.setInt(5, auditoria.getIdEntidad());
+                ps.setString(6, auditoria.getDetalles());
+                ps.executeUpdate();
+            }
+            return null;
+        });
+    }
+}
