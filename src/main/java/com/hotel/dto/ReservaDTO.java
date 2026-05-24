@@ -21,4 +21,8 @@ public class ReservaDTO {
     private LocalDate fechaSalida;
     private int numPersonas;
 
+    public ReservaDTO() {
+    }
+
+    
 }
