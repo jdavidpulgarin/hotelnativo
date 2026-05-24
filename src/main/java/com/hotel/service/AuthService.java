@@ -113,6 +113,45 @@ public class AuthService {
     }
 
     /**
+     * Genera un hash BCrypt de la contraseña dada. Expuesto para que
+     * EmpleadoService pueda obtener el hash antes de persistirlo.
+     */
+    public String generarHash(String contrasena) {
+        return hashContrasena(contrasena);
+    }
+
+    /**
+     * Retorna el email asociado a un preAuthToken activo y no expirado, o null
+     * si no existe. Expira automáticamente tokens con más de
+     * MINUTOS_EXPIRACION_PRE_AUTH minutos de antigüedad.
+     */
+    public String obtenerEmailDePreAuthToken(String preAuthToken) {
+        String valor = preAuthTokens.get(preAuthToken);
+        if (valor == null) {
+            return null;
+        }
+        String[] partes = valor.split("\\|", 2);
+        long creadoEn = Long.parseLong(partes[1]);
+        long minutos = (System.currentTimeMillis() - creadoEn) / 60_000L;
+        if (minutos >= MINUTOS_EXPIRACION_PRE_AUTH) {
+            preAuthTokens.remove(preAuthToken);
+            return null;
+        }
+        return partes[0];
+    }
+
+    /**
+     * Retorna el Empleado cuyo email (normalizado) coincida, o vacío si no está
+     * cargado. Usa el mapa en memoria — sin consulta adicional a la BD.
+     */
+    public Optional<Empleado> obtenerEmpleadoPorEmail(String email) {
+        if (email == null) {
+            return Optional.empty();
+        }
+        return Optional.ofNullable(empleadosPorEmail.get(email.toLowerCase().trim()));
+    }
+
+    /**
      * Genera un hash BCrypt con factor de trabajo 12 (recomendado OWASP 2024).
      */
     private String hashContrasena(String contrasena) {
