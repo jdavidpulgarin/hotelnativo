@@ -24,4 +24,9 @@ public class ClienteDTO {
     private String telefono;
     private String nacionalidad;
     private String ciudadOrigen;
+
+    public ClienteDTO() {
+    }
+    
+    
 }
