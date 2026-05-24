@@ -90,4 +90,20 @@ public class CheckInOutController {
         colHoraCheckout.setCellValueFactory(c -> new SimpleStringProperty(
                 c.getValue().getFechaHoraCheckout() != null
                         ? c.getValue().getFechaHoraCheckout().format(FMT) : "—"));
+        
+        colEstado.setCellValueFactory(c -> {
+            Reserva r = c.getValue().getReserva();
+            return new SimpleStringProperty(
+                    r != null && r.getEstado() != null ? r.getEstado().name() : "—");
+        });
+        colEstado.setCellFactory(col -> new TableCell<>() {
+            @Override protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) { setGraphic(null); return; }
+                Label badge = new Label(item);
+                badge.setStyle(getBadgeEstilo(item));
+                setGraphic(badge); setText(null);
+                setAlignment(Pos.CENTER);
+            }
+        });
 }
