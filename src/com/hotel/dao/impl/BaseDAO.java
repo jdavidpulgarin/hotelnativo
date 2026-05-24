@@ -68,3 +68,34 @@ public abstract class BaseDAO {
          */
         T ejecutar(Connection conn) throws Exception;
     }
+/**
+     * Ejecuta {@code callback} dentro de una transacción ACID:
+     * <ol>
+     *   <li>Obtiene una conexión del pool.</li>
+     *   <li>Desactiva autocommit.</li>
+     *   <li>Invoca {@code callback.ejecutar(conn)}.</li>
+     *   <li>Si tiene éxito → commit.</li>
+     *   <li>Si lanza excepción → rollback y relanza como {@link ExcepcionBaseDatos}.</li>
+     *   <li>En finally → restaura autocommit y libera la conexión al pool.</li>
+     * </ol>
+     *
+     * @param callback operación a ejecutar dentro de la transacción
+     * @param <T>      tipo del valor retornado
+     * @return resultado devuelto por {@code callback.ejecutar()}
+     * @throws ExcepcionBaseDatos si ocurre cualquier error durante la operación
+     */
+    protected <T> T enTransaccion(TransaccionCallback<T> callback) {
+        Connection conn = obtener();
+        try {
+            conn.setAutoCommit(false);
+            T resultado = callback.ejecutar(conn);
+            conn.commit();
+            return resultado;
+        } catch (Exception e) {
+            try { conn.rollback(); } catch (SQLException ignored) {}
+            throw new ExcepcionBaseDatos("Error en transacción: " + e.getMessage(), e);
+        } finally {
+            try { conn.setAutoCommit(true); } catch (SQLException ignored) {}
+            liberar(conn);
+        }
+    }
