@@ -98,3 +98,32 @@ public class FacturaDAOImpl extends BaseDAO implements IFacturaDAO {
             }
         });
     }
+@Override
+    public Optional<Factura> buscarPorId(int idFactura) {
+        Connection conn = obtener();
+        try (PreparedStatement stmt = conn.prepareStatement(SQL_BUSCAR_POR_ID)) {
+            stmt.setString(1, fmt("FAC", idFactura));
+            try (ResultSet rs = stmt.executeQuery()) {
+                return rs.next() ? Optional.of(mapearFila(rs)) : Optional.empty();
+            }
+        } catch (SQLException e) {
+            throw new ExcepcionBaseDatos("Error al buscar factura: " + e.getMessage(), e);
+        } finally {
+            liberar(conn);
+        }
+    }
+
+    @Override
+    public Optional<Factura> buscarPorReserva(int idReserva) {
+        Connection conn = obtener();
+        try (PreparedStatement stmt = conn.prepareStatement(SQL_BUSCAR_RESERVA)) {
+            stmt.setString(1, fmt("RES", idReserva));
+            try (ResultSet rs = stmt.executeQuery()) {
+                return rs.next() ? Optional.of(mapearFila(rs)) : Optional.empty();
+            }
+        } catch (SQLException e) {
+            throw new ExcepcionBaseDatos("Error al buscar factura por reserva: " + e.getMessage(), e);
+        } finally {
+            liberar(conn);
+        }
+    }
