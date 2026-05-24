@@ -211,6 +211,13 @@ public class AuthService {
         return token;
     }
 
+    public void logout(String token) {
+        SesionActiva sesion = sesionesActivas.remove(token);
+        if (sesion != null) {
+            System.out.println("[AUTH] Logout - ID: " + sesion.empleado.getId());
+        }
+    }
+
     private boolean verificarContrasena(String contrasenaPlana, String hashAlmacenado) {
         if (hashAlmacenado == null) {
             return false;
