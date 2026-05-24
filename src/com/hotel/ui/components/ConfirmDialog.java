@@ -30,4 +30,32 @@ import javafx.scene.layout.*;
 public final class ConfirmDialog {
 
     private ConfirmDialog() {}
+    
+        public static void mostrar(StackPane contenedor, String titulo,
+                               String mensaje, Runnable onConfirmar) {
+
+        // Referencia para la lambda de cierre (necesaria antes de que crearModal retorne)
+        StackPane[] overlayRef = new StackPane[1];
+
+        // ── Contenido del modal ────────────────────────────────────────────
+        VBox cuerpo = new VBox(14);
+        cuerpo.setAlignment(Pos.TOP_CENTER);
+        cuerpo.setPadding(new Insets(8, 4, 4, 4));
+
+        Label icono = new Label("⚠");
+        icono.setStyle(
+            "-fx-font-size:36px;" +
+            "-fx-background-color:#fef3c7;" +
+            "-fx-background-radius:50%;" +
+            "-fx-padding:14px 18px;" +
+            "-fx-text-fill:#b45309;");
+
+        Label lblMensaje = new Label(mensaje);
+        lblMensaje.setStyle("-fx-font-size:13px; -fx-text-fill:#374151;");
+        lblMensaje.setWrapText(true);
+        lblMensaje.setMaxWidth(440);
+        lblMensaje.setTextAlignment(javafx.scene.text.TextAlignment.CENTER);
+
+        cuerpo.getChildren().addAll(icono, lblMensaje);
+    }
 }
