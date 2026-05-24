@@ -253,3 +253,21 @@ private static volatile boolean constraintVerificado = false;
         }
         return lista;
     }
+@Override
+    public List<Habitacion> buscarDisponibles(BusquedaDisponibilidadDTO criterios) {
+        List<Habitacion> lista = new ArrayList<>();
+        Connection conn = obtener();
+        try (PreparedStatement stmt = conn.prepareStatement(SQL_BUSCAR_DISPONIBLES)) {
+            stmt.setInt(1, criterios.getNumPersonas());
+            stmt.setDate(2, Date.valueOf(criterios.getFechaSalida()));
+            stmt.setDate(3, Date.valueOf(criterios.getFechaEntrada()));
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) lista.add(mapearFila(rs));
+            }
+        } catch (SQLException e) {
+            throw new ExcepcionBaseDatos("Error al buscar disponibles: " + e.getMessage(), e);
+        } finally {
+            liberar(conn);
+        }
+        return lista;
+    }
