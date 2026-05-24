@@ -72,3 +72,31 @@ public class ClienteDAOImpl extends BaseDAO implements IClienteDAO, IClienteBusq
 
     public ClienteDAOImpl() { super(); }
 }
+@Override
+    public Cliente insertar(Cliente cliente) {
+        String sql = "INSERT INTO CLIENTE " +
+                "(id_cliente, primer_nombre, segundo_nombre, apellido_1, apellido_2, " +
+                " email, telefono, nacionalidad, ciudad_origen, fecha_registro, es_vip) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        return enTransaccion(conn -> {
+            String cedula = cliente.getDocumento();
+            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                stmt.setString(1, cedula);
+                stmt.setString(2, cliente.getNombre());
+                stmt.setString(3, cliente.getSegundoNombre());
+                stmt.setString(4, cliente.getApellido());
+                stmt.setString(5, cliente.getApellido2());
+                stmt.setString(6, cliente.getEmail());
+                stmt.setString(7, cliente.getTelefono());
+                stmt.setString(8, cliente.getNacionalidad());
+                stmt.setString(9, cliente.getCiudadOrigen());
+                stmt.setDate(10, java.sql.Date.valueOf(java.time.LocalDate.now()));
+                stmt.setInt(11, cliente.isEsVip() ? 1 : 0);
+                stmt.executeUpdate();
+            }
+            try { cliente.setId(Integer.parseInt(cedula)); }
+            catch (NumberFormatException ignore) { cliente.setId(0); }
+            cliente.setFechaRegistro(java.time.LocalDate.now());
+            return cliente;
+        });
+    }
