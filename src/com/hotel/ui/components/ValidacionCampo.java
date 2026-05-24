@@ -116,4 +116,63 @@ public final class ValidacionCampo {
             }
         });
     }
+    
+        /**
+     * Valida formato de email en tiempo real.
+     * Muestra error solo después de que el usuario escriba al menos un @.
+     */
+    public static void aplicarEmail(TextField campo, Label labelError) {
+        labelError.setStyle(ESTILO_LABEL_ERROR);
+        labelError.setVisible(false);
+        labelError.setManaged(false);
+
+        campo.textProperty().addListener((obs, viejo, nuevo) -> {
+            if (nuevo == null || nuevo.isEmpty()) {
+                campo.setStyle(ESTILO_NORMAL);
+                ocultar(labelError); return;
+            }
+            if (nuevo.contains("@")) {
+                if (!nuevo.matches("^[\\w.-]+@[\\w.-]+\\.[a-zA-Z]{2,}$")) {
+                    campo.setStyle(ESTILO_ERROR);
+                    labelError.setText("⚠ Formato de email no válido");
+                    mostrar(labelError);
+                } else {
+                    campo.setStyle(ESTILO_VALIDO);
+                    ocultar(labelError);
+                }
+            } else {
+                campo.setStyle(ESTILO_NORMAL);
+                ocultar(labelError);
+            }
+        });
+    }
+
+    /**
+     * Valida formato de teléfono en tiempo real.
+     */
+    public static void aplicarTelefono(TextField campo, Label labelError) {
+        labelError.setStyle(ESTILO_LABEL_ERROR);
+        labelError.setVisible(false);
+        labelError.setManaged(false);
+
+        campo.textProperty().addListener((obs, viejo, nuevo) -> {
+            if (nuevo == null || nuevo.isEmpty()) {
+                campo.setStyle(ESTILO_NORMAL);
+                ocultar(labelError); return;
+            }
+            if (!nuevo.matches("^[+]?[0-9]*$")) {
+                campo.setStyle(ESTILO_ERROR);
+                labelError.setText("⚠ Solo números y opcionalmente + al inicio");
+                mostrar(labelError);
+            } else if (nuevo.replaceAll("[^0-9]", "").length() > 0
+                       && nuevo.replaceAll("[^0-9]", "").length() < 7) {
+                campo.setStyle(ESTILO_ERROR);
+                labelError.setText("⚠ Mínimo 7 dígitos");
+                mostrar(labelError);
+            } else {
+                campo.setStyle(ESTILO_VALIDO);
+                ocultar(labelError);
+            }
+        });
+    } 
 }
