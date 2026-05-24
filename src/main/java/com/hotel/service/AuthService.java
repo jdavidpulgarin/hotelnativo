@@ -448,5 +448,35 @@ public class AuthService {
         }
         return sesion.empleado;
     }
+    
+    
+        /**
+     * Excepción de autenticación/autorización.
+     * Incluye un {@code preAuthToken} opcional que se emite únicamente
+     * cuando el código es "CAMBIO_PASSWORD_REQUERIDO".
+     */
+    public static class AuthException extends Exception {
+
+        private final String codigo;
+        private final String preAuthToken;
+
+        public AuthException(String codigo, String mensaje) {
+            this(codigo, mensaje, null);
+        }
+
+        public AuthException(String codigo, String mensaje, String preAuthToken) {
+            super(mensaje);
+            this.codigo = codigo;
+            this.preAuthToken = preAuthToken;
+        }
+
+        public String getCodigo() {
+            return codigo;
+        }
+
+        public String getPreAuthToken() {
+            return preAuthToken;
+        }
+    }
 
 }
