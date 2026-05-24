@@ -8,6 +8,9 @@ package main.java.com.hotel.dto;
  *
  * @author Pulgarin
  */
+/**
+ * DTO para crear o actualizar una habitación.
+ */
 public class HabitacionDTO {
 
     private String numero;
