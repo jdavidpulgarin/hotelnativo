@@ -108,3 +108,34 @@ private void migrarColumna(Connection conn, String columna, String definicion) {
             }
         }
     }
+@Override
+    public Empleado insertar(Empleado empleado) {
+        String sql = "INSERT INTO EMPLEADO " +
+                "(id_empleado, primer_nombre, segundo_nombre, apellido_1, apellido_2, " +
+                "email, telefono, id_cargo, fecha_contratacion, debe_cambiar_password, " +
+                "salario, tipo_contrato, tipo_pago, fecha_fin_contrato) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?, ?)";
+        return enTransaccion(conn -> {
+            int seqVal = siguienteSeq(conn, "seq_empleado");
+            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                stmt.setString(1, fmt("EMP", seqVal));
+                stmt.setString(2, empleado.getNombre());
+                stmt.setString(3, blankToNull(empleado.getSegundoNombre()));
+                stmt.setString(4, empleado.getApellido());
+                stmt.setString(5, blankToNull(empleado.getApellido2()));
+                stmt.setString(6, empleado.getEmail());
+                stmt.setString(7, empleado.getTelefono());
+                stmt.setString(8, fmt("CAR", empleado.getCargo().getId()));
+                stmt.setDate(9, Date.valueOf(empleado.getFechaContratacion()));
+                if (empleado.getSalario() > 0) stmt.setDouble(10, empleado.getSalario());
+                else stmt.setNull(10, java.sql.Types.NUMERIC);
+                stmt.setString(11, empleado.getTipoContrato());
+                stmt.setString(12, empleado.getTipoPago());
+                stmt.setDate(13, empleado.getFechaFinContrato() != null
+                        ? Date.valueOf(empleado.getFechaFinContrato()) : null);
+                stmt.executeUpdate();
+            }
+            empleado.setId(seqVal);
+            return empleado;
+        });
+    }
