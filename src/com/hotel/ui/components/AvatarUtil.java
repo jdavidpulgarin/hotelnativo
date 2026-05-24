@@ -81,5 +81,5 @@ public final class AvatarUtil {
         pane.setMaxSize(tamano, tamano);
         pane.setPrefSize(tamano, tamano);
         return pane;
-    }
+    } 
 }
