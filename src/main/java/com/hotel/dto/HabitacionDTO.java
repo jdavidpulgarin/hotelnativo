@@ -24,6 +24,22 @@ public class HabitacionDTO {
         this.idPiso = idPiso;
         this.precioBase = precioBase;
     }
+
+    public String getNumero() {
+        return numero;
+    }
+
+    public int getIdTipoHabitacion() {
+        return idTipoHabitacion;
+    }
+
+    public int getIdPiso() {
+        return idPiso;
+    }
+
+    public double getPrecioBase() {
+        return precioBase;
+    }
     
     
 }
