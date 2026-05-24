@@ -70,5 +70,19 @@ public final class ModalUtil {
         card.setStyle(
             "-fx-background-color:white;" +
             "-fx-background-radius:16px;" +
-            "-fx-effect:dropshadow(gaussian,rgba(0,0,0,0.30),24,0,0,6);");  
+            "-fx-effect:dropshadow(gaussian,rgba(0,0,0,0.30),24,0,0,6);");
+        
+        
+         // ── Overlay ────────────────────────────────────────────────────────
+        StackPane overlay = new StackPane(card);
+        overlay.setAlignment(Pos.CENTER);
+        overlay.setStyle("-fx-background-color:rgba(0,0,0,0.50);");
+        overlay.setPadding(new Insets(32));
+
+        // Cerrar al hacer click en el overlay (pero no en la card)
+        overlay.setOnMouseClicked(e -> {
+            if (e.getTarget() == overlay) cerrarModal(overlay, onCerrar);
+        });
+
+        btnCerrar.setOnAction(e -> cerrarModal(overlay, onCerrar));
 }
