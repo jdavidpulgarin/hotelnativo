@@ -114,3 +114,17 @@ public class CheckInOutDAOImpl extends BaseDAO implements ICheckInOutDAO {
             liberar(conn);
         }
     }
+@Override
+    public Optional<CheckInOut> buscarCheckinActivoPorReserva(int idReserva) {
+        Connection conn = obtener();
+        try (PreparedStatement stmt = conn.prepareStatement(SQL_BUSCAR_ACTIVO_POR_RESERVA)) {
+            stmt.setString(1, fmt("RES", idReserva));
+            try (ResultSet rs = stmt.executeQuery()) {
+                return rs.next() ? Optional.of(mapearFila(rs)) : Optional.empty();
+            }
+        } catch (SQLException e) {
+            throw new ExcepcionBaseDatos("Error al buscar check-in activo: " + e.getMessage(), e);
+        } finally {
+            liberar(conn);
+        }
+    }
