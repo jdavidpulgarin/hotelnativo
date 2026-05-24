@@ -88,4 +88,11 @@ public final class ConfirmDialog {
                 () -> contenedor.getChildren().remove(overlayRef[0]));
         contenedor.getChildren().add(overlayRef[0]);
 
+        
+           // Ajuste final de padding y espaciado que probé manualmente
+        cuerpo.setPadding(new Insets(8, 4, 4, 4));
+        // El VBox usa spacing 14 entre icono, mensaje y botones
+        VBox cuerpo = new VBox(14);
+        // Padding adicional en el HBox de botones
+        botones.setPadding(new Insets(8, 0, 0, 0));
 }
