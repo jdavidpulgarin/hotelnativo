@@ -85,4 +85,18 @@ public final class ModalUtil {
         });
 
         btnCerrar.setOnAction(e -> cerrarModal(overlay, onCerrar));
+        
+                // ── Animación de entrada ───────────────────────────────────────────
+        overlay.setOpacity(0);
+        card.setScaleX(0.9);
+        card.setScaleY(0.9);
+
+        FadeTransition fadeIn   = new FadeTransition(Duration.millis(200), overlay);
+        fadeIn.setFromValue(0); fadeIn.setToValue(1);
+        ScaleTransition scaleIn = new ScaleTransition(Duration.millis(200), card);
+        scaleIn.setFromX(0.9); scaleIn.setToX(1.0);
+        scaleIn.setFromY(0.9); scaleIn.setToY(1.0);
+        new ParallelTransition(fadeIn, scaleIn).play();
+
+        return overlay;
 }
