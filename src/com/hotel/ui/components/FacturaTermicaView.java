@@ -406,4 +406,48 @@ public class FacturaTermicaView {
         );
         return v;
     }
+    
+     private VBox construirSeccionCodigoQR() {
+        VBox v = new VBox(5);
+        v.setAlignment(Pos.TOP_CENTER);
+        v.setPadding(new Insets(8, 0, 8, 0));
+
+        String payload = numeroFactura() + "|" + factura.getTotal() + "|" +
+                (factura.getCliente() != null ? factura.getCliente().getDocumento() : "0");
+
+        // QR visual
+        Canvas qr = dibujarQR(payload, 88);
+        v.getChildren().add(qr);
+        v.getChildren().add(labelCentrado("Escanea para verificar", FS_SM, false));
+        v.getChildren().add(espacio(8));
+
+        // Código de barras
+        Canvas barra = dibujarCodigoBarras(payload, 260, 38);
+        HBox boxBarra = new HBox(barra);
+        boxBarra.setAlignment(Pos.CENTER);
+        v.getChildren().add(boxBarra);
+        v.getChildren().add(labelCentrado(numeroFactura(), FS_SM, true));
+
+        return v;
+    }
+
+    private VBox construirPieDePagina() {
+        VBox v = new VBox(2);
+        v.setAlignment(Pos.TOP_CENTER);
+        v.setPadding(new Insets(8, 0, 6, 0));
+
+        v.getChildren().addAll(
+            espacio(4),
+            labelCentrado("¡Gracias por su visita!", FS_LG, true),
+            espacio(3),
+            labelCentrado("Esperamos verle pronto en Hotel Nativo", FS_SM, false),
+            espacio(5),
+            labelCentrado("Síguenos:  @HotelNativoCol", FS_SM, false),
+            labelCentrado("Calificanos en:  ★ ★ ★ ★ ★", FS_SM, false),
+            espacio(5),
+            labelCentrado("Sistema Hotel Nativo  v1.4", FS_SM, false),
+            labelCentrado(LocalDate.now().format(FMT_LARGO), FS_SM, false)
+        );
+        return v;
+    }
 }
