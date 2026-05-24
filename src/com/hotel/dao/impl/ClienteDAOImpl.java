@@ -131,3 +131,33 @@ public class ClienteDAOImpl extends BaseDAO implements IClienteDAO, IClienteBusq
             }
         });
     }
+@Override
+    public Optional<Cliente> buscarPorId(int idCliente) {
+        Connection conn = obtener();
+        try (PreparedStatement stmt = conn.prepareStatement(SQL_BUSCAR_POR_ID)) {
+            stmt.setString(1, String.valueOf(idCliente));  // cedula directa (ej. "1066280182")
+            stmt.setString(2, fmt("CLI", idCliente));      // formato prefijo (ej. "CLI01")
+            try (ResultSet rs = stmt.executeQuery()) {
+                return rs.next() ? Optional.of(mapearFila(rs)) : Optional.empty();
+            }
+        } catch (SQLException e) {
+            throw new ExcepcionBaseDatos("Error al buscar cliente por ID: " + e.getMessage(), e);
+        } finally {
+            liberar(conn);
+        }
+    }
+
+    @Override
+    public List<Cliente> listarTodos() {
+        List<Cliente> lista = new ArrayList<>();
+        Connection conn = obtener();
+        try (PreparedStatement stmt = conn.prepareStatement(SQL_LISTAR_TODOS);
+             ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) lista.add(mapearFila(rs));
+        } catch (SQLException e) {
+            throw new ExcepcionBaseDatos("Error al listar clientes: " + e.getMessage(), e);
+        } finally {
+            liberar(conn);
+        }
+        return lista;
+    }
