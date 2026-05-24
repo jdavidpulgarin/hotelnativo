@@ -88,6 +88,37 @@ public class AuthService {
     private final Map<String, String> preAuthTokens = new ConcurrentHashMap<>();
     private static final long MINUTOS_EXPIRACION_PRE_AUTH = 15L;
 
+    public void registrarCredenciales(Empleado empleado, String contrasena) {
+        if (empleado == null || contrasena == null || contrasena.isBlank()) {
+            throw new IllegalArgumentException("Empleado y contraseña son requeridos.");
+        }
+        String email = empleado.getEmail().toLowerCase();
+        credenciales.put(email, hashContrasena(contrasena));
+        empleadosPorEmail.put(email, empleado);
+        intentosFallidos.put(email, 0);
+    }
+
+    /**
+     * Registra un hash BCrypt ya calculado, sin volver a hashearlo. Usado al
+     * cargar empleados desde la BD para no alterar el hash almacenado.
+     */
+    public void registrarCredencialesConHash(Empleado empleado, String hashDirecto) {
+        if (empleado == null || hashDirecto == null || hashDirecto.isBlank()) {
+            throw new IllegalArgumentException("Empleado y hash son requeridos.");
+        }
+        String email = empleado.getEmail().toLowerCase();
+        credenciales.put(email, hashDirecto);
+        empleadosPorEmail.put(email, empleado);
+        intentosFallidos.put(email, 0);
+    }
+
+    /**
+     * Genera un hash BCrypt con factor de trabajo 12 (recomendado OWASP 2024).
+     */
+    private String hashContrasena(String contrasena) {
+        return BCrypt.hashpw(contrasena, BCrypt.gensalt(12));
+    }
+
     private class SesionActiva {
 
         final Empleado empleado;
