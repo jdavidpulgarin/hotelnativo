@@ -579,4 +579,42 @@ public class ChatbotService {
             return "⚠ Error al buscar el cliente. Intenta de nuevo.";
         }
     }
+
+    // ── Textos de ayuda ───────────────────────────────────────────────────────
+    private String obtenerTextoAyuda() {
+        LocalDate hoy = LocalDate.now();
+        String ej1 = hoy.plusDays(3).toString();
+        String ej2 = hoy.plusDays(7).toString();
+        return "🤖 Guía del asistente de recepción:\n\n"
+                + "🔑 CHECK-IN HOY:\n"
+                + "   'check-in hoy'  │  'llegadas hoy'  │  'quién llega hoy'\n\n"
+                + "🔓 CHECKOUT HOY:\n"
+                + "   'checkout hoy'  │  'salidas hoy'  │  'quién se va hoy'\n\n"
+                + "🛏 ESTADO HABITACIONES:\n"
+                + "   'estado habitaciones'  │  'mapa habitaciones'\n"
+                + "   'habitaciones disponibles'\n\n"
+                + "📅 DISPONIBILIDAD POR FECHAS:\n"
+                + "   'disponibilidad " + ej1 + " " + ej2 + "'\n"
+                + "   'hay habitaciones " + ej1 + " " + ej2 + " para 2 personas'\n\n"
+                + "📋 RESERVAS:\n"
+                + "   'reserva #123'          → detalle de una reserva\n"
+                + "   'reservas hoy'          → movimiento del día\n"
+                + "   'reservas pendientes'   → todas las reservas activas\n\n"
+                + "👤 CLIENTES:\n"
+                + "   'buscar cliente Juan García'\n"
+                + "   'buscar cliente 1001234567'\n\n"
+                + "¡Escríbeme lo que necesites! 😊";
+    }
+
+    private String respuestaNoEntendida() {
+        return "🤔 No entendí esa consulta.\n\n"
+                + "Puedo ayudarte con:\n"
+                + "  • 'check-in hoy' / 'checkout hoy'\n"
+                + "  • 'estado habitaciones'\n"
+                + "  • 'disponibilidad 2026-06-01 2026-06-05'\n"
+                + "  • 'reserva #123'\n"
+                + "  • 'reservas pendientes'\n"
+                + "  • 'buscar cliente García'\n\n"
+                + "Escribe 'ayuda' para ver todos los comandos.";
+    }
 }
