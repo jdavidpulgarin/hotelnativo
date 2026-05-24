@@ -9,9 +9,8 @@ package main.java.com.hotel.dto;
  * @author Pulgarin
  */
 /**
- * DTO para crear o actualizar un cliente.
- * Separa los datos de entrada del modelo de dominio.
- * SOLID: S - solo transporta datos, sin lógica.
+ * DTO para crear o actualizar un cliente. Separa los datos de entrada del
+ * modelo de dominio. SOLID: S - solo transporta datos, sin lógica.
  */
 public class ClienteDTO {
 
@@ -39,6 +38,45 @@ public class ClienteDTO {
         this.nacionalidad = nacionalidad;
         this.ciudadOrigen = ciudadOrigen;
     }
-    
-    
+
+    public String getCedula() {
+        return cedula;
+    }
+
+    public void setCedula(String v) {
+        this.cedula = v;
+    }
+
+    public String getNombre() {
+        return nombre;
+    }
+
+    public void setNombre(String v) {
+        this.nombre = v;
+    }
+
+    public String getSegundoNombre() {
+        return segundoNombre;
+    }
+
+    public void setSegundoNombre(String v) {
+        this.segundoNombre = v;
+    }
+
+    public String getApellido() {
+        return apellido;
+    }
+
+    public void setApellido(String v) {
+        this.apellido = v;
+    }
+
+    public String getApellido2() {
+        return apellido2;
+    }
+
+    public void setApellido2(String v) {
+        this.apellido2 = v;
+    }
+
 }
