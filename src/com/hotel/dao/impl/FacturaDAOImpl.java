@@ -86,3 +86,15 @@ public class FacturaDAOImpl extends BaseDAO implements IFacturaDAO {
             return factura;
         });
     }
+@Override
+    public boolean actualizar(Factura factura) {
+        return enTransaccion(conn -> {
+            try (PreparedStatement stmt = conn.prepareStatement(SQL_ACTUALIZAR)) {
+                stmt.setString(1, factura.getEstadoPago().name());
+                stmt.setString(2, factura.getMetodoPago() != null
+                        ? factura.getMetodoPago().name() : null);
+                stmt.setString(3, fmt("FAC", factura.getId()));
+                return stmt.executeUpdate() > 0;
+            }
+        });
+    }
