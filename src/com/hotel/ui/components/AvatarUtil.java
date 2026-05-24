@@ -38,4 +38,17 @@ public final class AvatarUtil {
     private AvatarUtil() {
         // Utility class, ni se te ocurra instanciar esto
     }
+    private static String extraerIniciales(String nombreCompleto) {
+        if (nombreCompleto == null || nombreCompleto.isBlank()) return "?";
+        String[] partes = nombreCompleto.trim().split("\\s+");
+        if (partes.length == 1) {
+            // Caso: nombre simple como "Pedro" -> solo primera letra
+            return String.valueOf(partes[0].charAt(0)).toUpperCase();
+        }
+        // Tomo primera letra del nombre y primera letra del apellido
+        return (String.valueOf(partes[0].charAt(0))
+              + String.valueOf(partes[1].charAt(0))).toUpperCase();
+    }
+    
+    
 }
