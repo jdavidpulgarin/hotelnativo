@@ -71,7 +71,7 @@ public class ClienteDAOImpl extends BaseDAO implements IClienteDAO, IClienteBusq
             "DELETE FROM CLIENTE WHERE id_cliente=? OR id_cliente=?";
 
     public ClienteDAOImpl() { super(); }
-}
+
 @Override
     public Cliente insertar(Cliente cliente) {
         String sql = "INSERT INTO CLIENTE " +
@@ -293,3 +293,4 @@ private Cliente mapearFila(ResultSet rs) throws SQLException {
         c.setEsVip(rs.getInt("es_vip") == 1);
         return c;
     }
+}
