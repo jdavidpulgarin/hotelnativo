@@ -245,3 +245,34 @@ public class ClienteDAOImpl extends BaseDAO implements IClienteDAO, IClienteBusq
         }
         return lista;
     }
+@Override
+    public void purgarHistorialCliente(int idCliente) {
+        enTransaccion(conn -> {
+            String numId = String.valueOf(idCliente);
+            String cliId = fmt("CLI", idCliente);
+
+            // 1. Check-ins de las reservas del cliente
+            try (PreparedStatement s = conn.prepareStatement(
+                    "DELETE FROM CHECKINOUT WHERE id_reserva IN " +
+                    "(SELECT id_reserva FROM RESERVA WHERE id_cliente=? OR id_cliente=?)")) {
+                s.setString(1, numId);
+                s.setString(2, cliId);
+                s.executeUpdate();
+            }
+            // 2. Facturas del cliente
+            try (PreparedStatement s = conn.prepareStatement(
+                    "DELETE FROM FACTURA WHERE id_cliente=? OR id_cliente=?")) {
+                s.setString(1, numId);
+                s.setString(2, cliId);
+                s.executeUpdate();
+            }
+            // 3. Reservas del cliente
+            try (PreparedStatement s = conn.prepareStatement(
+                    "DELETE FROM RESERVA WHERE id_cliente=? OR id_cliente=?")) {
+                s.setString(1, numId);
+                s.setString(2, cliId);
+                s.executeUpdate();
+            }
+            return null;
+        });
+    }
