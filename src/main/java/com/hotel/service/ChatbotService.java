@@ -180,5 +180,110 @@ public class ChatbotService {
                 .replaceAll("[íìï]", "i").replaceAll("[óòö]", "o")
                 .replaceAll("[úùü]", "u").replaceAll("[ñ]", "n");
     }
+    // ── Handler: check-ins de hoy ─────────────────────────────────────────────
+
+    private String manejarCheckinsHoy() {
+        try {
+            LocalDate hoy = LocalDate.now();
+            List<Reserva> llegadas = reservaBusqueda.buscarPorRangoFechas(hoy, hoy)
+                    .stream()
+                    .filter(r -> r.getEstado() == Reserva.EstadoReserva.PENDIENTE
+                    || r.getEstado() == Reserva.EstadoReserva.CONFIRMADA)
+                    .collect(Collectors.toList());
+
+            List<Reserva> yaCheckIn = reservaBusqueda.buscarPorRangoFechas(hoy, hoy)
+                    .stream()
+                    .filter(r -> r.getEstado() == Reserva.EstadoReserva.EN_PROCESO)
+                    .collect(Collectors.toList());
+
+            StringBuilder sb = new StringBuilder();
+            sb.append("🔑 Check-ins de hoy (").append(hoy).append("):\n\n");
+
+            if (llegadas.isEmpty() && yaCheckIn.isEmpty()) {
+                return sb.append("No hay llegadas registradas para hoy.").toString();
+            }
+
+            if (!llegadas.isEmpty()) {
+                sb.append("⏳ Pendientes de hacer check-in (").append(llegadas.size()).append("):\n");
+                for (Reserva r : llegadas) {
+                    long noches = r.getFechaEntrada().until(r.getFechaSalida()).getDays();
+                    sb.append(String.format("  📋 Res. #%-4d │ %-25s │ Hab. %-5s │ %d noche(s) │ Sale: %s\n",
+                            r.getId(),
+                            r.getCliente() != null ? r.getCliente().obtenerNombreCompleto() : "—",
+                            r.getHabitacion() != null ? r.getHabitacion().getNumero() : "—",
+                            noches, r.getFechaSalida()));
+                }
+            }
+
+            if (!yaCheckIn.isEmpty()) {
+                if (!llegadas.isEmpty()) {
+                    sb.append("\n");
+                }
+                sb.append("✅ Ya hicieron check-in (").append(yaCheckIn.size()).append("):\n");
+                for (Reserva r : yaCheckIn) {
+                    sb.append(String.format("  📋 Res. #%-4d │ %-25s │ Hab. %-5s │ Sale: %s\n",
+                            r.getId(),
+                            r.getCliente() != null ? r.getCliente().obtenerNombreCompleto() : "—",
+                            r.getHabitacion() != null ? r.getHabitacion().getNumero() : "—",
+                            r.getFechaSalida()));
+                }
+            }
+            return sb.toString().trim();
+        } catch (Exception e) {
+            return "⚠ No pude consultar los check-ins de hoy. Verifica la conexión.";
+        }
+    }
+
+    // ── Handler: checkouts de hoy ─────────────────────────────────────────────
+    private String manejarCheckoutsHoy() {
+        try {
+            LocalDate hoy = LocalDate.now();
+            List<Reserva> todas = reservaDAO.listarTodas();
+
+            List<Reserva> pendientes = todas.stream()
+                    .filter(r -> hoy.equals(r.getFechaSalida())
+                    && r.getEstado() == Reserva.EstadoReserva.EN_PROCESO)
+                    .collect(Collectors.toList());
+
+            List<Reserva> completadas = todas.stream()
+                    .filter(r -> hoy.equals(r.getFechaSalida())
+                    && r.getEstado() == Reserva.EstadoReserva.COMPLETADA)
+                    .collect(Collectors.toList());
+
+            StringBuilder sb = new StringBuilder();
+            sb.append("🔓 Checkouts de hoy (").append(hoy).append("):\n\n");
+
+            if (pendientes.isEmpty() && completadas.isEmpty()) {
+                return sb.append("No hay salidas registradas para hoy.").toString();
+            }
+
+            if (!pendientes.isEmpty()) {
+                sb.append("⏳ Pendientes de hacer checkout (").append(pendientes.size()).append("):\n");
+                for (Reserva r : pendientes) {
+                    sb.append(String.format("  📋 Res. #%-4d │ %-25s │ Hab. %-5s │ Total: $%,.0f\n",
+                            r.getId(),
+                            r.getCliente() != null ? r.getCliente().obtenerNombreCompleto() : "—",
+                            r.getHabitacion() != null ? r.getHabitacion().getNumero() : "—",
+                            r.getPrecioTotal()));
+                }
+            }
+
+            if (!completadas.isEmpty()) {
+                if (!pendientes.isEmpty()) {
+                    sb.append("\n");
+                }
+                sb.append("✅ Ya realizaron checkout (").append(completadas.size()).append("):\n");
+                for (Reserva r : completadas) {
+                    sb.append(String.format("  📋 Res. #%-4d │ %-25s │ Hab. %-5s\n",
+                            r.getId(),
+                            r.getCliente() != null ? r.getCliente().obtenerNombreCompleto() : "—",
+                            r.getHabitacion() != null ? r.getHabitacion().getNumero() : "—"));
+                }
+            }
+            return sb.toString().trim();
+        } catch (Exception e) {
+            return "⚠ No pude consultar los checkouts de hoy. Verifica la conexión.";
+        }
+    }
 
 }
