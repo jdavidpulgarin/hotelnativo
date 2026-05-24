@@ -216,3 +216,40 @@ private CheckInOut mapearFila(ResultSet rs) throws SQLException {
         c.setObservaciones(rs.getString("observaciones"));
         return c;
     }
+private CheckInOut mapearFila(ResultSet rs) throws SQLException {
+        Cliente cliente = new Cliente();
+        cliente.setId(rs.getInt("id_cliente"));
+        cliente.setNombre(rs.getString("cl_nombre") != null ? rs.getString("cl_nombre") : "");
+        cliente.setApellido(rs.getString("cl_apellido") != null ? rs.getString("cl_apellido") : "");
+        cliente.setEmail(rs.getString("cl_email") != null ? rs.getString("cl_email") : "");
+
+        Habitacion habitacion = new Habitacion();
+        habitacion.setId(rs.getInt("id_habitacion"));
+        habitacion.setNumero(rs.getString("h_numero") != null ? rs.getString("h_numero") : "");
+        habitacion.setPrecioBase(rs.getDouble("precio_base"));
+
+        Reserva reserva = new Reserva();
+        reserva.setId(rs.getInt("id_reserva"));
+        reserva.setCliente(cliente);
+        reserva.setHabitacion(habitacion);
+        reserva.setFechaEntrada(rs.getDate("fecha_entrada") != null ? rs.getDate("fecha_entrada").toLocalDate() : null);
+        reserva.setFechaSalida(rs.getDate("fecha_salida") != null ? rs.getDate("fecha_salida").toLocalDate() : null);
+        reserva.setEstado(Reserva.EstadoReserva.valueOf(rs.getString("r_estado") != null ? rs.getString("r_estado") : "PENDIENTE"));
+        reserva.setNumPersonas(rs.getInt("num_personas"));
+        reserva.setPrecioTotal(rs.getDouble("precio_total"));
+
+        Empleado empleado = new Empleado();
+        empleado.setId(rs.getInt("id_empleado"));
+        empleado.setNombre(rs.getString("e_nombre") != null ? rs.getString("e_nombre") : "");
+        empleado.setApellido(rs.getString("e_apellido") != null ? rs.getString("e_apellido") : "");
+
+        CheckInOut c = new CheckInOut();
+        c.setId(rs.getInt("id"));
+        c.setReserva(reserva);
+        c.setEmpleadoResponsable(empleado);
+        c.setFechaHoraCheckin(rs.getTimestamp("fecha_checkin") != null ? rs.getTimestamp("fecha_checkin").toLocalDateTime() : null);
+        Timestamp checkout = rs.getTimestamp("fecha_checkout");
+        if (checkout != null) c.setFechaHoraCheckout(checkout.toLocalDateTime());
+        c.setObservaciones(rs.getString("observaciones") != null ? rs.getString("observaciones") : "");
+        return c;
+    }
