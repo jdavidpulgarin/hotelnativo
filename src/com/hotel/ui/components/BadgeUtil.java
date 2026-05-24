@@ -53,4 +53,23 @@ public final class BadgeUtil {
             default -> new String[]{"#f1f5f9", "#64748b"};
         };
     }
+     /**
+     * Crea un Label estilizado como badge según el estado recibido.
+     *
+     * @param estado texto del estado (ej: "DISPONIBLE", "CONFIRMADA", "CANCELADA")
+     * @return Label con los estilos de color y forma correspondientes
+     */
+    public static Label crearBadge(String estado) {
+        String[] colores = resolverColores(estado == null ? "" : estado.toUpperCase());
+
+        Label badge = new Label(estado);
+        badge.setStyle(
+            "-fx-background-color:" + colores[0] + ";" +
+            "-fx-text-fill:"        + colores[1] + ";" +
+            "-fx-background-radius:20px;" +
+            "-fx-padding:3px 10px;" +
+            "-fx-font-size:11px;" +
+            "-fx-font-weight:bold;");
+        return badge;
+    }
 }
