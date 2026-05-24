@@ -188,3 +188,32 @@ private static volatile boolean constraintVerificado = false;
             }
         });
     }
+@Override
+    public Optional<Habitacion> buscarPorId(int idHabitacion) {
+        Connection conn = obtener();
+        try (PreparedStatement stmt = conn.prepareStatement(SQL_BUSCAR_POR_ID)) {
+            stmt.setString(1, fmt("HAB", idHabitacion));
+            try (ResultSet rs = stmt.executeQuery()) {
+                return rs.next() ? Optional.of(mapearFila(rs)) : Optional.empty();
+            }
+        } catch (SQLException e) {
+            throw new ExcepcionBaseDatos("Error al buscar habitación por ID: " + e.getMessage(), e);
+        } finally {
+            liberar(conn);
+        }
+    }
+
+    @Override
+    public Optional<Habitacion> buscarPorNumero(String numero) {
+        Connection conn = obtener();
+        try (PreparedStatement stmt = conn.prepareStatement(SQL_BUSCAR_POR_NUMERO)) {
+            stmt.setString(1, numero);
+            try (ResultSet rs = stmt.executeQuery()) {
+                return rs.next() ? Optional.of(mapearFila(rs)) : Optional.empty();
+            }
+        } catch (SQLException e) {
+            throw new ExcepcionBaseDatos("Error al buscar habitación por número: " + e.getMessage(), e);
+        } finally {
+            liberar(conn);
+        }
+    }
