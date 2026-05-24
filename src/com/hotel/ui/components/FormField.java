@@ -68,4 +68,16 @@ public class FormField extends VBox {
             input.getStyleClass().add("field-error");
         }
     }
+    
+      /**
+     * Oculta el error y aplica el estilo de campo válido.
+     */
+    public void limpiarError() {
+        lblError.setVisible(false);
+        lblError.setManaged(false);
+        input.getStyleClass().removeAll("field-error");
+        if (!input.getStyleClass().contains("field-success")) {
+            input.getStyleClass().add("field-success");
+        }
+    }
 }
