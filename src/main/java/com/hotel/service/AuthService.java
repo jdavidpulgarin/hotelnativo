@@ -337,4 +337,51 @@ public class AuthService {
             return transcurridoMin >= MINUTOS_EXPIRACION_SESION;
         }
     }
+
+    // ── Cambio de contraseña obligatorio ──────────────────────────────────────
+    /**
+     * Cambia la contraseña del empleado identificado por el preAuthToken. Solo
+     * funciona con tokens generados durante el flujo de primer login.
+     *
+     * @param preAuthToken token temporal emitido cuando
+     * debeCambiarContrasena==true
+     * @param contrasenaActual la contraseña actual (para re-verificación)
+     * @param contrasenaNueva la nueva contraseña que debe cumplir la política
+     * de complejidad
+     */
+    public void cambiarPassword(String preAuthToken, String contrasenaActual, String contrasenaNueva)
+            throws AuthException, ExcepcionValidacion {
+
+        String emailNorm = obtenerEmailDePreAuthToken(preAuthToken);
+        if (emailNorm == null) {
+            throw new AuthException("TOKEN_INVALIDO",
+                    "La sesión de cambio de contraseña es inválida o ha expirado.");
+        }
+
+        String hashAlmacenado = credenciales.get(emailNorm);
+        if (!verificarContrasena(contrasenaActual, hashAlmacenado)) {
+            throw new AuthException("CREDENCIALES_INVALIDAS",
+                    "La contraseña actual es incorrecta.");
+        }
+
+        // Validar complejidad de la nueva contraseña
+        ValidadorEntradas.validarPassword(contrasenaNueva, "nueva contraseña");
+
+        // La nueva contraseña debe ser diferente a la actual
+        if (verificarContrasena(contrasenaNueva, hashAlmacenado)) {
+            throw new AuthException("PASSWORD_IGUAL",
+                    "La nueva contraseña debe ser diferente a la contraseña actual.");
+        }
+
+        credenciales.put(emailNorm, hashContrasena(contrasenaNueva));
+
+        Empleado empleado = empleadosPorEmail.get(emailNorm);
+        if (empleado != null) {
+            empleado.setDebeCambiarContrasena(false);
+        }
+
+        preAuthTokens.remove(preAuthToken);
+        System.out.println("[AUTH] Contraseña actualizada - ID: "
+                + (empleado != null ? empleado.getId() : "desconocido"));
+    }
 }
