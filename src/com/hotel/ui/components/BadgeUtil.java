@@ -72,4 +72,7 @@ public final class BadgeUtil {
             "-fx-font-weight:bold;");
         return badge;
     }
+   
+    
+    
 }
