@@ -194,3 +194,17 @@ private void migrarColumna(Connection conn, String columna, String definicion) {
             }
         });
     }
+@Override
+    public Optional<Empleado> buscarPorId(int idEmpleado) {
+        Connection conn = obtener();
+        try (PreparedStatement stmt = conn.prepareStatement(SQL_BUSCAR_POR_ID)) {
+            stmt.setString(1, fmt("EMP", idEmpleado));
+            try (ResultSet rs = stmt.executeQuery()) {
+                return rs.next() ? Optional.of(mapearFila(rs)) : Optional.empty();
+            }
+        } catch (SQLException e) {
+            throw new ExcepcionBaseDatos("Error al buscar empleado: " + e.getMessage(), e);
+        } finally {
+            liberar(conn);
+        }
+    }
