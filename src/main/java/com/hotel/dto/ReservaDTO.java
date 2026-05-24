@@ -24,5 +24,13 @@ public class ReservaDTO {
     public ReservaDTO() {
     }
 
+    public ReservaDTO(int idCliente, int idHabitacion, LocalDate fechaEntrada, LocalDate fechaSalida, int numPersonas) {
+        this.idCliente = idCliente;
+        this.idHabitacion = idHabitacion;
+        this.fechaEntrada = fechaEntrada;
+        this.fechaSalida = fechaSalida;
+        this.numPersonas = numPersonas;
+    }
+
     
 }
