@@ -87,37 +87,69 @@ public class ChatbotService {
                     "datos del cliente", "informacion del cliente", "buscar huesped",
                     "quien es el cliente"});
     }
-    
-        // ── Dependencias ──────────────────────────────────────────────────────────
-    private final IHabitacionDAO   habitacionDAO;
-    private final IReservaDAO      reservaDAO;
+
+    // ── Dependencias ──────────────────────────────────────────────────────────
+    private final IHabitacionDAO habitacionDAO;
+    private final IReservaDAO reservaDAO;
     private final IReservaBusqueda reservaBusqueda;
-    private final IClienteDAO      clienteDAO;
+    private final IClienteDAO clienteDAO;
 
     public ChatbotService(IHabitacionDAO habitacionDAO, IReservaDAO reservaDAO,
-                          IReservaBusqueda reservaBusqueda, IClienteDAO clienteDAO) {
-        this.habitacionDAO   = habitacionDAO;
-        this.reservaDAO      = reservaDAO;
+            IReservaBusqueda reservaBusqueda, IClienteDAO clienteDAO) {
+        this.habitacionDAO = habitacionDAO;
+        this.reservaDAO = reservaDAO;
         this.reservaBusqueda = reservaBusqueda;
-        this.clienteDAO      = clienteDAO;
+        this.clienteDAO = clienteDAO;
     }
-    
-        // ── API pública ───────────────────────────────────────────────────────────
 
+    // ── API pública ───────────────────────────────────────────────────────────
     public String obtenerMensajeBienvenida() {
         LocalDate hoy = LocalDate.now();
         String ej1 = hoy.plusDays(3).toString();
         String ej2 = hoy.plusDays(6).toString();
-        return "¡Hola! Soy tu asistente de recepción del Hotel Nativo 🏨\n" +
-               "Consulto la base de datos en tiempo real para darte información precisa.\n\n" +
-               "¿Qué necesitas saber?\n" +
-               "  🔑 'check-in hoy'           → llegadas del día\n" +
-               "  🔓 'checkout hoy'           → salidas del día\n" +
-               "  🛏 'estado habitaciones'    → mapa de ocupación actual\n" +
-               "  📅 'disponibilidad " + ej1 + " " + ej2 + "'\n" +
-               "  📋 'reserva #123'           → detalle de una reserva\n" +
-               "  📋 'reservas pendientes'    → todas las reservas activas\n" +
-               "  👤 'buscar cliente García'  → datos del cliente\n\n" +
-               "Escribe 'ayuda' para ver todos los comandos disponibles. 😊";
+        return "¡Hola! Soy tu asistente de recepción del Hotel Nativo 🏨\n"
+                + "Consulto la base de datos en tiempo real para darte información precisa.\n\n"
+                + "¿Qué necesitas saber?\n"
+                + "  🔑 'check-in hoy'           → llegadas del día\n"
+                + "  🔓 'checkout hoy'           → salidas del día\n"
+                + "  🛏 'estado habitaciones'    → mapa de ocupación actual\n"
+                + "  📅 'disponibilidad " + ej1 + " " + ej2 + "'\n"
+                + "  📋 'reserva #123'           → detalle de una reserva\n"
+                + "  📋 'reservas pendientes'    → todas las reservas activas\n"
+                + "  👤 'buscar cliente García'  → datos del cliente\n\n"
+                + "Escribe 'ayuda' para ver todos los comandos disponibles. 😊";
+    }
+
+    public String procesarMensaje(String mensajeUsuario) {
+        if (mensajeUsuario == null || mensajeUsuario.trim().isEmpty()) {
+            return "Por favor escribe tu consulta. Escribe 'ayuda' para ver las opciones.";
+        }
+        String normalizado = normalizar(mensajeUsuario);
+        String intencion = detectarIntencion(normalizado);
+
+        switch (intencion) {
+            case "SALUDO":
+                return obtenerMensajeBienvenida();
+            case "AYUDA":
+                return obtenerTextoAyuda();
+            case "CHECKINS_HOY":
+                return manejarCheckinsHoy();
+            case "CHECKOUTS_HOY":
+                return manejarCheckoutsHoy();
+            case "ESTADO_HABITACIONES":
+                return manejarEstadoHabitaciones();
+            case "DISPONIBILIDAD":
+                return manejarDisponibilidad(mensajeUsuario, normalizado);
+            case "ESTADO_RESERVA":
+                return manejarEstadoReserva(mensajeUsuario);
+            case "RESERVAS_HOY":
+                return manejarReservasHoy();
+            case "RESERVAS_ACTIVAS":
+                return manejarReservasActivas();
+            case "BUSCAR_CLIENTE":
+                return manejarBuscarCliente(mensajeUsuario);
+            default:
+                return respuestaNoEntendida();
+        }
     }
 }
