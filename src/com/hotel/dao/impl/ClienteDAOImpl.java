@@ -276,3 +276,20 @@ public class ClienteDAOImpl extends BaseDAO implements IClienteDAO, IClienteBusq
             return null;
         });
     }
+private Cliente mapearFila(ResultSet rs) throws SQLException {
+        Cliente c = new Cliente();
+        c.setDocumento(rs.getString("cedula_str"));
+        c.setId(rs.getInt("id"));
+        c.setNombre(rs.getString("nombre"));
+        c.setSegundoNombre(rs.getString("segundo_nombre"));
+        c.setApellido(rs.getString("apellido"));
+        c.setApellido2(rs.getString("apellido_2"));
+        c.setEmail(rs.getString("email"));
+        c.setTelefono(rs.getString("telefono"));
+        c.setNacionalidad(rs.getString("nacionalidad"));
+        c.setCiudadOrigen(rs.getString("ciudad_origen"));
+        java.sql.Date fechaReg = rs.getDate("fecha_registro");
+        c.setFechaRegistro(fechaReg != null ? fechaReg.toLocalDate() : java.time.LocalDate.now());
+        c.setEsVip(rs.getInt("es_vip") == 1);
+        return c;
+    }
