@@ -99,4 +99,14 @@ public final class ModalUtil {
         new ParallelTransition(fadeIn, scaleIn).play();
 
         return overlay;
+        
+        
+         /** Animación de salida (fade-out 150ms) y luego ejecuta {@code onCerrar}. */
+    static void cerrarModal(StackPane overlay, Runnable onCerrar) {
+        FadeTransition fadeOut = new FadeTransition(Duration.millis(150), overlay);
+        fadeOut.setFromValue(overlay.getOpacity());
+        fadeOut.setToValue(0);
+        fadeOut.setOnFinished(e -> onCerrar.run());
+        fadeOut.play();
+    }
 }
