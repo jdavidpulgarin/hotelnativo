@@ -80,4 +80,13 @@ public class FormField extends VBox {
             input.getStyleClass().add("field-success");
         }
     }
+      /** Devuelve el texto actual del campo de entrada. */
+    public String getValue() {
+        return input.getText();
+    }
+
+    /** Acceso directo al TextField para configurar listeners o bindings. */
+    public TextField getInput() {
+        return input;
+    }
 }
