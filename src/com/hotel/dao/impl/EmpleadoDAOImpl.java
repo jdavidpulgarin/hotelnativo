@@ -244,3 +244,41 @@ private void migrarColumna(Connection conn, String columna, String definicion) {
         }
         return lista;
     }
+@Override
+    public List<Empleado> buscarPorCargo(int idCargo) {
+        List<Empleado> lista = new ArrayList<>();
+        Connection conn = obtener();
+        try (PreparedStatement stmt = conn.prepareStatement(SQL_BUSCAR_POR_CARGO)) {
+            stmt.setString(1, fmt("CAR", idCargo));
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) lista.add(mapearFila(rs));
+            }
+        } catch (SQLException e) {
+            throw new ExcepcionBaseDatos("Error al buscar por cargo: " + e.getMessage(), e);
+        } finally {
+            liberar(conn);
+        }
+        return lista;
+    }
+
+    @Override
+    public List<Cargo> listarCargos() {
+        List<Cargo> lista = new ArrayList<>();
+        Connection conn = obtener();
+        try (PreparedStatement stmt = conn.prepareStatement(SQL_LISTAR_CARGOS);
+             ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                Cargo c = new Cargo();
+                c.setId(rs.getInt("id"));
+                c.setNombreCargo(rs.getString("nombre_cargo"));
+                c.setDescripcion(rs.getString("descripcion"));
+                c.setSalarioBase(rs.getDouble("salario_base"));
+                lista.add(c);
+            }
+        } catch (SQLException e) {
+            throw new ExcepcionBaseDatos("Error al listar cargos: " + e.getMessage(), e);
+        } finally {
+            liberar(conn);
+        }
+        return lista;
+    }
