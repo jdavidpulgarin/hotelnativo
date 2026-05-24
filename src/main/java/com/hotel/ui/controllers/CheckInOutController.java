@@ -68,4 +68,26 @@ public class CheckInOutController {
                             ? r.getHabitacion().getNumero() : "—");
         });
     }
+       
+          colEntrada.setCellValueFactory(c -> {
+            Reserva r = c.getValue().getReserva();
+            return new SimpleStringProperty(
+                    r != null && r.getFechaEntrada() != null
+                            ? r.getFechaEntrada().toString() : "—");
+        });
+        colSalida.setCellValueFactory(c -> {
+            Reserva r = c.getValue().getReserva();
+            return new SimpleStringProperty(
+                    r != null && r.getFechaSalida() != null
+                            ? r.getFechaSalida().toString() : "—");
+        });
+        colEmpleado.setCellValueFactory(c -> new SimpleStringProperty(
+                c.getValue().getEmpleadoResponsable() != null
+                        ? c.getValue().getEmpleadoResponsable().obtenerNombreCompleto() : "—"));
+        colHoraCheckin.setCellValueFactory(c -> new SimpleStringProperty(
+                c.getValue().getFechaHoraCheckin() != null
+                        ? c.getValue().getFechaHoraCheckin().format(FMT) : "—"));
+        colHoraCheckout.setCellValueFactory(c -> new SimpleStringProperty(
+                c.getValue().getFechaHoraCheckout() != null
+                        ? c.getValue().getFechaHoraCheckout().format(FMT) : "—"));
 }
