@@ -454,5 +454,46 @@ public class ChatbotService {
             return "⚠ Error al consultar la reserva #" + idReserva + ". Intenta de nuevo.";
         }
     }
+    
+        // ── Handler: movimiento del día ───────────────────────────────────────────
+
+    private String manejarReservasHoy() {
+        try {
+            LocalDate hoy = LocalDate.now();
+            List<Reserva> checkinsHoy  = reservaBusqueda.buscarPorRangoFechas(hoy, hoy);
+            List<Reserva> checkoutsHoy = reservaDAO.listarTodas().stream()
+                    .filter(r -> hoy.equals(r.getFechaSalida()))
+                    .collect(Collectors.toList());
+
+            StringBuilder sb = new StringBuilder();
+            sb.append("📆 Movimiento de hoy (").append(hoy).append("):\n\n");
+            sb.append("  🔑 Check-ins programados: ").append(checkinsHoy.size()).append("\n");
+            sb.append("  🔓 Check-outs programados: ").append(checkoutsHoy.size()).append("\n\n");
+
+            if (!checkinsHoy.isEmpty()) {
+                sb.append("Llegadas de hoy:\n");
+                checkinsHoy.forEach(r -> sb.append(String.format(
+                        "  • Res.#%-4d │ %-22s │ Hab.%-5s │ [%s]\n",
+                        r.getId(),
+                        r.getCliente() != null ? r.getCliente().obtenerNombreCompleto() : "—",
+                        r.getHabitacion() != null ? r.getHabitacion().getNumero() : "—",
+                        traducirEstado(r.getEstado()))));
+            }
+
+            if (!checkoutsHoy.isEmpty()) {
+                sb.append("\nSalidas de hoy:\n");
+                checkoutsHoy.forEach(r -> sb.append(String.format(
+                        "  • Res.#%-4d │ %-22s │ Hab.%-5s │ [%s]\n",
+                        r.getId(),
+                        r.getCliente() != null ? r.getCliente().obtenerNombreCompleto() : "—",
+                        r.getHabitacion() != null ? r.getHabitacion().getNumero() : "—",
+                        traducirEstado(r.getEstado()))));
+            }
+
+            return sb.toString().trim();
+        } catch (Exception e) {
+            return "⚠ No pude obtener el movimiento del día.";
+        }
+    }
 
 }
