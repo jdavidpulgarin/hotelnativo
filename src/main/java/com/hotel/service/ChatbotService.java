@@ -617,4 +617,71 @@ public class ChatbotService {
                 + "  • 'buscar cliente García'\n\n"
                 + "Escribe 'ayuda' para ver todos los comandos.";
     }
+
+    // ── Utilidades ────────────────────────────────────────────────────────────
+    private String traducirEstado(Reserva.EstadoReserva estado) {
+        switch (estado) {
+            case PENDIENTE:
+                return "Pendiente";
+            case CONFIRMADA:
+                return "Confirmada";
+            case EN_PROCESO:
+                return "En proceso";
+            case COMPLETADA:
+                return "Completada";
+            case CANCELADA:
+                return "Cancelada";
+            default:
+                return estado.name();
+        }
+    }
+
+    private List<LocalDate> extraerFechas(String texto) {
+        List<LocalDate> fechas = new ArrayList<>();
+        Matcher mIso = PATRON_FECHA_ISO.matcher(texto);
+        while (mIso.find()) {
+            try {
+                fechas.add(LocalDate.parse(mIso.group()));
+            } catch (DateTimeParseException ignored) {
+            }
+        }
+        if (fechas.size() < 2) {
+            Matcher mDmy = PATRON_FECHA_DMY.matcher(texto);
+            while (mDmy.find()) {
+                try {
+                    String[] p = mDmy.group().split("/");
+                    fechas.add(LocalDate.of(Integer.parseInt(p[2]), Integer.parseInt(p[1]), Integer.parseInt(p[0])));
+                } catch (Exception ignored) {
+                }
+            }
+        }
+        return fechas;
+    }
+
+    private int contarFechas(String texto) {
+        int n = 0;
+        Matcher m = PATRON_FECHA_ISO.matcher(texto);
+        while (m.find()) {
+            n++;
+        }
+        if (n < 2) {
+            m = PATRON_FECHA_DMY.matcher(texto);
+            while (m.find()) {
+                n++;
+            }
+        }
+        return n;
+    }
+
+    private int extraerNumeroPersonas(String texto, int porDefecto) {
+        Matcher m = Pattern.compile("(\\d+)\\s*(?:persona|personas|huesped|huespedes|adulto|adultos)")
+                .matcher(texto);
+        if (m.find()) {
+            try {
+                return Integer.parseInt(m.group(1));
+            } catch (NumberFormatException ignored) {
+            }
+        }
+        return porDefecto;
+    }
 }
