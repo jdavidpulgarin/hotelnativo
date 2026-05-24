@@ -111,4 +111,15 @@ public class ClienteDTO {
         this.ciudadOrigen = v;
     }
 
+    /**
+     * La cédula es el id_cliente en la base de datos.
+     */
+    public String getDocumento() {
+        return cedula;
+    }
+
+    public String getSubtipoDocumento() {
+        return null;
+    }
+
 }
