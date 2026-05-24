@@ -29,4 +29,30 @@ import javafx.util.Duration;
 public final class ModalUtil {
 
     private ModalUtil() {}
+    
+    // ── Header ────────────────────────────────────────────────────────────
+        Label lblTitulo = new Label(titulo);
+        lblTitulo.setStyle(
+            "-fx-font-size:16px; -fx-font-weight:bold; -fx-text-fill:#1e293b;");
+
+        Button btnCerrar = new Button("✕");
+        btnCerrar.setStyle(
+            "-fx-background-color:transparent; -fx-text-fill:#64748b;" +
+            "-fx-font-size:16px; -fx-cursor:hand; -fx-padding:2px 6px;");
+        btnCerrar.setOnMouseEntered(e ->
+            btnCerrar.setStyle(
+                "-fx-background-color:#fee2e2; -fx-text-fill:#b91c1c;" +
+                "-fx-font-size:16px; -fx-cursor:hand; -fx-padding:2px 6px;" +
+                "-fx-background-radius:6px;"));
+        btnCerrar.setOnMouseExited(e ->
+            btnCerrar.setStyle(
+                "-fx-background-color:transparent; -fx-text-fill:#64748b;" +
+                "-fx-font-size:16px; -fx-cursor:hand; -fx-padding:2px 6px;"));
+
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+
+        HBox header = new HBox(lblTitulo, spacer, btnCerrar);
+        header.setAlignment(Pos.CENTER_LEFT);
+        header.setPadding(new Insets(0, 0, 12, 0));
 }
