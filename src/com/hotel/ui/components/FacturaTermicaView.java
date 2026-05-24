@@ -221,4 +221,94 @@ public class FacturaTermicaView {
         );
         return v;
     }
+    
+    
+       private VBox construirSeccionHuesped() {
+        VBox v = new VBox(2);
+        v.setPadding(new Insets(5, 0, 5, 0));
+
+        Label titulo = labelMono("DATOS DEL HUÉSPED", FS_SM, true);
+        titulo.setStyle(titulo.getStyle() + " -fx-underline:true;");
+        v.getChildren().add(titulo);
+        v.getChildren().add(espacio(2));
+
+        Cliente c = factura.getCliente();
+        Reserva r = factura.getReserva();
+
+        if (c != null) {
+            String nombre = c.obtenerNombreCompleto();
+            if (c.isEsVip()) nombre += "   ★ VIP";
+            v.getChildren().add(filaKV("Nombre:", nombre));
+            if (c.getDocumento() != null)
+                v.getChildren().add(filaKV("Documento:", c.getDocumento()));
+            if (c.getNacionalidad() != null && !c.getNacionalidad().isBlank())
+                v.getChildren().add(filaKV("Nac.:", c.getNacionalidad()));
+        }
+        if (r != null) {
+            v.getChildren().add(filaKV("Reserva:", "#" + r.getId()));
+            if (r.getHabitacion() != null) {
+                String hab = r.getHabitacion().getNumero();
+                if (r.getHabitacion().getTipoHabitacion() != null)
+                    hab += " - " + r.getHabitacion().getTipoHabitacion().obtenerEtiquetaTipo();
+                v.getChildren().add(filaKV("Habitación:", hab));
+            }
+            if (r.getFechaEntrada() != null)
+                v.getChildren().add(filaKV("Check-in:", r.getFechaEntrada().format(FMT_DIA)));
+            if (r.getFechaSalida() != null)
+                v.getChildren().add(filaKV("Check-out:", r.getFechaSalida().format(FMT_DIA)));
+            long noches = calcularNoches(r);
+            if (noches > 0)
+                v.getChildren().add(filaKV("Noches:", noches + " noche(s)"));
+            v.getChildren().add(filaKV("Personas:", r.getNumPersonas() + " huésped(es)"));
+        }
+        return v;
+    }
+
+    private VBox construirTablaItems() {
+        VBox v = new VBox(0);
+        v.setPadding(new Insets(5, 0, 0, 0));
+
+        // Encabezado de columnas
+        v.getChildren().add(filaTabla("CONCEPTO", "CANT", "VALOR", true));
+        v.getChildren().add(sep('─'));
+
+        Reserva r     = factura.getReserva();
+        long noches   = r != null ? calcularNoches(r) : 1;
+        if (noches <= 0) noches = 1;
+
+        // Precio base por noche (antes de descuento VIP)
+        double precioBaseTotal = (r != null && r.getPrecioTotal() > 0)
+                ? r.getPrecioTotal() : factura.getSubtotal();
+        double precioPorNoche  = precioBaseTotal / noches;
+
+        // ── Hospedaje ────────────────────────────────────────────────────────
+        String tipoHab = "Hospedaje";
+        if (r != null && r.getHabitacion() != null && r.getHabitacion().getTipoHabitacion() != null)
+            tipoHab = acortar(r.getHabitacion().getTipoHabitacion().obtenerEtiquetaTipo(), 18);
+
+        v.getChildren().add(filaTabla(tipoHab, String.valueOf(noches),
+                fmt(precioBaseTotal), false));
+
+        // Sub-descripción de noches
+        Label subDesc = labelMono(
+                "  " + noches + " noche(s) x " + fmt(precioPorNoche), FS_SM, false);
+        subDesc.setStyle(subDesc.getStyle() + " -fx-text-fill:#555555;");
+        v.getChildren().add(subDesc);
+
+        // ── Descuento VIP ────────────────────────────────────────────────────
+        Cliente c = factura.getCliente();
+        boolean esVip = c != null && c.isEsVip();
+        double descuentoVip = 0;
+        if (esVip && r != null && r.getPrecioTotal() > 0) {
+            descuentoVip = r.getPrecioTotal() - factura.getSubtotal();
+            if (descuentoVip > 0.5) {
+                v.getChildren().add(espacio(2));
+                v.getChildren().add(filaTabla("Desc. VIP (-15%)", "1",
+                        "-" + fmt(descuentoVip), false));
+            }
+        }
+
+        v.getChildren().add(espacio(2));
+        return v;
+    }
 }
