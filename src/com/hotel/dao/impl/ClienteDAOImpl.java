@@ -100,3 +100,34 @@ public class ClienteDAOImpl extends BaseDAO implements IClienteDAO, IClienteBusq
             return cliente;
         });
     }
+@Override
+    public boolean actualizar(Cliente cliente) {
+        String cedula = cliente.getDocumento() != null
+                ? cliente.getDocumento() : String.valueOf(cliente.getId());
+        return enTransaccion(conn -> {
+            try (PreparedStatement stmt = conn.prepareStatement(SQL_ACTUALIZAR)) {
+                stmt.setString(1, cliente.getNombre());
+                stmt.setString(2, cliente.getSegundoNombre());
+                stmt.setString(3, cliente.getApellido());
+                stmt.setString(4, cliente.getApellido2());
+                stmt.setString(5, cliente.getEmail());
+                stmt.setString(6, cliente.getTelefono());
+                stmt.setString(7, cliente.getNacionalidad());
+                stmt.setInt(8, cliente.isEsVip() ? 1 : 0);
+                stmt.setString(9, cliente.getCiudadOrigen());
+                stmt.setString(10, cedula);
+                return stmt.executeUpdate() > 0;
+            }
+        });
+    }
+
+    @Override
+    public boolean eliminar(int idCliente) {
+        return enTransaccion(conn -> {
+            try (PreparedStatement stmt = conn.prepareStatement(SQL_ELIMINAR)) {
+                stmt.setString(1, String.valueOf(idCliente));
+                stmt.setString(2, fmt("CLI", idCliente));
+                return stmt.executeUpdate() > 0;
+            }
+        });
+    }
