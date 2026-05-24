@@ -71,7 +71,7 @@ public class CheckInOutDAOImpl extends BaseDAO implements ICheckInOutDAO {
             "AND r.fecha_salida <= ? AND r.estado = 'EN_PROCESO'";
 
     public CheckInOutDAOImpl() { super(); }
-}
+
 @Override
     public CheckInOut insertar(CheckInOut checkInOut) {
         return enTransaccion(conn -> {
@@ -253,3 +253,4 @@ private CheckInOut mapearFila(ResultSet rs) throws SQLException {
         c.setObservaciones(rs.getString("observaciones") != null ? rs.getString("observaciones") : "");
         return c;
     }
+}
