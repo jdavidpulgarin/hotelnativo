@@ -4,20 +4,16 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
                              http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-
     <groupId>com.hotel</groupId>
     <artifactId>hotelnativo</artifactId>
     <version>1.0.0</version>
     <packaging>jar</packaging>
-
     <properties>
         <maven.compiler.release>21</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <javafx.version>21.0.1</javafx.version>
     </properties>
-
     <dependencies>
-
         <!-- JavaFX -->
         <dependency>
             <groupId>org.openjfx</groupId>
@@ -34,7 +30,6 @@
             <artifactId>javafx-graphics</artifactId>
             <version>${javafx.version}</version>
         </dependency>
-
         <!-- Oracle JDBC (coloca ojdbc11.jar en la carpeta lib/ del proyecto) -->
         <dependency>
             <groupId>com.oracle.database.jdbc</groupId>
@@ -43,35 +38,30 @@
             <scope>system</scope>
             <systemPath>${project.basedir}/lib/ojdbc11.jar</systemPath>
         </dependency>
-
         <!-- BCrypt para contraseñas seguras -->
         <dependency>
             <groupId>org.mindrot</groupId>
             <artifactId>jbcrypt</artifactId>
             <version>0.4</version>
         </dependency>
-
         <!-- Correo electrónico SMTP (compatible con Java 21) -->
         <dependency>
             <groupId>org.eclipse.angus</groupId>
             <artifactId>angus-mail</artifactId>
             <version>2.0.3</version>
         </dependency>
-
         <!-- Generación de PDFs -->
         <dependency>
             <groupId>com.github.librepdf</groupId>
             <artifactId>openpdf</artifactId>
             <version>2.0.2</version>
         </dependency>
-
     </dependencies>
-
     <build>
-        <sourceDirectory>src</sourceDirectory>
+        <sourceDirectory>src/main/java</sourceDirectory>
         <resources>
             <resource>
-                <directory>src</directory>
+                <directory>src/main/java</directory>
                 <includes>
                     <include>**/*.fxml</include>
                     <include>**/*.css</include>
