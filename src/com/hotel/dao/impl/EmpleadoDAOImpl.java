@@ -73,7 +73,7 @@ public class EmpleadoDAOImpl extends BaseDAO implements IEmpleadoDAO {
             "UPDATE EMPLEADO SET debe_cambiar_password=? WHERE id_empleado=?";
 
     public EmpleadoDAOImpl() { super(); }
-}
+
 private static volatile boolean schemaVerificado = false;
 
     private void verificarYMigrarSchema() {
@@ -314,3 +314,4 @@ private Empleado mapearFila(ResultSet rs) throws SQLException {
         e.setFechaContratacion(rs.getDate("fecha_contratacion").toLocalDate());
         return e;
     }
+}
