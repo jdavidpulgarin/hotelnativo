@@ -271,3 +271,21 @@ private static volatile boolean constraintVerificado = false;
         }
         return lista;
     }
+private Habitacion mapearFila(ResultSet rs) throws SQLException {
+        Piso piso = new Piso();
+        piso.setId(rs.getInt("id_piso"));
+        piso.setNumeroPiso(rs.getInt("numero_piso"));
+        piso.setDescripcion(rs.getString("p_desc"));
+
+        TipoHabitacion tipo = resolverTipo(rs);
+
+        Habitacion h = new Habitacion();
+        h.setId(rs.getInt("id"));
+        h.setNumero(rs.getString("numero"));
+        h.setTipoHabitacion(tipo);
+        h.setPiso(piso);
+        h.setEstado(Habitacion.EstadoHabitacion.valueOf(rs.getString("estado")));
+        h.setPrecioBase(rs.getDouble("precio_base"));
+        h.setNumCamas(rs.getInt("num_camas"));
+        return h;
+    }
