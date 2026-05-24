@@ -181,3 +181,32 @@ public class ClienteDAOImpl extends BaseDAO implements IClienteDAO, IClienteBusq
         }
         return lista;
     }
+@Override
+    public Optional<Cliente> buscarPorDocumento(String documento) {
+        Connection conn = obtener();
+        try (PreparedStatement stmt = conn.prepareStatement(SQL_BUSCAR_POR_DOCUMENTO)) {
+            stmt.setString(1, documento);
+            try (ResultSet rs = stmt.executeQuery()) {
+                return rs.next() ? Optional.of(mapearFila(rs)) : Optional.empty();
+            }
+        } catch (SQLException e) {
+            throw new ExcepcionBaseDatos("Error al buscar por cédula: " + e.getMessage(), e);
+        } finally {
+            liberar(conn);
+        }
+    }
+
+    @Override
+    public Optional<Cliente> buscarPorEmail(String email) {
+        Connection conn = obtener();
+        try (PreparedStatement stmt = conn.prepareStatement(SQL_BUSCAR_EMAIL)) {
+            stmt.setString(1, email);
+            try (ResultSet rs = stmt.executeQuery()) {
+                return rs.next() ? Optional.of(mapearFila(rs)) : Optional.empty();
+            }
+        } catch (SQLException e) {
+            throw new ExcepcionBaseDatos("Error al buscar por email: " + e.getMessage(), e);
+        } finally {
+            liberar(conn);
+        }
+    }
