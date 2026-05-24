@@ -55,4 +55,31 @@ public final class AvatarUtil {
         int indice = Math.abs(nombre.hashCode()) % COLORES.length;
         return COLORES[indice];
     }
+        /**
+     * Crea un avatar circular con las iniciales del nombre completo.
+     *
+     * @param nombreCompleto nombre y apellido del usuario (ej: "Pedro Rodriguez")
+     * @param tamano         diámetro del círculo en píxeles (ej: 36.0)
+     * @return               StackPane cuadrado de lado {@code tamano} listo para insertar
+     */
+    public static StackPane crear(String nombreCompleto, double tamano) {
+        String iniciales = extraerIniciales(nombreCompleto);
+        String colorHex  = elegirColor(nombreCompleto);
+
+        Circle circulo = new Circle(tamano / 2);
+        circulo.setFill(Color.web(colorHex));
+
+        Label texto = new Label(iniciales);
+        // El 0.40 lo saqué probando, me pareció que quedaba bien proporcionado
+        texto.setStyle(
+            "-fx-text-fill:white;" +
+            "-fx-font-weight:bold;" +
+            "-fx-font-size:" + (tamano * 0.40) + "px;");
+
+        StackPane pane = new StackPane(circulo, texto);
+        pane.setMinSize(tamano, tamano);
+        pane.setMaxSize(tamano, tamano);
+        pane.setPrefSize(tamano, tamano);
+        return pane;
+    }
 }
