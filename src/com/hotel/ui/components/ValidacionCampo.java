@@ -185,4 +185,21 @@ public final class ValidacionCampo {
             return change;
         }));
     }
+       /**
+     * Resetea el campo a estado normal (sin error ni éxito).
+     */
+    public static void resetear(TextField campo, Label labelError) {
+        campo.setStyle(ESTILO_NORMAL);
+        ocultar(labelError);
+    }
+
+    /**
+     * Verifica si un campo tiene error visible actualmente.
+     */
+    public static boolean tieneError(Label labelError) {
+        return labelError.isVisible();
+    }
+
+    private static void mostrar(Label l) { l.setVisible(true); l.setManaged(true); }
+    private static void ocultar(Label l) { l.setVisible(false); l.setManaged(false); }
 }
