@@ -264,4 +264,30 @@ public class DashboardController {
     private void scrollAlFinal() {
         Platform.runLater(() -> mensajesScroll.setVvalue(1.0));
     }
+    
+     // ── Panel Dashboard ───────────────────────────────────────────────────────
+
+    private void cargarPanelDashboard() {
+        ScrollPane scroll = new ScrollPane();
+        scroll.setFitToWidth(true);
+        scroll.getStyleClass().add("content-scroll");
+        scroll.setStyle("-fx-background-color: transparent; -fx-border-color: transparent;");
+
+        VBox panel = new VBox(26);
+        panel.setPadding(new Insets(28, 28, 40, 28));
+        panel.setStyle("-fx-background-color: #f0f3fa;");
+
+        HBox kpiRow = crearFilaKPI();
+        VBox chartsContainer = new VBox(20);
+        VBox recentTable     = crearTablaRecientes();
+
+        panel.getChildren().addAll(
+                crearSaludoHeader(), kpiRow,
+                chartsContainer, recentTable);
+        scroll.setContent(panel);
+        setContenido(scroll);
+        
+        
+    }
 }
+    
