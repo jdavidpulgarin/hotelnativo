@@ -286,8 +286,7 @@ public class ClientesController {
                 dialog.getDialogPane().getButtonTypes().get(0));
         btnGuardar.setStyle("-fx-background-color:#1a3a5c; -fx-text-fill:white; " +
                             "-fx-font-weight:bold; -fx-background-radius:8px; -fx-padding:8px 18px;");
-
-    btnGuardar.addEventFilter(javafx.event.ActionEvent.ACTION, event -> {
+btnGuardar.addEventFilter(javafx.event.ActionEvent.ACTION, event -> {
             if (ValidacionCampo.tieneError(errCedula)
                     || ValidacionCampo.tieneError(errNombre) || ValidacionCampo.tieneError(errApellido)
                     || ValidacionCampo.tieneError(errEmail) || ValidacionCampo.tieneError(errTelefono)) {
@@ -351,8 +350,7 @@ public class ClientesController {
         });
         dialog.setResultConverter(btn -> btn);
         dialog.showAndWait();
-    }     
-        
-    
     }
+    
+    
 }
