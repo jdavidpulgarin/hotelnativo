@@ -22,20 +22,23 @@ import java.util.Optional;
 /**
  * Lógica de negocio para gestión de empleados del hotel.
  *
- * NUEVO: Esta clase faltaba completamente en el proyecto.
- * Sin ella, EmpleadoDAOImpl no tenía capa de servicio que la usara,
- * y la vista de empleados (EmpleadoView) no tenía a qué conectarse.
+ * NUEVO: Esta clase faltaba completamente en el proyecto. Sin ella,
+ * EmpleadoDAOImpl no tenía capa de servicio que la usara, y la vista de
+ * empleados (EmpleadoView) no tenía a qué conectarse.
  *
- * Responsabilidades:
- *  - CRUD completo de empleados con validaciones.
- *  - Integración con AuthService para registrar credenciales al crear.
- *  - Búsqueda por cargo.
+ * Responsabilidades: - CRUD completo de empleados con validaciones. -
+ * Integración con AuthService para registrar credenciales al crear. - Búsqueda
+ * por cargo.
  *
- * GRASP: Alta Cohesión – solo maneja operaciones de empleados.
- * GRASP: Controlador – coordina los casos de uso de empleados.
- * SOLID: S – responsabilidad única: lógica de negocio de empleados.
- * SOLID: D – depende de IEmpleadoDAO, no de la implementación concreta.
+ * GRASP: Alta Cohesión – solo maneja operaciones de empleados. GRASP:
+ * Controlador – coordina los casos de uso de empleados. SOLID: S –
+ * responsabilidad única: lógica de negocio de empleados. SOLID: D – depende de
+ * IEmpleadoDAO, no de la implementación concreta.
  */
 public class EmpleadoService {
 
+    private final IEmpleadoDAO empleadoDAO;
+    private final AuthService authService;
+    
+    
 }
