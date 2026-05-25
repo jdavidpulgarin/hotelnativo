@@ -1029,5 +1029,48 @@ public class DashboardController {
         // Animaciones de entrada escalonadas para cada fila
         animarEntradaFila(fila1, 100);
         animarEntradaFila(fila2, 260);
+        // ── Tabla recientes ───────────────────────────────────────────────────────
+
+    private VBox crearTablaRecientes() {
+        VBox card = new VBox(12);
+        card.setPadding(new Insets(20));
+        card.setStyle("-fx-background-color:white; -fx-background-radius:14px;" +
+                      "-fx-effect:dropshadow(gaussian,rgba(0,0,0,0.07),12,0,0,3);");
+        HBox header = new HBox();
+        Label title = new Label("Reservas recientes");
+        title.setStyle("-fx-font-size:15px; -fx-font-weight:bold; -fx-text-fill:#1e293b;");
+        header.getChildren().add(title);
+        header.setAlignment(Pos.CENTER_LEFT);
+        Label placeholder = new Label("Cargando reservas...");
+        placeholder.setStyle("-fx-text-fill:#94a3b8; -fx-font-size:13px;");
+        card.getChildren().addAll(header, new Separator(), placeholder);
+        return card;
     }
- }
+
+    private void actualizarTablaRecientes(VBox card, List<Reserva> reservas) {
+        card.getChildren().removeIf(n -> !(n instanceof HBox) && !(n instanceof Separator));
+
+        TableView<Reserva> tabla = new TableView<>();
+        tabla.setStyle("-fx-background-color:transparent; -fx-border-color:transparent;");
+        tabla.setPrefHeight(240);
+        tabla.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
+
+        tabla.getColumns().addAll(List.of(
+            col("ID",        r -> "#" + r.getId(),                                                           50),
+            col("Cliente",   r -> r.getCliente()    != null ? r.getCliente().obtenerNombreCompleto() : "—", 190),
+            col("Habitación",r -> r.getHabitacion() != null ? r.getHabitacion().getNumero()           : "—",  90),
+            col("Entrada",   r -> r.getFechaEntrada()!= null ? r.getFechaEntrada().toString()          : "—", 110),
+            col("Total",     r -> String.format("$%,.0f", r.getPrecioTotal()),                               110),
+            col("Estado",    r -> r.getEstado().name(),                                                      110)
+        ));
+
+        List<Reserva> ultimas = reservas.stream()
+                .sorted((a, b) -> Integer.compare(b.getId(), a.getId()))
+                .limit(8)
+                .collect(Collectors.toList());
+        tabla.getItems().addAll(ultimas);
+
+        card.getChildren().removeIf(n -> n instanceof Label || n instanceof TableView);
+        card.getChildren().add(tabla);
+    }
+    }
