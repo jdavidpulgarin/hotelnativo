@@ -38,4 +38,16 @@ public class EmailService {
         public EmailService() {
         cargarConfiguracion();
     }
+        
+        private void cargarConfiguracion() {
+        try (InputStream is = getClass().getResourceAsStream("/com/hotel/email.properties")) {
+            if (is == null) {
+                System.err.println("[EMAIL] email.properties no encontrado en classpath.");
+                return;
+            }
+            Properties cfg = new Properties();
+            cfg.load(is);
+
+            fromAddress = cfg.getProperty("mail.from", "").trim();
+            password    = cfg.getProperty("mail.password", "").trim();
 }
