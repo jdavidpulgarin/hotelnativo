@@ -91,6 +91,54 @@ public class CheckInOutService {
         }
     }
 
+    /**
+     * Registra el check-out de una reserva activa.
+     *
+     * Carga la Reserva COMPLETA desde reservaDAO para evitar NPE al acceder a
+     * reserva.getHabitacion() (el CheckInOut del DAO solo tiene el ID).
+     */
+    public CheckInOut realizarCheckout(int idReserva, String observaciones)
+            throws ExcepcionNegocio {
+        ValidadorEntradas.validarIdPositivo(idReserva, "reserva");
+
+        CheckInOut checkinActivo = obtenerCheckinActivoOLanzarError(idReserva);
+        Reserva reserva = obtenerReservaOLanzarError(idReserva);
+
+        Habitacion habitacion = reserva.getHabitacion();
+        if (habitacion == null) {
+            throw new ExcepcionNegocio("HABITACION_NO_ENCONTRADA",
+                    "La reserva #" + idReserva + " no tiene habitación asociada.");
+        }
+
+        checkinActivo.setFechaHoraCheckout(LocalDateTime.now());
+        checkinActivo.setObservaciones(observaciones);
+        checkInOutDAO.actualizar(checkinActivo);
+
+        try {
+            habitacion.liberar();
+            habitacionDAO.actualizarEstado(habitacion.getId(),
+                    Habitacion.EstadoHabitacion.DISPONIBLE.name());
+
+            reserva.completar();
+            reservaDAO.actualizar(reserva);
+        } catch (Exception e) {
+            // Compensar: revertir timestamp de checkout
+            checkinActivo.setFechaHoraCheckout(null);
+            try {
+                checkInOutDAO.actualizar(checkinActivo);
+            } catch (Exception ex) {
+                System.err.println("[CHECKOUT] Error al revertir checkin: " + ex.getMessage());
+            }
+            if (e instanceof ExcepcionNegocio) {
+                throw (ExcepcionNegocio) e;
+            }
+            throw new ExcepcionNegocio("ERROR_CHECKOUT",
+                    "Error al registrar check-out: " + e.getMessage());
+        }
+
+        return checkinActivo;
+    }
+
     // ── Métodos privados de apoyo ─────────────────────────────────────────────
     private Reserva obtenerReservaConfirmadaOLanzarError(int idReserva) throws ExcepcionNegocio {
         Reserva reserva = obtenerReservaOLanzarError(idReserva);
