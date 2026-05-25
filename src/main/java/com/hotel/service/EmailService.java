@@ -202,6 +202,16 @@ public class EmailService {
             return false;
         }
     }
-    
-    
+
+    // ── Constructores de cuerpo ───────────────────────────────────────────────
+    private String construirCuerpoConfirmacion(Cliente cliente, Reserva reserva) {
+        return "Estimado " + cliente.obtenerNombreCompleto() + ",\n\n"
+                + "Su reserva #" + reserva.getId() + " fue confirmada.\n"
+                + "Habitación: " + (reserva.getHabitacion() != null ? reserva.getHabitacion().getNumero() : "—") + "\n"
+                + "Entrada: " + reserva.getFechaEntrada() + "\n"
+                + "Salida: " + reserva.getFechaSalida() + "\n"
+                + "Total: $" + String.format("%,.0f", reserva.getPrecioTotal()) + "\n\n"
+                + "Gracias por elegir Hotel Nativo.\n"
+                + "Para consultas: recepcion@hotelnativo.com";
+    }
 }
