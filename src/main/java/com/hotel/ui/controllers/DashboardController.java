@@ -363,7 +363,46 @@ public class DashboardController {
         badgeRow.getChildren().addAll(fechaBadge, turnoBadge);
         box.getChildren().addAll(saludo, sub, badgeRow);
         return box;
-    } 
+    }
+       // ── KPI Cards ─────────────────────────────────────────────────────────────
+
+    private HBox crearFilaKPI() {
+        HBox row = new HBox(16);
+        for (int i = 0; i < 6; i++) {
+            VBox card = new VBox(10);
+            card.setPadding(new Insets(20));
+            card.setStyle("-fx-background-color:white; -fx-background-radius:14px;" +
+                          "-fx-effect:dropshadow(gaussian,rgba(0,0,0,0.07),12,0,0,3);");
+            Label val = new Label("—");
+            val.setStyle("-fx-font-size:28px; -fx-font-weight:bold; -fx-text-fill:#e2e8f0;");
+            Label lbl = new Label("Cargando...");
+            lbl.setStyle("-fx-font-size:12px; -fx-text-fill:#e2e8f0;");
+            card.getChildren().addAll(val, lbl);
+            HBox.setHgrow(card, Priority.ALWAYS);
+            row.getChildren().add(card);
+        }
+        return row;
+    }
+
+    private VBox construirKpiCard(String value, String label, String icon,
+            String gradientBg, String shadowColor,
+            Runnable onDoubleClick, int delayMs) {
+
+        VBox card = new VBox(0);
+        card.setPadding(new Insets(22, 22, 18, 22));
+
+        String baseStyle =
+                "-fx-background-color: " + gradientBg + "; " +
+                "-fx-background-radius: 18px;" +
+                "-fx-effect: dropshadow(gaussian," + shadowColor + ",22,0.10,0,6);" +
+                "-fx-cursor: hand;";
+        String hoverStyle =
+                "-fx-background-color: " + gradientBg + "; " +
+                "-fx-background-radius: 18px;" +
+                "-fx-effect: dropshadow(gaussian," + shadowColor + ",36,0.28,0,10);" +
+                "-fx-cursor: hand;";
+
+        card.setStyle(baseStyle);
     
-    
+    }
  }
