@@ -142,4 +142,22 @@ public class EmailService {
                 "Mantenimiento completado – Hab. " + mantenimiento.getHabitacion().getNumero(),
                 cuerpo, null);
     }
-}
+
+    // ── Implementación SMTP ───────────────────────────────────────────────────
+    /**
+     * Envía un email SMTP con cuerpo de texto y, opcionalmente, un PDF adjunto.
+     * Si el servicio no está configurado, imprime en consola (modo prueba).
+     *
+     * @param pdfPath ruta del PDF a adjuntar, null para no adjuntar nada
+     * @return true si se envió realmente, false en modo simulado o error
+     */
+    private boolean enviarEmail(String destinatario, String asunto, String cuerpo, String pdfPath) {
+        System.out.println("[EMAIL] Para:   " + destinatario);
+        System.out.println("[EMAIL] Asunto: " + asunto);
+
+        if (!configurado) {
+            System.out.println("[EMAIL] (simulado — configura email.properties para envío real)");
+            System.out.println("[EMAIL] ─────────────────────────────────────────");
+            return false;
+        }
+    }
