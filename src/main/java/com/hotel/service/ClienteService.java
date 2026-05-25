@@ -156,21 +156,6 @@ public class ClienteService {
         }
     }
 
-    private Cliente obtenerClienteOLanzarError(int idCliente) throws ExcepcionNegocio {
-        return clienteDAO.buscarPorId(idCliente)
-                .orElseThrow(() -> new ExcepcionNegocio("CLIENTE_NOT_FOUND",
-                "No se encontró el cliente con ID: " + idCliente));
-    }
-
-    private Cliente construirClienteDesdeDTO(ClienteDTO dto) {
-        Cliente c = new Cliente(0, dto.getNombre(), dto.getApellido(), dto.getEmail(),
-                dto.getTelefono(), dto.getCedula(), dto.getNacionalidad(), LocalDate.now());
-        c.setDocumento(dto.getCedula());
-        c.setSegundoNombre(dto.getSegundoNombre());
-        c.setApellido2(dto.getApellido2());
-        c.setCiudadOrigen(dto.getCiudadOrigen());
-        return c;
-    }
 
     private Cliente obtenerClienteOLanzarError(int idCliente) throws ExcepcionNegocio {
         return clienteDAO.buscarPorId(idCliente)
