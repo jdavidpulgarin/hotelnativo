@@ -85,4 +85,14 @@ public class EmailService {
                 + ", su reserva #" + reserva.getId() + " fue cancelada exitosamente.",
                 null);
     }
+
+    // ── Notificaciones de Factura ─────────────────────────────────────────────
+    public void notificarFacturaGenerada(Cliente cliente, int idFactura, double total) {
+        enviarEmail(cliente.getEmail(),
+                "Factura #" + idFactura + " generada - Hotel Nativo",
+                "Estimado " + cliente.obtenerNombreCompleto()
+                + ", su factura #" + idFactura
+                + " por $" + String.format("%,.0f", total) + " está lista.",
+                null);
+    }
 }
