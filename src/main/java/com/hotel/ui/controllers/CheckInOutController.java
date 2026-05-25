@@ -137,4 +137,21 @@ public class CheckInOutController {
             }
         }).start();
     }
+    
+      @FXML
+    public void filtrar() {
+        String texto = searchField.getText().toLowerCase().trim();
+        filtradas.setPredicate(ci -> {
+            if (texto.isEmpty()) return true;
+            Reserva r = ci.getReserva();
+            return String.valueOf(ci.getId()).contains(texto)
+                || (r != null && r.getCliente() != null
+                        && r.getCliente().obtenerNombreCompleto().toLowerCase().contains(texto))
+                || (r != null && r.getHabitacion() != null
+                        && r.getHabitacion().getNumero().toLowerCase().contains(texto))
+                || (ci.getEmpleadoResponsable() != null
+                        && ci.getEmpleadoResponsable().obtenerNombreCompleto()
+                                .toLowerCase().contains(texto));
+        });
+    }
 }
