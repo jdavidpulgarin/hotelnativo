@@ -157,6 +157,17 @@ public class EmpleadoService {
         empleadoDAO.actualizar(empleado);
         return empleado;
     }
+
+    /**
+     * Elimina un empleado del sistema.
+     *
+     * @throws ExcepcionNegocio si el empleado no existe
+     */
+    public void eliminarEmpleado(int idEmpleado) throws ExcepcionNegocio {
+        ValidadorEntradas.validarIdPositivo(idEmpleado, "empleado");
+        obtenerEmpleadoOLanzarError(idEmpleado);
+        empleadoDAO.eliminar(idEmpleado);
+    }
     // ── Métodos privados ──────────────────────────────────────────────────────
 
     private Empleado obtenerEmpleadoOLanzarError(int idEmpleado) throws ExcepcionNegocio {
