@@ -1452,4 +1452,20 @@ public class DashboardController {
 
         return card;
     }
+       
+        private VBox enCardConExtra(String titulo, Node extra, Node contenido) {
+        VBox card = new VBox(10);
+        card.setPadding(new Insets(16));
+        card.setStyle("-fx-background-color:white; -fx-background-radius:14px;" +
+                      "-fx-effect:dropshadow(gaussian,rgba(0,0,0,0.08),14,0,0,3);");
+        Label t = new Label(titulo);
+        t.setStyle("-fx-font-size:14px; -fx-font-weight:bold; -fx-text-fill:#1e293b;");
+        Region sp = new Region();
+        HBox.setHgrow(sp, Priority.ALWAYS);
+        HBox hdr = new HBox(8, t, sp, extra);
+        hdr.setAlignment(Pos.CENTER_LEFT);
+        card.getChildren().addAll(hdr, new Separator(), contenido);
+        return card;
     }
+}
+    
