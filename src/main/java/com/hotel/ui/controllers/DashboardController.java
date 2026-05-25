@@ -1296,4 +1296,38 @@ public class DashboardController {
         section.getChildren().addAll(header, grid);
         return section;
     }
+    
+       private VBox construirRoomCard(Habitacion hab, Reserva reserva) {
+        Habitacion.EstadoHabitacion estado = hab.getEstado();
+
+        String stripeColor, bgColor, borderColor, badgeText, badgeStyle;
+        switch (estado) {
+            case DISPONIBLE:
+                stripeColor = "linear-gradient(to right,#22c55e,#4ade80)";
+                bgColor     = "linear-gradient(160deg,#ffffff 55%,#f0fdf4 100%)";
+                borderColor = "rgba(34,197,94,0.20)";
+                badgeText   = "LIBRE";
+                badgeStyle  = "-fx-background-color:#dcfce7; -fx-text-fill:#15803d;";
+                break;
+            case OCUPADA:
+                stripeColor = "linear-gradient(to right,#f43f5e,#fb7185)";
+                bgColor     = "linear-gradient(160deg,#ffffff 55%,#fff1f2 100%)";
+                borderColor = "rgba(244,63,94,0.20)";
+                badgeText   = "OCUPADA";
+                badgeStyle  = "-fx-background-color:#ffe4e6; -fx-text-fill:#be123c;";
+                break;
+            case RESERVADA:
+                stripeColor = "linear-gradient(to right,#f97316,#fb923c)";
+                bgColor     = "linear-gradient(160deg,#ffffff 55%,#fff7ed 100%)";
+                borderColor = "rgba(249,115,22,0.20)";
+                badgeText   = "RESERVADA";
+                badgeStyle  = "-fx-background-color:#ffedd5; -fx-text-fill:#c2410c;";
+                break;
+            default: // MANTENIMIENTO y otros
+                stripeColor = "linear-gradient(to right,#f59e0b,#fcd34d)";
+                bgColor     = "linear-gradient(160deg,#ffffff 55%,#fffbeb 100%)";
+                borderColor = "rgba(245,158,11,0.20)";
+                badgeText   = "MANTENIM.";
+                badgeStyle  = "-fx-background-color:#fef9c3; -fx-text-fill:#a16207;";
+        }
     }
