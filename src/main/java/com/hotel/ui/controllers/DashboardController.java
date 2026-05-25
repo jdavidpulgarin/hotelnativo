@@ -970,4 +970,64 @@ public class DashboardController {
                 "-fx-background-color:#f1f5f9; -fx-background-radius:20px; -fx-padding:4px 12px;");
         VBox cardMensual = enCardConExtraPremium("Ingresos mensuales", anioLabel2, barMensual);
         HBox.setHgrow(cardMensual, Priority.ALWAYS);
+        
+         // ── Barras anuales (últimos 5 años) ───────────────────────────────────
+        CategoryAxis xA = new CategoryAxis();
+        NumberAxis   yA = new NumberAxis();
+        xA.setLabel(""); yA.setLabel("$ Ingresos");
+        yA.setMinorTickVisible(false);
+        BarChart<String, Number> barAnual = new BarChart<>(xA, yA);
+        barAnual.setLegendVisible(false);
+        barAnual.setPrefHeight(250);
+        barAnual.setAnimated(true);
+        barAnual.getStyleClass().add("bar-chart-hotel");
+        barAnual.setCategoryGap(14);
+        barAnual.setBarGap(3);
+
+        XYChart.Series<String, Number> serieAnual = new XYChart.Series<>();
+        for (int i = 4; i >= 0; i--) {
+            int anio = anioActual - i;
+            final boolean esActual = (i == 0);
+            final String anioStr = String.valueOf(anio);
+            final double aVal = facturasPagadas.stream()
+                    .filter(f -> f.getFechaEmision().getYear() == anio)
+                    .mapToDouble(Factura::getTotal).sum();
+            XYChart.Data<String, Number> dato = new XYChart.Data<>(anioStr, aVal);
+            dato.nodeProperty().addListener((obs, o, node) -> {
+                if (node == null) return;
+                String barColor  = esActual ? "#8b5cf6" : "#c4b5fd";
+                String glowBase  = esActual ? "rgba(139,92,246,0.40)" : "rgba(196,181,253,0.20)";
+                String glowHover = esActual ? "rgba(139,92,246,0.70)" : "rgba(196,181,253,0.45)";
+                String baseStyle = "-fx-bar-fill:" + barColor + ";" +
+                        "-fx-background-radius:6px 6px 0 0;" +
+                        "-fx-effect:dropshadow(gaussian," + glowBase + ",8,0,0,3);";
+                String hoverStyle = "-fx-bar-fill:" + barColor + ";" +
+                        "-fx-background-radius:6px 6px 0 0;" +
+                        "-fx-effect:dropshadow(gaussian," + glowHover + ",14,0.15,0,5);";
+                node.setStyle(baseStyle);
+                Tooltip tip = new Tooltip(anioStr + " · $" + String.format("%,.0f", aVal));
+                tip.setStyle("-fx-background-color:#1e293b; -fx-text-fill:white;" +
+                        "-fx-background-radius:10px; -fx-padding:8px 13px;" +
+                        "-fx-font-size:12px; -fx-font-weight:600;");
+                Tooltip.install(node, tip);
+                node.setOnMouseEntered(e -> node.setStyle(hoverStyle));
+                node.setOnMouseExited(e -> node.setStyle(baseStyle));
+            });
+            serieAnual.getData().add(dato);
+        }
+        barAnual.getData().add(serieAnual);
+
+        Label trend5yLabel = new Label("Últimos 5 años");
+        trend5yLabel.setStyle("-fx-font-size:11px; -fx-font-weight:700; -fx-text-fill:#64748b;" +
+                "-fx-background-color:#f1f5f9; -fx-background-radius:20px; -fx-padding:4px 12px;");
+        VBox cardAnual = enCardConExtraPremium("Ingresos anuales", trend5yLabel, barAnual);
+        HBox.setHgrow(cardAnual, Priority.ALWAYS);
+
+        HBox fila2 = new HBox(20, cardMensual, cardAnual);
+        chartsContainer.getChildren().addAll(fila1, fila2);
+
+        // Animaciones de entrada escalonadas para cada fila
+        animarEntradaFila(fila1, 100);
+        animarEntradaFila(fila2, 260);
+    }
  }
