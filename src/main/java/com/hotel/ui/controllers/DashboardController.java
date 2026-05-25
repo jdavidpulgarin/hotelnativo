@@ -1122,4 +1122,31 @@ public class DashboardController {
         topbarTitle.setText(titulo);
         topbarBreadcrumb.setText(breadcrumb);
     }
+    
+      private void aplicarRestriccionesRol() {
+        ocultarSiSinPermiso(navReservas,     "CREAR_RESERVA");
+        ocultarSiSinPermiso(navCheckin,      "CHECKIN");
+        ocultarSiSinPermiso(navClientes,     "CREAR_CLIENTE");
+        ocultarSiSinPermiso(navHabitaciones, "GESTIONAR_HABITACIONES");
+        ocultarSiSinPermiso(navMantenimiento,"GESTIONAR_MANTENIMIENTO");
+        ocultarSiSinPermiso(navFacturacion,  "GENERAR_FACTURA");
+        ocultarSiSinPermiso(navReportes,     "VER_REPORTES");
+        ocultarSiSinPermiso(navEmpleados,    "CREAR_EMPLEADO");
+        if (!navReservas.isManaged() && !navCheckin.isManaged() && !navClientes.isManaged())
+            ocultarNodo(sectionOperaciones);
+        if (!navHabitaciones.isManaged() && !navMantenimiento.isManaged())
+            ocultarNodo(sectionRecursos);
+        if (!navFacturacion.isManaged() && !navReportes.isManaged() && !navEmpleados.isManaged())
+            ocultarNodo(sectionAdministracion);
+    }
+
+    private void ocultarSiSinPermiso(Button btn, String permiso) {
+        try { ctx.getAuthService().verificarPermiso(ctx.getTokenSesion(), permiso); }
+        catch (Exception e) { ocultarNodo(btn); }
+    }
+
+    private void ocultarNodo(Node nodo) {
+        nodo.setVisible(false);
+        nodo.setManaged(false);
+    }
     }
