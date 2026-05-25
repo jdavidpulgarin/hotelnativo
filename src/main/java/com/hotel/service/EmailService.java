@@ -245,4 +245,20 @@ public class EmailService {
             sb.append("  Noches:     ").append(r.calcularTotalDiasReserva()).append("\n\n");
         }
 
+        sb.append("──────────────────────────────────────────\n");
+        sb.append(String.format("  Subtotal:   $%,14.0f%n", factura.getSubtotal()));
+        sb.append(String.format("  Impuestos:  $%,14.0f%n", factura.getImpuestos()));
+        sb.append("──────────────────────────────────────────\n");
+        sb.append(String.format("  TOTAL:      $%,14.0f%n", factura.getTotal()));
+        sb.append("══════════════════════════════════════════\n\n");
+        sb.append("Método de pago: ").append(factura.getMetodoPago() != null
+                ? factura.getMetodoPago().name().replace("_", " ") : "—").append("\n");
+        sb.append("Estado:         ").append(factura.getEstadoPago() != null
+                ? factura.getEstadoPago().name() : "—").append("\n\n");
+        sb.append("Gracias por hospedarse en Hotel Nativo.\n");
+        sb.append("Recepción: +57 XXX XXX XXXX | recepcion@hotelnativo.com\n");
+        return sb.toString();
     }
+
+
+}
