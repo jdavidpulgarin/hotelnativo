@@ -66,3 +66,23 @@ public class MantenimientoDAOImpl extends BaseDAO implements IMantenimientoDAO {
 
     public MantenimientoDAOImpl() { super(); }
 }
+@Override
+    public Mantenimiento insertar(Mantenimiento m) {
+        String sql = "INSERT INTO MANTENIMIENTO " +
+                "(id_mantenimiento, id_habitacion, id_empleado, fecha_solicitud, tipo, estado, descripcion_trabajo) " +
+                "VALUES (?, ?, ?, ?, ?, 'SOLICITADO', ?)";
+        return enTransaccion(conn -> {
+            int seqVal = siguienteSeq(conn, "seq_mantenimiento");
+            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                stmt.setString(1, fmt("MAN", seqVal));
+                stmt.setString(2, fmt("HAB", m.getHabitacion().getId()));
+                stmt.setString(3, fmt("EMP", m.getEmpleadoResponsable().getId()));
+                stmt.setDate(4, Date.valueOf(m.getFechaSolicitud()));
+                stmt.setString(5, m.getTipo().name());
+                stmt.setString(6, m.getDescripcionTrabajo());
+                stmt.executeUpdate();
+            }
+            m.setId(seqVal);
+            return m;
+        });
+    }
