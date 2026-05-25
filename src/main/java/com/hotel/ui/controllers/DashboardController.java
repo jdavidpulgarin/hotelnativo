@@ -65,5 +65,30 @@ public class DashboardController {
     private Button navActivo;
 
     private static final java.util.Locale LOCALE_ES = java.util.Locale.forLanguageTag("es-CO");
+   
+     // ── Init ──────────────────────────────────────────────────────────────────
+
+    @FXML
+    public void initialize() {
+        Empleado emp = ctx.getEmpleadoActual();
+        if (emp != null) {
+            labelUsuario.setText(emp.obtenerNombreCompleto());
+            labelRol.setText(emp.getCargo() != null ? emp.getCargo().getNombreCargo() : "");
+            StackPane avatar = AvatarUtil.crear(emp.obtenerNombreCompleto(), 36);
+            int idx = sidebarUserHBox.getChildren().indexOf(userAvatarLabel);
+            sidebarUserHBox.getChildren().set(idx, avatar);
+        }
+        labelFecha.setText(LocalDate.now().format(
+                DateTimeFormatter.ofPattern("EEEE, dd 'de' MMMM yyyy", LOCALE_ES)));
+        navActivo = navDashboard;
+        cargarPanelDashboard();
+        aplicarRestriccionesRol();
+        List.of(navDashboard, navReservas, navCheckin, navClientes,
+                navHabitaciones, navMantenimiento, navFacturacion, navReportes, navEmpleados)
+                .forEach(this::configurarHoverNav);
+        Platform.runLater(this::initChatbot);
+    }
+    
+    
     
 }
