@@ -1073,4 +1073,53 @@ public class DashboardController {
         card.getChildren().removeIf(n -> n instanceof Label || n instanceof TableView);
         card.getChildren().add(tabla);
     }
+    
+      // ── Helpers de navegación y layout ───────────────────────────────────────
+
+    private void cargarPanel(String fxmlName) {
+        try {
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/com/hotel/ui/fxml/" + fxmlName));
+            Node panel = loader.load();
+            setContenido(panel);
+        } catch (Exception e) {
+            System.out.println("ERROR cargando FXML: " + fxmlName + " -> " + e.getMessage());
+            e.printStackTrace();
+            setContenido(crearPlaceholder(fxmlName.replace(".fxml", "")));
+        }
+    }
+
+    private VBox crearPlaceholder(String nombre) {
+        VBox box = new VBox(16);
+        box.setAlignment(Pos.CENTER);
+        box.setStyle("-fx-background-color:#f0f2f5;");
+        Label ico = new Label("🚧");
+        ico.setStyle("-fx-font-size:48px;");
+        Label lbl = new Label("Módulo " + nombre);
+        lbl.setStyle("-fx-font-size:20px; -fx-font-weight:bold; -fx-text-fill:#1e293b;");
+        Label sub = new Label("Este panel está disponible en las clases de controlador.");
+        sub.setStyle("-fx-font-size:13px; -fx-text-fill:#64748b;");
+        sub.setWrapText(true);
+        sub.setMaxWidth(400);
+        sub.setTextAlignment(javafx.scene.text.TextAlignment.CENTER);
+        box.getChildren().addAll(ico, lbl, sub);
+        return box;
+    }
+
+    private void setContenido(Node node) {
+        contentArea.getChildren().clear();
+        node.setOpacity(0);
+        contentArea.getChildren().add(node);
+        FadeTransition ft = new FadeTransition(Duration.millis(250), node);
+        ft.setFromValue(0); ft.setToValue(1);
+        ft.play();
+    }
+
+    private void setActivo(Button nav, String titulo, String breadcrumb) {
+        if (navActivo != null) navActivo.getStyleClass().remove("active");
+        nav.getStyleClass().add("active");
+        navActivo = nav;
+        topbarTitle.setText(titulo);
+        topbarBreadcrumb.setText(breadcrumb);
+    }
     }
