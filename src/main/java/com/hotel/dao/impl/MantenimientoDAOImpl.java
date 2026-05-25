@@ -181,3 +181,28 @@ public class MantenimientoDAOImpl extends BaseDAO implements IMantenimientoDAO {
         }
         return lista;
     }
+private Mantenimiento mapearFila(ResultSet rs) throws SQLException {
+        Habitacion habRef = new Habitacion();
+        habRef.setId(rs.getInt("id_habitacion"));
+        habRef.setNumero(rs.getString("hab_numero") != null ? rs.getString("hab_numero") : "");
+
+        Empleado empRef = new Empleado();
+        empRef.setId(rs.getInt("id_empleado"));
+        empRef.setNombre(rs.getString("emp_nombre") != null ? rs.getString("emp_nombre") : "");
+        empRef.setApellido(rs.getString("emp_apellido") != null ? rs.getString("emp_apellido") : "");
+
+        Mantenimiento m = new Mantenimiento();
+        m.setId(rs.getInt("id"));
+        m.setHabitacion(habRef);
+        m.setEmpleadoResponsable(empRef);
+        m.setFechaSolicitud(rs.getDate("fecha_solicitud").toLocalDate());
+        Date fechaReal = rs.getDate("fecha_realizacion");
+        if (fechaReal != null) m.setFechaRealizacion(fechaReal.toLocalDate());
+        String tipoStr = rs.getString("tipo");
+        String estadoStr = rs.getString("estado");
+        m.setTipo(tipoStr != null ? Mantenimiento.TipoMantenimiento.valueOf(tipoStr) : null);
+        m.setEstado(estadoStr != null ? Mantenimiento.EstadoMantenimiento.valueOf(estadoStr) : null);
+        m.setCosto(rs.getDouble("costo"));
+        m.setDescripcionTrabajo(rs.getString("descripcion_trabajo") != null ? rs.getString("descripcion_trabajo") : "");
+        return m;
+    }
