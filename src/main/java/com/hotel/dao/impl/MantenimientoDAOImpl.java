@@ -132,3 +132,32 @@ public class MantenimientoDAOImpl extends BaseDAO implements IMantenimientoDAO {
         }
         return lista;
     }
+@Override
+    public List<Mantenimiento> listarPendientes() {
+        List<Mantenimiento> lista = new ArrayList<>();
+        Connection conn = obtener();
+        try (PreparedStatement stmt = conn.prepareStatement(SQL_PENDIENTES);
+             ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) lista.add(mapearFila(rs));
+        } catch (SQLException e) {
+            throw new ExcepcionBaseDatos("Error al listar pendientes: " + e.getMessage(), e);
+        } finally {
+            liberar(conn);
+        }
+        return lista;
+    }
+
+    @Override
+    public List<Mantenimiento> listarTodos() {
+        List<Mantenimiento> lista = new ArrayList<>();
+        Connection conn = obtener();
+        try (PreparedStatement stmt = conn.prepareStatement(SQL_LISTAR_TODOS);
+             ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) lista.add(mapearFila(rs));
+        } catch (SQLException e) {
+            throw new ExcepcionBaseDatos("Error al listar mantenimientos: " + e.getMessage(), e);
+        } finally {
+            liberar(conn);
+        }
+        return lista;
+    }
