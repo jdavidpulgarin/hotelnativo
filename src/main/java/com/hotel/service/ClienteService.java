@@ -125,8 +125,17 @@ public class ClienteService {
     public List<Cliente> listarClientesVip() {
         return clienteBusqueda.listarClientesVip();
     }
-    
-    
+
+    /**
+     * Marca a un cliente como VIP.
+     *
+     * @throws ExcepcionNegocio si el cliente no existe
+     */
+    public void marcarClienteComoVip(int idCliente) throws ExcepcionNegocio {
+        Cliente cliente = obtenerClienteOLanzarError(idCliente);
+        cliente.setEsVip(true);
+        clienteDAO.actualizar(cliente);
+    }
 
     // ── métodos privados de apoyo ──────────────────────────────────────────────
     private void validarDatosCliente(ClienteDTO dto) throws ExcepcionValidacion {
@@ -167,6 +176,16 @@ public class ClienteService {
         return clienteDAO.buscarPorId(idCliente)
                 .orElseThrow(() -> new ExcepcionNegocio("CLIENTE_NOT_FOUND",
                 "No se encontró el cliente con ID: " + idCliente));
+    }
+
+    private Cliente construirClienteDesdeDTO(ClienteDTO dto) {
+        Cliente c = new Cliente(0, dto.getNombre(), dto.getApellido(), dto.getEmail(),
+                dto.getTelefono(), dto.getCedula(), dto.getNacionalidad(), LocalDate.now());
+        c.setDocumento(dto.getCedula());
+        c.setSegundoNombre(dto.getSegundoNombre());
+        c.setApellido2(dto.getApellido2());
+        c.setCiudadOrigen(dto.getCiudadOrigen());
+        return c;
     }
 
     private void actualizarCamposCliente(Cliente cliente, ClienteDTO dto) {
