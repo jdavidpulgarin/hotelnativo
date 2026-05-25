@@ -688,4 +688,58 @@ public class DashboardController {
         dialog.getDialogPane().setPrefSize(820, 500);
         dialog.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
         dialog.getDialogPane().setStyle("-fx-background-color:white;");
+        
+        
+        TableView<Reserva> tabla = new TableView<>();
+        tabla.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
+        tabla.setStyle("-fx-background-color:transparent; -fx-border-color:transparent;");
+        VBox.setVgrow(tabla, Priority.ALWAYS);
+
+        // Columna de estado con colores
+        TableColumn<Reserva, String> colEst = colS("Estado", r -> r.getEstado().name());
+        colEst.setCellFactory(tc -> new TableCell<>() {
+            @Override protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) { setText(null); setStyle(""); return; }
+                String color = switch (item) {
+                    case "EN_PROCESO"  -> "#2563eb";
+                    case "COMPLETADA"  -> "#059669";
+                    case "CANCELADA"   -> "#dc2626";
+                    default            -> "#64748b";
+                };
+                setText(item);
+                setStyle("-fx-text-fill:" + color + "; -fx-font-weight:bold;");
+            }
+        });
+
+        tabla.getColumns().addAll(List.of(
+            colS("Reserva",    r -> "#" + r.getId()),
+            colS("Cliente",    r -> r.getCliente() != null ? r.getCliente().obtenerNombreCompleto() : "—"),
+            colS("Habitación", r -> r.getHabitacion() != null ? r.getHabitacion().getNumero() : "—"),
+            colS("Entrada",    r -> r.getFechaEntrada() != null ? r.getFechaEntrada().toString() : "—"),
+            colS("Salida",     r -> r.getFechaSalida()  != null ? r.getFechaSalida().toString()  : "—"),
+            colEst,
+            colS("Total",      r -> String.format("$%,.0f", r.getPrecioTotal()))
+        ));
+        tabla.getItems().addAll(salidas);
+
+        String fechaStr = hoy.format(DateTimeFormatter.ofPattern("EEEE dd 'de' MMMM yyyy", LOCALE_ES));
+        Label sub = new Label(salidas.isEmpty()
+                ? "No hay salidas programadas para hoy"
+                : salidas.size() + " salida(s) — " + fechaStr);
+        sub.setStyle("-fx-font-size:12px; -fx-text-fill:#64748b;");
+
+        VBox content = new VBox(10,
+            modalHeader("Salidas de hoy  (" + salidas.size() + ")"),
+            sub, new Separator(), tabla);
+        content.setPadding(new Insets(22));
+        dialog.getDialogPane().setContent(content);
+        dialog.showAndWait();
+    }
+
+    private Label modalHeader(String texto) {
+        Label l = new Label(texto);
+        l.setStyle("-fx-font-size:16px; -fx-font-weight:bold; -fx-text-fill:#1a3a5c;");
+        return l;
+    }
  }
