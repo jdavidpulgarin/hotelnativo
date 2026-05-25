@@ -175,4 +175,21 @@ public class EmailService {
             msg.setSubject(asunto, "UTF-8");
             msg.setHeader("X-Mailer", "Hotel Nativo System 1.0");
             msg.setSentDate(new java.util.Date());
+
+            if (pdfPath != null && new java.io.File(pdfPath).exists()) {
+                MimeMultipart multipart = new MimeMultipart();
+
+                MimeBodyPart textoPart = new MimeBodyPart();
+                textoPart.setText(cuerpo, "UTF-8");
+                multipart.addBodyPart(textoPart);
+
+                MimeBodyPart adjuntoPart = new MimeBodyPart();
+                adjuntoPart.attachFile(new java.io.File(pdfPath));
+                adjuntoPart.setFileName("Factura_Hotel_Nativo.pdf");
+                multipart.addBodyPart(adjuntoPart);
+
+                msg.setContent(multipart);
+            } else {
+                msg.setText(cuerpo, "UTF-8");
+            }
         }
