@@ -160,4 +160,19 @@ public class EmailService {
             System.out.println("[EMAIL] ─────────────────────────────────────────");
             return false;
         }
-    }
+
+        try {
+            Session session = Session.getInstance(smtpProps, new Authenticator() {
+                @Override
+                protected PasswordAuthentication getPasswordAuthentication() {
+                    return new PasswordAuthentication(fromAddress, password);
+                }
+            });
+
+            MimeMessage msg = new MimeMessage(session);
+            msg.setFrom(new InternetAddress(fromAddress, "Hotel Nativo"));
+            msg.setRecipients(Message.RecipientType.TO, InternetAddress.parse(destinatario));
+            msg.setSubject(asunto, "UTF-8");
+            msg.setHeader("X-Mailer", "Hotel Nativo System 1.0");
+            msg.setSentDate(new java.util.Date());
+        }
