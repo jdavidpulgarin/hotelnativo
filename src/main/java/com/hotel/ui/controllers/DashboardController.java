@@ -235,4 +235,33 @@ public class DashboardController {
         }).start();
 }
     
+    private void agregarMensajeUsuario(String texto) {
+        Label burbuja = new Label(texto);
+        burbuja.setWrapText(true);
+        burbuja.setMaxWidth(270);
+        burbuja.setStyle("-fx-background-color:#1a3a5c; -fx-text-fill:white;" +
+                         "-fx-background-radius:18px 18px 4px 18px;" +
+                         "-fx-padding:10px 14px; -fx-font-size:13px;");
+        HBox fila = new HBox(burbuja);
+        fila.setAlignment(Pos.CENTER_RIGHT);
+        mensajesBox.getChildren().add(fila);
+        scrollAlFinal();
+    }
+
+    private void agregarMensajeBot(String texto) {
+        Label burbuja = new Label(texto);
+        burbuja.setWrapText(true);
+        burbuja.setMaxWidth(280);
+        burbuja.setStyle("-fx-background-color:#f1f5f9; -fx-text-fill:#1e293b;" +
+                         "-fx-background-radius:18px 18px 18px 4px;" +
+                         "-fx-padding:10px 14px; -fx-font-size:13px;");
+        HBox fila = new HBox(burbuja);
+        fila.setAlignment(Pos.CENTER_LEFT);
+        mensajesBox.getChildren().add(fila);
+        scrollAlFinal();
+    }
+
+    private void scrollAlFinal() {
+        Platform.runLater(() -> mensajesScroll.setVvalue(1.0));
+    }
 }
