@@ -103,6 +103,11 @@ public class ClienteService {
         }
     }
 
+    public Optional<Cliente> buscarPorId(int idCliente) throws ExcepcionValidacion {
+        ValidadorEntradas.validarIdPositivo(idCliente, "cliente");
+        return clienteDAO.buscarPorId(idCliente);
+    }
+
     // ── métodos privados de apoyo ──────────────────────────────────────────────
     private void validarDatosCliente(ClienteDTO dto) throws ExcepcionValidacion {
         ValidadorEntradas.validarCampoRequerido(dto.getCedula(), "cédula");
