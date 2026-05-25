@@ -135,3 +135,32 @@ public class ReservaDAOImpl extends BaseDAO implements IReservaDAO, IReservaBusq
             return reserva;
         });
     }
+@Override
+    public boolean actualizar(Reserva reserva) {
+        return enTransaccion(conn -> {
+            try (PreparedStatement stmt = conn.prepareStatement(SQL_ACTUALIZAR)) {
+                String idClienteStr = reserva.getCliente().getDocumento() != null
+                        ? reserva.getCliente().getDocumento()
+                        : String.valueOf(reserva.getCliente().getId());
+                stmt.setString(1, idClienteStr);
+                stmt.setString(2, fmt("HAB", reserva.getHabitacion().getId()));
+                stmt.setDate(3, Date.valueOf(reserva.getFechaEntrada()));
+                stmt.setDate(4, Date.valueOf(reserva.getFechaSalida()));
+                stmt.setString(5, reserva.getEstado().name());
+                stmt.setInt(6, reserva.getNumPersonas());
+                stmt.setDouble(7, reserva.getPrecioTotal());
+                stmt.setString(8, fmt("RES", reserva.getId()));
+                return stmt.executeUpdate() > 0;
+            }
+        });
+    }
+
+    @Override
+    public boolean eliminar(int idReserva) {
+        return enTransaccion(conn -> {
+            try (PreparedStatement stmt = conn.prepareStatement(SQL_ELIMINAR)) {
+                stmt.setString(1, fmt("RES", idReserva));
+                return stmt.executeUpdate() > 0;
+            }
+        });
+    }
