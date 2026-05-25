@@ -116,4 +116,25 @@ public class CheckInOutController {
                         : "-fx-background-color:#fffbeb;");
             }
         });
+        
+        
+          @FXML
+    public void cargarDatos() {
+        progressBar.setVisible(true);
+        new Thread(() -> {
+            try {
+                List<CheckInOut> lista = ctx.getCheckInOutService().listarTodos();
+                Platform.runLater(() -> {
+                    datos.setAll(lista);
+                    actualizarStats(lista);
+                    progressBar.setVisible(false);
+                });
+            } catch (Exception e) {
+                Platform.runLater(() -> {
+                    NotificationUtil.error("Error cargando check-ins: " + e.getMessage());
+                    progressBar.setVisible(false);
+                });
+            }
+        }).start();
+    }
 }
