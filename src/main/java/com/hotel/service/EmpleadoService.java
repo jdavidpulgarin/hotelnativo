@@ -39,6 +39,14 @@ public class EmpleadoService {
 
     private final IEmpleadoDAO empleadoDAO;
     private final AuthService authService;
-    
-    
+
+    /**
+     * @param empleadoDAO repositorio de empleados
+     * @param authService servicio de autenticación (para registrar
+     * credenciales)
+     */
+    public EmpleadoService(IEmpleadoDAO empleadoDAO, AuthService authService) {
+        this.empleadoDAO = empleadoDAO;
+        this.authService = authService;
+    }
 }
