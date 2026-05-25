@@ -529,4 +529,59 @@ public class DashboardController {
             row.getChildren().add(card);
         }
     }
+    
+    
+     // ── Modales de detalle (doble clic) ───────────────────────────────────────
+
+    private void abrirModalHabitaciones(String titulo, List<Habitacion> todas,
+            Habitacion.EstadoHabitacion filtro) {
+
+        List<Habitacion> lista = filtro == null ? todas :
+                todas.stream().filter(h -> h.getEstado() == filtro).collect(Collectors.toList());
+
+        Dialog<Void> dialog = new Dialog<>();
+        dialog.setTitle(titulo);
+        dialog.getDialogPane().setPrefSize(680, 500);
+        dialog.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
+        dialog.getDialogPane().setStyle("-fx-background-color:white;");
+
+        TableView<Habitacion> tabla = new TableView<>();
+        tabla.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
+        tabla.setStyle("-fx-background-color:transparent; -fx-border-color:transparent;");
+        VBox.setVgrow(tabla, Priority.ALWAYS);
+
+        TableColumn<Habitacion, String> colEst = colS("Estado", h -> h.getEstado().name());
+        colEst.setCellFactory(tc -> new TableCell<>() {
+            @Override protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) { setText(null); setStyle(""); return; }
+                String color = switch (item) {
+                    case "DISPONIBLE"    -> "#059669";
+                    case "OCUPADA"       -> "#d97706";
+                    case "RESERVADA"     -> "#2563eb";
+                    case "MANTENIMIENTO" -> "#dc2626";
+                    default              -> "#64748b";
+                };
+                setText(item);
+                setStyle("-fx-text-fill:" + color + "; -fx-font-weight:bold;");
+            }
+        });
+
+        tabla.getColumns().addAll(List.of(
+            colS("Número",      h -> h.getNumero()),
+            colS("Tipo",        h -> h.getTipoHabitacion() != null
+                    ? h.getTipoHabitacion().obtenerEtiquetaTipo() : "—"),
+            colEst,
+            colS("Camas",       h -> h.getNumCamas() > 0 ? h.getNumCamas() + " cama(s)" : "—"),
+            colS("Precio base", h -> String.format("$%,.0f", h.getPrecioBase()))
+        ));
+        tabla.getItems().addAll(lista);
+
+        VBox content = new VBox(14,
+            modalHeader(titulo + "  (" + lista.size() + " habitaciones)"),
+            new Separator(), tabla);
+        content.setPadding(new Insets(22));
+        dialog.getDialogPane().setContent(content);
+        dialog.showAndWait();
+    }
  }
