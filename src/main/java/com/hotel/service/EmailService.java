@@ -214,4 +214,14 @@ public class EmailService {
                 + "Gracias por elegir Hotel Nativo.\n"
                 + "Para consultas: recepcion@hotelnativo.com";
     }
-}
+
+    private String construirCuerpoFactura(Factura factura) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("══════════════════════════════════════════\n");
+        sb.append("          HOTEL NATIVO — FACTURA\n");
+        sb.append("══════════════════════════════════════════\n\n");
+        sb.append("Factura N.°: #").append(factura.getId()).append("\n");
+        sb.append("Fecha:       ").append(factura.getFechaEmision() != null
+                ? factura.getFechaEmision() : "—").append("\n\n");
+
+    }
