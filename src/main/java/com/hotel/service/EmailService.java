@@ -234,4 +234,15 @@ public class EmailService {
             sb.append("\n");
         }
 
+        if (factura.getReserva() != null) {
+            Reserva r = factura.getReserva();
+            sb.append("RESERVA #").append(r.getId()).append("\n");
+            if (r.getHabitacion() != null) {
+                sb.append("  Habitación: ").append(r.getHabitacion().getNumero()).append("\n");
+            }
+            sb.append("  Entrada:    ").append(r.getFechaEntrada() != null ? r.getFechaEntrada() : "—").append("\n");
+            sb.append("  Salida:     ").append(r.getFechaSalida() != null ? r.getFechaSalida() : "—").append("\n");
+            sb.append("  Noches:     ").append(r.calcularTotalDiasReserva()).append("\n\n");
+        }
+
     }
