@@ -224,4 +224,14 @@ public class EmailService {
         sb.append("Fecha:       ").append(factura.getFechaEmision() != null
                 ? factura.getFechaEmision() : "—").append("\n\n");
 
+        if (factura.getCliente() != null) {
+            sb.append("CLIENTE\n");
+            sb.append("  Nombre:   ").append(factura.getCliente().obtenerNombreCompleto()).append("\n");
+            sb.append("  Email:    ").append(factura.getCliente().getEmail()).append("\n");
+            if (factura.getCliente().getTelefono() != null) {
+                sb.append("  Teléfono: ").append(factura.getCliente().getTelefono()).append("\n");
+            }
+            sb.append("\n");
+        }
+
     }
