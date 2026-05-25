@@ -913,4 +913,61 @@ public class DashboardController {
         HBox.setHgrow(cardDiario, Priority.ALWAYS);
 
         HBox fila1 = new HBox(20, cardPie, cardDiario);
+        
+         // ── FILA 2: Barras mensuales + Barras anuales ────────────────────────
+
+        String[] MESES_ABREV = {"Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"};
+
+        Map<Integer, Double> ingresosMensuales = facturasPagadas.stream()
+                .filter(f -> f.getFechaEmision().getYear() == anioActual)
+                .collect(Collectors.groupingBy(f -> f.getFechaEmision().getMonthValue(),
+                        Collectors.summingDouble(Factura::getTotal)));
+
+        CategoryAxis xM = new CategoryAxis();
+        NumberAxis   yM = new NumberAxis();
+        xM.setLabel(""); yM.setLabel("$ Ingresos");
+        yM.setMinorTickVisible(false);
+        BarChart<String, Number> barMensual = new BarChart<>(xM, yM);
+        barMensual.setLegendVisible(false);
+        barMensual.setPrefHeight(250);
+        barMensual.setAnimated(true);
+        barMensual.getStyleClass().add("bar-chart-hotel");
+        barMensual.setCategoryGap(6);
+        barMensual.setBarGap(2);
+
+        XYChart.Series<String, Number> serieMensual = new XYChart.Series<>();
+        for (int m = 1; m <= 12; m++) {
+            final boolean esMesActual = (m == mesActualNum);
+            final String mesLabel = MESES_ABREV[m - 1];
+            final double mVal = ingresosMensuales.getOrDefault(m, 0.0);
+            XYChart.Data<String, Number> dato = new XYChart.Data<>(mesLabel, mVal);
+            dato.nodeProperty().addListener((obs, o, node) -> {
+                if (node == null) return;
+                String barColor  = esMesActual ? "#f59e0b" : "#6366f1";
+                String glowBase  = esMesActual ? "rgba(245,158,11,0.35)" : "rgba(99,102,241,0.28)";
+                String glowHover = esMesActual ? "rgba(245,158,11,0.65)" : "rgba(99,102,241,0.55)";
+                String baseStyle = "-fx-bar-fill:" + barColor + ";" +
+                        "-fx-background-radius:6px 6px 0 0;" +
+                        "-fx-effect:dropshadow(gaussian," + glowBase + ",8,0,0,3);";
+                String hoverStyle = "-fx-bar-fill:" + barColor + ";" +
+                        "-fx-background-radius:6px 6px 0 0;" +
+                        "-fx-effect:dropshadow(gaussian," + glowHover + ",14,0.15,0,5);";
+                node.setStyle(baseStyle);
+                Tooltip tip = new Tooltip(mesLabel + " · $" + String.format("%,.0f", mVal));
+                tip.setStyle("-fx-background-color:#1e293b; -fx-text-fill:white;" +
+                        "-fx-background-radius:10px; -fx-padding:8px 13px;" +
+                        "-fx-font-size:12px; -fx-font-weight:600;");
+                Tooltip.install(node, tip);
+                node.setOnMouseEntered(e -> node.setStyle(hoverStyle));
+                node.setOnMouseExited(e -> node.setStyle(baseStyle));
+            });
+            serieMensual.getData().add(dato);
+        }
+        barMensual.getData().add(serieMensual);
+
+        Label anioLabel2 = new Label(String.valueOf(anioActual));
+        anioLabel2.setStyle("-fx-font-size:11px; -fx-font-weight:700; -fx-text-fill:#64748b;" +
+                "-fx-background-color:#f1f5f9; -fx-background-radius:20px; -fx-padding:4px 12px;");
+        VBox cardMensual = enCardConExtraPremium("Ingresos mensuales", anioLabel2, barMensual);
+        HBox.setHgrow(cardMensual, Priority.ALWAYS);
  }
