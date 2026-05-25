@@ -312,3 +312,19 @@ private Reserva mapearFilaCompleta(ResultSet rs) throws SQLException {
         h.setId(rs.getInt("id_habitacion"));
         return armarReserva(rs, c, h);
     }
+private Reserva armarReserva(ResultSet rs, Cliente cliente, Habitacion habitacion)
+            throws SQLException {
+        Reserva r = new Reserva();
+        r.setId(rs.getInt("id"));
+        r.setCliente(cliente);
+        r.setHabitacion(habitacion);
+        Date fechaEntrada = rs.getDate("fecha_entrada");
+        Date fechaSalida = rs.getDate("fecha_salida");
+        r.setFechaEntrada(fechaEntrada != null ? fechaEntrada.toLocalDate() : null);
+        r.setFechaSalida(fechaSalida != null ? fechaSalida.toLocalDate() : null);
+        String estadoStr = rs.getString("estado");
+        r.setEstado(estadoStr != null ? Reserva.EstadoReserva.valueOf(estadoStr) : null);
+        r.setNumPersonas(rs.getInt("num_personas"));
+        r.setPrecioTotal(rs.getDouble("precio_total"));
+        return r;
+    }
