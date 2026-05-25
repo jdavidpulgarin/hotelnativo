@@ -35,5 +35,7 @@ public class EmailService {
     private String password;
     private boolean configurado = false;
     
-    
+        public EmailService() {
+        cargarConfiguracion();
+    }
 }
