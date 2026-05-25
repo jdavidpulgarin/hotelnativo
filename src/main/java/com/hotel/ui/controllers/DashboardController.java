@@ -859,4 +859,58 @@ public class DashboardController {
         VBox pieWithLegend = new VBox(4, pieStack, legendRow);
         VBox cardPie = enCardPremium("Ocupación de habitaciones", pieWithLegend);
         HBox.setHgrow(cardPie, Priority.ALWAYS);
+        
+         // ── AreaChart: ingresos diarios del mes ────────────────────────────────
+        Map<Integer, Double> ingresosDiarios = facturasPagadas.stream()
+                .filter(f -> f.getFechaEmision().getYear() == anioActual
+                          && f.getFechaEmision().getMonth() == mesActual)
+                .collect(Collectors.groupingBy(f -> f.getFechaEmision().getDayOfMonth(),
+                        Collectors.summingDouble(Factura::getTotal)));
+
+        NumberAxis xAxisD = new NumberAxis(1, diasEnMes, 5);
+        xAxisD.setLabel("Día");
+        xAxisD.setAutoRanging(false);
+        xAxisD.setTickUnit(5);
+        xAxisD.setMinorTickVisible(false);
+
+        NumberAxis yAxisD = new NumberAxis();
+        yAxisD.setLabel("Ingresos $");
+        yAxisD.setAutoRanging(true);
+        yAxisD.setForceZeroInRange(true);
+        yAxisD.setMinorTickVisible(false);
+
+        AreaChart<Number, Number> areaChart = new AreaChart<>(xAxisD, yAxisD);
+        areaChart.setPrefHeight(260);
+        areaChart.setAnimated(true);
+        areaChart.setCreateSymbols(true);
+        areaChart.getStyleClass().add("ingresos-diarios");
+        areaChart.setLegendVisible(false);
+
+        XYChart.Series<Number, Number> serieDiaria = new XYChart.Series<>();
+        serieDiaria.setName("Ingresos diarios");
+        for (int dia = 1; dia <= diasEnMes; dia++) {
+            final int dFinal = dia;
+            final double val = ingresosDiarios.getOrDefault(dia, 0.0);
+            XYChart.Data<Number, Number> dato = new XYChart.Data<>(dia, val);
+            serieDiaria.getData().add(dato);
+            dato.nodeProperty().addListener((obs, o, node) -> {
+                if (node == null) return;
+                Tooltip tip = new Tooltip("Día " + dFinal + "  ·  $" + String.format("%,.0f", val));
+                tip.setStyle("-fx-background-color:#1e293b; -fx-text-fill:white;" +
+                        "-fx-background-radius:10px; -fx-padding:8px 13px;" +
+                        "-fx-font-size:12px; -fx-font-weight:600;");
+                Tooltip.install(node, tip);
+            });
+        }
+        areaChart.getData().add(serieDiaria);
+
+        double totalMes = ingresosDiarios.values().stream().mapToDouble(Double::doubleValue).sum();
+        Label trendBadge = new Label("📈  $" + String.format("%,.0f", totalMes));
+        trendBadge.setStyle("-fx-font-size:11px; -fx-font-weight:700; -fx-text-fill:#059669;" +
+                "-fx-background-color:#d1fae5; -fx-background-radius:20px; -fx-padding:4px 12px;");
+
+        VBox cardDiario = enCardConExtraPremium("Ingresos — " + mesNombre, trendBadge, areaChart);
+        HBox.setHgrow(cardDiario, Priority.ALWAYS);
+
+        HBox fila1 = new HBox(20, cardPie, cardDiario);
  }
