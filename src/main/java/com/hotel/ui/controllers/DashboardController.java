@@ -824,4 +824,39 @@ public class DashboardController {
             });
         });
     }
+    
+      // Donut: StackPane con círculo blanco + etiqueta central
+        StackPane pieStack = new StackPane(pie);
+        Circle hole = new Circle(52);
+        hole.setFill(Color.WHITE);
+        hole.setMouseTransparent(true);
+        VBox centerBox = new VBox(1);
+        centerBox.setAlignment(Pos.CENTER);
+        centerBox.setMouseTransparent(true);
+        Label pctLbl = new Label(String.format("%.0f%%", pctOcupacion));
+        pctLbl.setStyle("-fx-font-size:20px; -fx-font-weight:900; -fx-text-fill:#0f172a;");
+        Label pctSub = new Label("Ocupación");
+        pctSub.setStyle("-fx-font-size:9.5px; -fx-text-fill:#94a3b8; -fx-font-weight:700;");
+        centerBox.getChildren().addAll(pctLbl, pctSub);
+        pieStack.getChildren().addAll(hole, centerBox);
+
+        // Leyenda personalizada con puntos de color
+        HBox legendRow = new HBox(14);
+        legendRow.setAlignment(Pos.CENTER);
+        legendRow.setPadding(new Insets(6, 0, 0, 0));
+        for (int i = 0; i < ORDEN_PIE.length; i++) {
+            if (!estados.containsKey(ORDEN_PIE[i])) continue;
+            Circle dot = new Circle(5);
+            dot.setFill(Color.web(COLORES_PIE[i]));
+            long cnt = estados.get(ORDEN_PIE[i]);
+            Label lbl = new Label(LABELS_PIE[i] + " " + cnt);
+            lbl.setStyle("-fx-font-size:10.5px; -fx-text-fill:#64748b; -fx-font-weight:600;");
+            HBox item = new HBox(5, dot, lbl);
+            item.setAlignment(Pos.CENTER_LEFT);
+            legendRow.getChildren().add(item);
+        }
+
+        VBox pieWithLegend = new VBox(4, pieStack, legendRow);
+        VBox cardPie = enCardPremium("Ocupación de habitaciones", pieWithLegend);
+        HBox.setHgrow(cardPie, Priority.ALWAYS);
  }
