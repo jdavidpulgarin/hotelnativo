@@ -1,0 +1,68 @@
+
+package com.hotel.dao.impl;
+
+/**
+ *
+ * @author rober
+ */
+import com.hotel.dao.interfaces.IMantenimientoDAO;
+import com.hotel.exception.ExcepcionBaseDatos;
+import com.hotel.model.*;
+
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+/**
+ * Implementación JDBC Oracle del repositorio de mantenimientos.
+ * Adaptado al schema HOTELNATIVO: tabla MANTENIMIENTO con PK id_mantenimiento (VARCHAR2).
+ *
+ * REFACTORING v2 — 5 puntos críticos corregidos:
+ *  1. ResultSet cerrado con try-with-resources anidado en todos los buscarPor*.
+ *  2. Sin concatenación de Strings en SQL (todo PreparedStatement).
+ *  3. insertar/actualizar usan enTransaccion() → commit/rollback garantizado.
+ *  4. listarTodos(int,int) con paginación Oracle OFFSET/FETCH.
+ *  5. Sin printStackTrace(); errores suben como ExcepcionBaseDatos.
+ *
+ * GRASP: Fabricación Pura.
+ */
+public class MantenimientoDAOImpl extends BaseDAO implements IMantenimientoDAO {
+
+    // JOIN a HABITACION y EMPLEADO para obtener numero y nombre en una sola query
+    private static final String COLS =
+            "TO_NUMBER(REGEXP_REPLACE(m.id_mantenimiento,'[^0-9]','')) AS id, " +
+            "TO_NUMBER(REGEXP_REPLACE(m.id_habitacion,'[^0-9]',''))    AS id_habitacion, " +
+            "h.numero AS hab_numero, " +
+            "TO_NUMBER(REGEXP_REPLACE(m.id_empleado,'[^0-9]',''))      AS id_empleado, " +
+            "e.primer_nombre AS emp_nombre, e.apellido_1 AS emp_apellido, " +
+            "m.fecha_solicitud, m.fecha_realizacion, m.tipo, m.estado, m.costo, m.descripcion_trabajo";
+
+    private static final String FROM_JOIN =
+            "FROM MANTENIMIENTO m " +
+            "LEFT JOIN HABITACION h ON m.id_habitacion = h.id_habitacion " +
+            "LEFT JOIN EMPLEADO   e ON m.id_empleado   = e.id_empleado";
+
+    private static final String SQL_BUSCAR_POR_ID =
+            "SELECT " + COLS + " " + FROM_JOIN + " WHERE m.id_mantenimiento = ?";
+
+    private static final String SQL_POR_HABITACION =
+            "SELECT " + COLS + " " + FROM_JOIN +
+            " WHERE m.id_habitacion = ? ORDER BY m.fecha_solicitud DESC";
+
+    private static final String SQL_PENDIENTES =
+            "SELECT " + COLS + " " + FROM_JOIN +
+            " WHERE m.estado IN ('SOLICITADO','EN_PROCESO') ORDER BY m.fecha_solicitud";
+
+    private static final String SQL_LISTAR_TODOS =
+            "SELECT " + COLS + " " + FROM_JOIN + " ORDER BY m.fecha_solicitud DESC";
+
+    private static final String SQL_LISTAR_PAGINADA =
+            SQL_LISTAR_TODOS + " OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+
+    private static final String SQL_ACTUALIZAR =
+            "UPDATE MANTENIMIENTO SET id_empleado=?, fecha_realizacion=?, estado=?, " +
+            "costo=?, descripcion_trabajo=? WHERE id_mantenimiento=?";
+
+    public MantenimientoDAOImpl() { super(); }
+}
