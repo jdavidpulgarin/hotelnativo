@@ -139,6 +139,19 @@ public class CheckInOutService {
         return checkinActivo;
     }
 
+    /**
+     * Proceso automático de checkout — MEJORA 5.
+     *
+     * Busca todos los check-ins activos cuya fecha de salida de reserva ya
+     * venció (≤ hoy) y ejecuta el checkout con nota automática. Típicamente se
+     * invoca a las 11:00 AM desde el menú de administración.
+     *
+     * @return número de checkouts procesados exitosamente
+     */
+    public List<CheckInOut> listarTodos() {
+        return checkInOutDAO.listarTodos();
+    }
+
     // ── Métodos privados de apoyo ─────────────────────────────────────────────
     private Reserva obtenerReservaConfirmadaOLanzarError(int idReserva) throws ExcepcionNegocio {
         Reserva reserva = obtenerReservaOLanzarError(idReserva);
