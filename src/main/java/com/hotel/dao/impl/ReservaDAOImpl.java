@@ -193,3 +193,23 @@ public class ReservaDAOImpl extends BaseDAO implements IReservaDAO, IReservaBusq
         }
         return lista;
     }
+ /**
+     * Versión paginada. pagina=0 devuelve la primera página.
+     * Usa Oracle OFFSET/FETCH para no cargar todo el historial en memoria.
+     */
+    public List<Reserva> listarTodas(int pagina, int tamano) {
+        List<Reserva> lista = new ArrayList<>();
+        Connection conn = obtener();
+        try (PreparedStatement stmt = conn.prepareStatement(SQL_LISTAR_PAGINADA)) {
+            stmt.setInt(1, pagina * tamano);
+            stmt.setInt(2, tamano);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) lista.add(mapearFilaCompleta(rs));
+            }
+        } catch (SQLException e) {
+            throw new ExcepcionBaseDatos("Error al listar reservas paginadas: " + e.getMessage(), e);
+        } finally {
+            liberar(conn);
+        }
+        return lista;
+    }
