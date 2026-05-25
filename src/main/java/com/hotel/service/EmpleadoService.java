@@ -49,4 +49,37 @@ public class EmpleadoService {
         this.empleadoDAO = empleadoDAO;
         this.authService = authService;
     }
-}
+
+    /**
+     * Registra un nuevo empleado y su contraseña inicial en el sistema de
+     * autenticación.
+     *
+     * @param nombre nombre del empleado
+     * @param apellido apellido
+     * @param email correo (usado como login)
+     * @param telefono teléfono
+     * @param idCargo ID del cargo asignado
+     * @param passwordInicial contraseña inicial (se almacena como hash SHA-256)
+     * @return empleado creado con ID generado por la BD
+     * @throws ExcepcionNegocio si el email ya está registrado
+     * @throws ExcepcionValidacion si algún campo es inválido
+     */
+    public Empleado registrarEmpleado(String nombre, String segundoNombre,
+            String apellido, String apellido2,
+            String email, String telefono,
+            int idCargo, String passwordInicial,
+            double salario, String tipoContrato,
+            String tipoPago, LocalDate fechaFinContrato)
+            throws ExcepcionNegocio {
+        ValidadorEntradas.validarLargoNombre(nombre, "nombre");
+        ValidadorEntradas.validarLargoNombre(apellido, "apellido");
+        ValidadorEntradas.validarFormatoEmail(email);
+        ValidadorEntradas.validarFormatoTelefono(telefono);
+        ValidadorEntradas.validarIdPositivo(idCargo, "cargo");
+        ValidadorEntradas.validarCampoRequerido(passwordInicial, "password");
+
+        if (authService.obtenerEmpleadoPorEmail(email).isPresent()) {
+            throw new ExcepcionNegocio("EMAIL_DUPLICADO",
+                    "Ya existe un empleado registrado con el email: " + email);
+        }
+    }
