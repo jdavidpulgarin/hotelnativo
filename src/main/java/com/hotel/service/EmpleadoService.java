@@ -212,6 +212,10 @@ public class EmpleadoService {
         return empleadoDAO.buscarPorId(idEmpleado);
     }
 
+    public List<Empleado> listarTodosLosEmpleados() {
+        return empleadoDAO.listarTodos();
+    }
+
     // ── Métodos privados ──────────────────────────────────────────────────────
     private Empleado obtenerEmpleadoOLanzarError(int idEmpleado) throws ExcepcionNegocio {
         return empleadoDAO.buscarPorId(idEmpleado)
