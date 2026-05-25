@@ -220,6 +220,11 @@ public class EmpleadoService {
         return empleadoDAO.listarCargos();
     }
 
+    public List<Empleado> buscarPorCargo(int idCargo) throws ExcepcionValidacion {
+        ValidadorEntradas.validarIdPositivo(idCargo, "cargo");
+        return empleadoDAO.buscarPorCargo(idCargo);
+    }
+
     // ── Métodos privados ──────────────────────────────────────────────────────
     private Empleado obtenerEmpleadoOLanzarError(int idEmpleado) throws ExcepcionNegocio {
         return empleadoDAO.buscarPorId(idEmpleado)
