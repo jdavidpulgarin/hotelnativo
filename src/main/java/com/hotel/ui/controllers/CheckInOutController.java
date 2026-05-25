@@ -154,4 +154,20 @@ public class CheckInOutController {
                                 .toLowerCase().contains(texto));
         });
     }
+      @FXML
+    public void realizarCheckin() { mostrarFormularioCheckin(); }
+
+    @FXML
+    public void realizarCheckout() {
+        CheckInOut sel = tabla.getSelectionModel().getSelectedItem();
+        if (sel == null) {
+            NotificationUtil.advertencia("Selecciona un check-in activo para hacer check-out.");
+            return;
+        }
+        if (sel.haRealizadoCheckout()) {
+            NotificationUtil.advertencia("Este registro ya tiene check-out registrado.");
+            return;
+        }
+        mostrarDialogCheckout(sel);
+    }
 }
