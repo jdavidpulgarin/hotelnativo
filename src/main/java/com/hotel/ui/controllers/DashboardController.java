@@ -334,6 +334,36 @@ public class DashboardController {
         hiloDashboard.setUncaughtExceptionHandler(new ManejadorExcepciones());
         hiloDashboard.start();
 }
+     private VBox crearSaludoHeader() {
+        VBox box = new VBox(5);
+        int hora = java.time.LocalTime.now().getHour();
+        String salTxt = hora < 12 ? "Buenos días" : hora < 18 ? "Buenas tardes" : "Buenas noches";
+        String nombre = ctx.getEmpleadoActual() != null ? ctx.getEmpleadoActual().getNombre() : "";
+        Label saludo = new Label(salTxt + ", " + nombre + " 👋");
+        saludo.setStyle("-fx-font-size:24px; -fx-font-weight:900; -fx-text-fill:#0f172a;");
+        Label sub = new Label("Aquí tienes el resumen del hotel en tiempo real");
+        sub.setStyle("-fx-font-size:13.5px; -fx-text-fill:#64748b;");
+
+        HBox badgeRow = new HBox(8);
+        badgeRow.setAlignment(Pos.CENTER_LEFT);
+        badgeRow.setPadding(new Insets(5, 0, 0, 0));
+
+        String fechaStr = LocalDate.now().format(
+                DateTimeFormatter.ofPattern("EEEE dd 'de' MMMM", LOCALE_ES));
+        String fechaCap = fechaStr.substring(0,1).toUpperCase() + fechaStr.substring(1);
+        Label fechaBadge = new Label("📅 " + fechaCap);
+        fechaBadge.setStyle("-fx-font-size:11.5px; -fx-font-weight:600; -fx-text-fill:#3b82f6;" +
+                "-fx-background-color:#eff6ff; -fx-background-radius:20px; -fx-padding:4px 13px;");
+
+        String turno = hora < 12 ? "Turno Mañana 🌤" : hora < 18 ? "Turno Tarde 🌇" : "Turno Noche 🌙";
+        Label turnoBadge = new Label(turno);
+        turnoBadge.setStyle("-fx-font-size:11.5px; -fx-font-weight:600; -fx-text-fill:#7c3aed;" +
+                "-fx-background-color:#f5f3ff; -fx-background-radius:20px; -fx-padding:4px 13px;");
+
+        badgeRow.getChildren().addAll(fechaBadge, turnoBadge);
+        box.getChildren().addAll(saludo, sub, badgeRow);
+        return box;
+    } 
     
     
-                   }
+ }
