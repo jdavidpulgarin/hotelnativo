@@ -269,5 +269,22 @@ public class ClientesController {
         grid.addRow(3, etiqueta("Email *:"),             vbEmail,     etiqueta("Teléfono *:"),       vbTelefono);
         grid.addRow(4, etiqueta("Nacionalidad *:"),      fNacionalidad, etiqueta("Ciudad origen:"),  fCiudad);
     
+          VBox content = new VBox(16);
+        Label header = new Label(clienteEditar == null ? "Registrar nuevo cliente" : "Editar cliente");
+        header.setStyle("-fx-font-size:16px; -fx-font-weight:bold; -fx-text-fill:#1a3a5c;");
+        Label errorLbl = new Label("");
+        errorLbl.setStyle("-fx-text-fill:#dc2626; -fx-font-size:12px;");
+        content.getChildren().addAll(header, new Separator(), grid, errorLbl);
+
+        dialog.getDialogPane().setContent(content);
+        dialog.getDialogPane().getButtonTypes().addAll(
+                new ButtonType("Guardar", ButtonBar.ButtonData.OK_DONE),
+                ButtonType.CANCEL);
+        dialog.getDialogPane().setStyle("-fx-background-color:white; -fx-background-radius:12px;");
+
+        Button btnGuardar = (Button) dialog.getDialogPane().lookupButton(
+                dialog.getDialogPane().getButtonTypes().get(0));
+        btnGuardar.setStyle("-fx-background-color:#1a3a5c; -fx-text-fill:white; " +
+                            "-fx-font-weight:bold; -fx-background-radius:8px; -fx-padding:8px 18px;");
 }
 }
