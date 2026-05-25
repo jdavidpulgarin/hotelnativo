@@ -316,6 +316,24 @@ public class DashboardController {
                     actualizarChartsRow(chartsContainer, reservas, habitaciones, facturas);
                     actualizarTablaRecientes(recentTable, reservas);
                 });
-    }
+    } catch (Exception e) {
+                e.printStackTrace();
+                String msg = e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName();
+                Platform.runLater(() -> {
+                    NotificationUtil.advertencia("Error cargando datos: " + msg);
+                    kpiRow.getChildren().clear();
+                    Label err = new Label("⚠ Error al cargar datos:\n" + msg);
+                    err.setStyle("-fx-text-fill:#dc2626; -fx-font-size:13px;");
+                    err.setWrapText(true);
+                    kpiRow.getChildren().add(err);
+                });
+            }
+        });
+        hiloDashboard.setName("hilo-dashboard");
+        hiloDashboard.setDaemon(true);
+        hiloDashboard.setUncaughtExceptionHandler(new ManejadorExcepciones());
+        hiloDashboard.start();
 }
+    
+    
                    }
