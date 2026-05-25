@@ -1167,4 +1167,63 @@ public class DashboardController {
         c.setCellValueFactory(data -> new SimpleStringProperty(extractor.apply(data.getValue())));
         return c;
     }
+    
+        // ── Wrappers de card premium (charts modernos) ────────────────────────────
+
+    private VBox enCardPremium(String titulo, Node contenido) {
+        VBox card = new VBox(12);
+        card.setPadding(new Insets(20, 20, 16, 20));
+        card.setStyle(
+                "-fx-background-color: white;" +
+                "-fx-background-radius: 20px;" +
+                "-fx-border-color: rgba(226,232,240,0.7);" +
+                "-fx-border-width: 1px;" +
+                "-fx-border-radius: 20px;" +
+                "-fx-effect: dropshadow(gaussian,rgba(15,23,42,0.09),28,0,0,8);");
+        Label t = new Label(titulo);
+        t.setStyle("-fx-font-size:13.5px; -fx-font-weight:800; -fx-text-fill:#0f172a;");
+        Region sep = new Region();
+        sep.setPrefHeight(1);
+        sep.setStyle("-fx-background-color: rgba(226,232,240,0.55);");
+        card.getChildren().addAll(t, sep, contenido);
+        return card;
+    }
+
+    private VBox enCardConExtraPremium(String titulo, Node badge, Node contenido) {
+        VBox card = new VBox(12);
+        card.setPadding(new Insets(20, 20, 16, 20));
+        card.setStyle(
+                "-fx-background-color: white;" +
+                "-fx-background-radius: 20px;" +
+                "-fx-border-color: rgba(226,232,240,0.7);" +
+                "-fx-border-width: 1px;" +
+                "-fx-border-radius: 20px;" +
+                "-fx-effect: dropshadow(gaussian,rgba(15,23,42,0.09),28,0,0,8);");
+        Label t = new Label(titulo);
+        t.setStyle("-fx-font-size:13.5px; -fx-font-weight:800; -fx-text-fill:#0f172a;");
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+        HBox header = new HBox(10, t, spacer, badge);
+        header.setAlignment(Pos.CENTER_LEFT);
+        Region sep = new Region();
+        sep.setPrefHeight(1);
+        sep.setStyle("-fx-background-color: rgba(226,232,240,0.55);");
+        card.getChildren().addAll(header, sep, contenido);
+        return card;
+    }
+
+    private void animarEntradaFila(Node node, int delayMs) {
+        node.setOpacity(0);
+        node.setTranslateY(18);
+        PauseTransition pause = new PauseTransition(Duration.millis(delayMs));
+        pause.setOnFinished(e -> {
+            FadeTransition ft = new FadeTransition(Duration.millis(480), node);
+            ft.setFromValue(0); ft.setToValue(1);
+            TranslateTransition tt = new TranslateTransition(Duration.millis(480), node);
+            tt.setFromY(18); tt.setToY(0);
+            tt.setInterpolator(Interpolator.EASE_OUT);
+            new ParallelTransition(ft, tt).play();
+        });
+        pause.play();
+    }
     }
