@@ -65,7 +65,7 @@ public class MantenimientoDAOImpl extends BaseDAO implements IMantenimientoDAO {
             "costo=?, descripcion_trabajo=? WHERE id_mantenimiento=?";
 
     public MantenimientoDAOImpl() { super(); }
-}
+
 @Override
     public Mantenimiento insertar(Mantenimiento m) {
         String sql = "INSERT INTO MANTENIMIENTO " +
@@ -206,3 +206,4 @@ private Mantenimiento mapearFila(ResultSet rs) throws SQLException {
         m.setDescripcionTrabajo(rs.getString("descripcion_trabajo") != null ? rs.getString("descripcion_trabajo") : "");
         return m;
     }
+}
