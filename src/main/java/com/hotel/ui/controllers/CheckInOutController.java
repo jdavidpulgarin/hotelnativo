@@ -261,4 +261,29 @@ public class CheckInOutController {
             // Lógica de búsqueda
         });
     }
+     
+        // Grid de datos cliente
+        GridPane gridCliente = new GridPane();
+        gridCliente.setHgap(12); gridCliente.setVgap(10);
+        TextField fCedula        = tf("Cédula *");
+        TextField fNombre        = tf("Primer nombre *");
+        TextField fSegundoNombre = tf("Segundo nombre");
+        TextField fApellido      = tf("Primer apellido *");
+        TextField fApellido2     = tf("Segundo apellido");
+        TextField fEmail         = tf("Email *");
+        TextField fTelefono      = tf("Teléfono *");
+        TextField fNacionalidad  = tf("Nacionalidad *");
+        TextField fCiudad        = tf("Ciudad origen");
+        
+        // Grid de reserva
+        GridPane gridReserva = new GridPane();
+        gridReserva.setHgap(12); gridReserva.setVgap(10);
+        TextField fIdReserva  = tf("ID de la reserva (CONFIRMADA)");
+        TextField fIdEmpleado = tf("ID del empleado que atiende");
+        TextArea  fObs        = new TextArea();
+        fObs.setPromptText("Observaciones (opcional)");
+        fObs.setPrefRowCount(2);
+        
+        Label lblHoraIngreso = new Label("⏱ " + LocalDateTime.now().format(
+                DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")));
 }
