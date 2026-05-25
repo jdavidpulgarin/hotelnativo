@@ -216,6 +216,10 @@ public class EmpleadoService {
         return empleadoDAO.listarTodos();
     }
 
+    public List<Cargo> listarCargos() {
+        return empleadoDAO.listarCargos();
+    }
+
     // ── Métodos privados ──────────────────────────────────────────────────────
     private Empleado obtenerEmpleadoOLanzarError(int idEmpleado) throws ExcepcionNegocio {
         return empleadoDAO.buscarPorId(idEmpleado)
