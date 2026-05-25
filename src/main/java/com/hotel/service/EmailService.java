@@ -34,12 +34,12 @@ public class EmailService {
     private String fromAddress;
     private String password;
     private boolean configurado = false;
-    
-        public EmailService() {
+
+    public EmailService() {
         cargarConfiguracion();
     }
-        
-        private void cargarConfiguracion() {
+
+    private void cargarConfiguracion() {
         try (InputStream is = getClass().getResourceAsStream("/com/hotel/email.properties")) {
             if (is == null) {
                 System.err.println("[EMAIL] email.properties no encontrado en classpath.");
@@ -49,5 +49,25 @@ public class EmailService {
             cfg.load(is);
 
             fromAddress = cfg.getProperty("mail.from", "").trim();
-            password    = cfg.getProperty("mail.password", "").trim();
+            password = cfg.getProperty("mail.password", "").trim();
+
+            smtpProps.put("mail.smtp.host", cfg.getProperty("mail.smtp.host", "smtp.gmail.com"));
+            smtpProps.put("mail.smtp.port", cfg.getProperty("mail.smtp.port", "587"));
+            smtpProps.put("mail.smtp.auth", cfg.getProperty("mail.smtp.auth", "true"));
+            smtpProps.put("mail.smtp.starttls.enable", cfg.getProperty("mail.smtp.starttls.enable", "true"));
+            smtpProps.put("mail.smtp.ssl.trust", cfg.getProperty("mail.smtp.host", "smtp.gmail.com"));
+
+            configurado = !fromAddress.isEmpty()
+                    && !password.isEmpty()
+                    && !password.startsWith("xxxx");
+
+            if (!configurado) {
+                System.out.println("[EMAIL] Configuración SMTP pendiente. Edita src/com/hotel/email.properties.");
+            } else {
+                System.out.println("[EMAIL] SMTP configurado: " + fromAddress);
+            }
+        } catch (IOException e) {
+            System.err.println("[EMAIL] Error leyendo email.properties: " + e.getMessage());
+        }
+    }
 }
