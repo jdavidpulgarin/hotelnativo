@@ -109,3 +109,29 @@ public class ReservaDAOImpl extends BaseDAO implements IReservaDAO, IReservaBusq
 
     public ReservaDAOImpl() { super(); }
 }
+@Override
+    public Reserva insertar(Reserva reserva) {
+        String sql = "INSERT INTO RESERVA " +
+                "(id_reserva, id_cliente, id_habitacion, fecha_entrada, fecha_salida, " +
+                " estado, num_personas, precio_total) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        return enTransaccion(conn -> {
+            int seqVal = siguienteSeq(conn, "seq_reserva");
+            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                // Usar el id_cliente real (documento) para que el JOIN funcione
+                String idClienteStr = reserva.getCliente().getDocumento() != null
+                        ? reserva.getCliente().getDocumento()
+                        : String.valueOf(reserva.getCliente().getId());
+                stmt.setString(1, fmt("RES", seqVal));
+                stmt.setString(2, idClienteStr);
+                stmt.setString(3, fmt("HAB", reserva.getHabitacion().getId()));
+                stmt.setDate(4, java.sql.Date.valueOf(reserva.getFechaEntrada()));
+                stmt.setDate(5, java.sql.Date.valueOf(reserva.getFechaSalida()));
+                stmt.setString(6, reserva.getEstado().name());
+                stmt.setInt(7, reserva.getNumPersonas());
+                stmt.setDouble(8, reserva.getPrecioTotal());
+                stmt.executeUpdate();
+            }
+            reserva.setId(seqVal);
+            return reserva;
+        });
+    }
