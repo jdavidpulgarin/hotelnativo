@@ -101,3 +101,34 @@ public class MantenimientoDAOImpl extends BaseDAO implements IMantenimientoDAO {
             }
         });
     }
+@Override
+    public Optional<Mantenimiento> buscarPorId(int id) {
+        Connection conn = obtener();
+        try (PreparedStatement stmt = conn.prepareStatement(SQL_BUSCAR_POR_ID)) {
+            stmt.setString(1, fmt("MAN", id));
+            try (ResultSet rs = stmt.executeQuery()) {
+                return rs.next() ? Optional.of(mapearFila(rs)) : Optional.empty();
+            }
+        } catch (SQLException e) {
+            throw new ExcepcionBaseDatos("Error al buscar mantenimiento: " + e.getMessage(), e);
+        } finally {
+            liberar(conn);
+        }
+    }
+
+    @Override
+    public List<Mantenimiento> listarPorHabitacion(int idHabitacion) {
+        List<Mantenimiento> lista = new ArrayList<>();
+        Connection conn = obtener();
+        try (PreparedStatement stmt = conn.prepareStatement(SQL_POR_HABITACION)) {
+            stmt.setString(1, fmt("HAB", idHabitacion));
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) lista.add(mapearFila(rs));
+            }
+        } catch (SQLException e) {
+            throw new ExcepcionBaseDatos("Error al listar mantenimientos por habitación: " + e.getMessage(), e);
+        } finally {
+            liberar(conn);
+        }
+        return lista;
+    }
