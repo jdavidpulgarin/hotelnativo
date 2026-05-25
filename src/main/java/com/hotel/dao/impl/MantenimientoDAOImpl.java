@@ -86,3 +86,18 @@ public class MantenimientoDAOImpl extends BaseDAO implements IMantenimientoDAO {
             return m;
         });
     }
+@Override
+    public boolean actualizar(Mantenimiento m) {
+        return enTransaccion(conn -> {
+            try (PreparedStatement stmt = conn.prepareStatement(SQL_ACTUALIZAR)) {
+                stmt.setString(1, fmt("EMP", m.getEmpleadoResponsable().getId()));
+                stmt.setDate(2, m.getFechaRealizacion() != null
+                        ? Date.valueOf(m.getFechaRealizacion()) : null);
+                stmt.setString(3, m.getEstado().name());
+                stmt.setDouble(4, m.getCosto());
+                stmt.setString(5, m.getDescripcionTrabajo());
+                stmt.setString(6, fmt("MAN", m.getId()));
+                return stmt.executeUpdate() > 0;
+            }
+        });
+    }
