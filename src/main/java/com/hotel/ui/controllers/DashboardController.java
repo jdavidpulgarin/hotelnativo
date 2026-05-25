@@ -464,4 +464,69 @@ public class DashboardController {
 
         return card;
     }
+    
+    private void actualizarKPIs(HBox row,
+            long totalHabs, long disponibles, long ocupadas, long clientes,
+            double ingresos, long checkoutsHoy,
+            List<Habitacion> habitaciones, List<Cliente> clientesList,
+            List<Factura> facturasList, List<Reserva> reservasList) {
+
+        row.getChildren().clear();
+
+        // { valor, etiqueta, icono, gradienteBg, shadowColor, accion }
+        Object[][] specs = {
+            { String.valueOf(totalHabs),
+              "Total Habitaciones", "🛏",
+              "linear-gradient(to bottom right, #0f172a, #1a2744)",
+              "rgba(15,23,42,0.45)",
+              (Runnable)() -> abrirModalHabitaciones("Todas las Habitaciones", habitaciones, null) },
+
+            { String.valueOf(disponibles),
+              "Disponibles", "✅",
+              "linear-gradient(to bottom right, #065f46, #059669)",
+              "rgba(5,150,105,0.42)",
+              (Runnable)() -> abrirModalHabitaciones("Habitaciones Disponibles",
+                      habitaciones, Habitacion.EstadoHabitacion.DISPONIBLE) },
+
+            { String.valueOf(ocupadas),
+              "Ocupadas", "🔑",
+              "linear-gradient(to bottom right, #1d4ed8, #3b82f6)",
+              "rgba(59,130,246,0.42)",
+              (Runnable)() -> abrirModalHabitaciones("Habitaciones Ocupadas",
+                      habitaciones, Habitacion.EstadoHabitacion.OCUPADA) },
+
+            { String.valueOf(clientes),
+              "Clientes", "👥",
+              "linear-gradient(to bottom right, #4c1d95, #8b5cf6)",
+              "rgba(139,92,246,0.42)",
+              (Runnable)() -> abrirModalClientes(clientesList) },
+
+            { String.format("$%,.0f", ingresos),
+              "Ingresos totales", "💰",
+              "linear-gradient(to bottom right, #065f46, #10b981)",
+              "rgba(16,185,129,0.42)",
+              (Runnable)() -> abrirModalIngresos(facturasList) },
+
+            { String.valueOf(checkoutsHoy),
+              "Salidas hoy", "🚪",
+              "linear-gradient(to bottom right, #9f1239, #f43f5e)",
+              "rgba(244,63,94,0.42)",
+              (Runnable)() -> abrirModalSalidasHoy(reservasList) }
+        };
+
+        int[] idx = {0};
+        for (Object[] s : specs) {
+            final String   value      = (String)   s[0];
+            final String   label      = (String)   s[1];
+            final String   icon       = (String)   s[2];
+            final String   gradientBg = (String)   s[3];
+            final String   shadowColor= (String)   s[4];
+            final Runnable accion     = (Runnable) s[5];
+            final int delay = idx[0]++ * 80;
+
+            VBox card = construirKpiCard(value, label, icon, gradientBg, shadowColor, accion, delay);
+            HBox.setHgrow(card, Priority.ALWAYS);
+            row.getChildren().add(card);
+        }
+    }
  }
