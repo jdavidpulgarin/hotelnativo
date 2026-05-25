@@ -82,4 +82,18 @@ public class EmpleadoService {
             throw new ExcepcionNegocio("EMAIL_DUPLICADO",
                     "Ya existe un empleado registrado con el email: " + email);
         }
+
+        Cargo cargoRef = new Cargo();
+        cargoRef.setId(idCargo);
+
+        Empleado nuevoEmpleado = new Empleado(0, nombre, apellido, email,
+                telefono, cargoRef, LocalDate.now());
+        nuevoEmpleado.setSegundoNombre(segundoNombre);
+        nuevoEmpleado.setApellido2(apellido2);
+        nuevoEmpleado.setSalario(salario);
+        nuevoEmpleado.setTipoContrato(tipoContrato);
+        nuevoEmpleado.setTipoPago(tipoPago);
+        nuevoEmpleado.setFechaFinContrato(fechaFinContrato);
+
+        Empleado guardado = empleadoDAO.insertar(nuevoEmpleado);
     }
