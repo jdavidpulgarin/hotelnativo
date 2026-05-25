@@ -188,8 +188,17 @@ public class EmpleadoService {
 
         System.out.println("[EMPLEADO] Contraseña reseteada y persistida para: " + empleado.getEmail());
     }
-    // ── Métodos privados ──────────────────────────────────────────────────────
 
+    /**
+     * Persiste en BD un hash ya calculado (usado por LoginController tras
+     * cambio de primer login).
+     */
+    public void persistirHashEnBD(int idEmpleado, String hash) throws ExcepcionNegocio {
+        ValidadorEntradas.validarIdPositivo(idEmpleado, "empleado");
+        empleadoDAO.actualizarPasswordHash(idEmpleado, hash);
+    }
+
+    // ── Métodos privados ──────────────────────────────────────────────────────
     private Empleado obtenerEmpleadoOLanzarError(int idEmpleado) throws ExcepcionNegocio {
         return empleadoDAO.buscarPorId(idEmpleado)
                 .orElseThrow(() -> new ExcepcionNegocio("EMPLEADO_NOT_FOUND",
