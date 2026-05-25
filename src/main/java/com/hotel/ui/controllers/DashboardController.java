@@ -173,4 +173,43 @@ public class DashboardController {
         centerRoot.getChildren().addAll(chatPanel, fab);
         agregarMensajeBot(ctx.getChatbotService().obtenerMensajeBienvenida());
 }
+    
+    
+     private void toggleChat() {
+        if (!chatVisible) {
+            chatPanel.setVisible(true);
+            chatPanel.setManaged(true);
+            chatPanel.setTranslateY(30);
+            chatPanel.setOpacity(0);
+            TranslateTransition tt = new TranslateTransition(Duration.millis(220), chatPanel);
+            tt.setToY(0);
+            FadeTransition ft = new FadeTransition(Duration.millis(220), chatPanel);
+            ft.setToValue(1);
+            new ParallelTransition(tt, ft).play();
+            chatVisible = true;
+            Platform.runLater(() -> chatInput.requestFocus());
+        } else {
+            TranslateTransition tt = new TranslateTransition(Duration.millis(180), chatPanel);
+            tt.setToY(30);
+            FadeTransition ft = new FadeTransition(Duration.millis(180), chatPanel);
+            ft.setToValue(0);
+            ParallelTransition pt = new ParallelTransition(tt, ft);
+            pt.setOnFinished(e -> { chatPanel.setVisible(false); chatPanel.setManaged(false); });
+            pt.play();
+            chatVisible = false;
+        }
+    }
+
+    private void enviarMensaje() {
+        String texto = chatInput.getText().trim();
+        if (texto.isEmpty()) return;
+        chatInput.clear();
+        agregarMensajeUsuario(texto);
+
+        Label typing = new Label("✦ Escribiendo...");
+        typing.setStyle("-fx-text-fill:#94a3b8; -fx-font-size:11px; -fx-padding:4px 14px;");
+        mensajesBox.getChildren().add(typing);
+        scrollAlFinal();
+}
+    
 }
