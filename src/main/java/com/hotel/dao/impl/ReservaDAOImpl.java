@@ -164,3 +164,32 @@ public class ReservaDAOImpl extends BaseDAO implements IReservaDAO, IReservaBusq
             }
         });
     }
+ @Override
+    public Optional<Reserva> buscarPorId(int idReserva) {
+        Connection conn = obtener();
+        try (PreparedStatement stmt = conn.prepareStatement(SQL_BUSCAR_POR_ID)) {
+            stmt.setString(1, fmt("RES", idReserva));
+            try (ResultSet rs = stmt.executeQuery()) {
+                return rs.next() ? Optional.of(mapearFilaCompleta(rs)) : Optional.empty();
+            }
+        } catch (SQLException e) {
+            throw new ExcepcionBaseDatos("Error al buscar reserva: " + e.getMessage(), e);
+        } finally {
+            liberar(conn);
+        }
+    }
+
+    @Override
+    public List<Reserva> listarTodas() {
+        List<Reserva> lista = new ArrayList<>();
+        Connection conn = obtener();
+        try (PreparedStatement stmt = conn.prepareStatement(SQL_LISTAR_TODAS);
+             ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) lista.add(mapearFilaCompleta(rs));
+        } catch (SQLException e) {
+            throw new ExcepcionBaseDatos("Error al listar reservas: " + e.getMessage(), e);
+        } finally {
+            liberar(conn);
+        }
+        return lista;
+    }
