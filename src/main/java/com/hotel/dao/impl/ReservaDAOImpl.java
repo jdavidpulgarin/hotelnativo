@@ -251,3 +251,37 @@ public class ReservaDAOImpl extends BaseDAO implements IReservaDAO, IReservaBusq
         }
         return lista;
     }
+@Override
+    public List<Reserva> buscarPorRangoFechas(LocalDate fechaInicio, LocalDate fechaFin) {
+        List<Reserva> lista = new ArrayList<>();
+        Connection conn = obtener();
+        try (PreparedStatement stmt = conn.prepareStatement(SQL_BUSCAR_POR_RANGO_FECHAS)) {
+            stmt.setDate(1, Date.valueOf(fechaInicio));
+            stmt.setDate(2, Date.valueOf(fechaFin));
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) lista.add(mapearFilaCompleta(rs));
+            }
+        } catch (SQLException e) {
+            throw new ExcepcionBaseDatos("Error al buscar por rango: " + e.getMessage(), e);
+        } finally {
+            liberar(conn);
+        }
+        return lista;
+    }
+
+    @Override
+    public List<Reserva> buscarPorEstado(String estado) {
+        List<Reserva> lista = new ArrayList<>();
+        Connection conn = obtener();
+        try (PreparedStatement stmt = conn.prepareStatement(SQL_BUSCAR_POR_ESTADO)) {
+            stmt.setString(1, estado);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) lista.add(mapearFilaCompleta(rs));
+            }
+        } catch (SQLException e) {
+            throw new ExcepcionBaseDatos("Error al buscar por estado: " + e.getMessage(), e);
+        } finally {
+            liberar(conn);
+        }
+        return lista;
+    }
