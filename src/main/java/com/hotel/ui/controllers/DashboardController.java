@@ -779,4 +779,49 @@ public class DashboardController {
         String[] ORDEN_PIE   = { "DISPONIBLE", "OCUPADA",   "RESERVADA", "MANTENIMIENTO" };
         String[] COLORES_PIE = { "#10b981",    "#f43f5e",   "#f97316",   "#8b5cf6"       };
         String[] LABELS_PIE  = { "Disponible", "Ocupada",   "Reservada", "Mantenim."     };
+        
+        or (int i = 0; i < ORDEN_PIE.length; i++) {
+            String est = ORDEN_PIE[i];
+            if (!estados.containsKey(est)) continue;
+            long count = estados.get(est);
+            pie.getData().add(new PieChart.Data(LABELS_PIE[i] + "  " + count, count));
+        }
+        estados.forEach((est, count) -> {
+            if (!Arrays.asList(ORDEN_PIE).contains(est))
+                pie.getData().add(new PieChart.Data(est + "  " + count, count));
+        });
+
+        int[] ci = {0};
+        pie.getData().forEach(d -> {
+            int ci2 = ci[0]++;
+            String color = ci2 < COLORES_PIE.length ? COLORES_PIE[ci2] : "#64748b";
+            d.nodeProperty().addListener((obs, o, node) -> {
+                if (node == null) return;
+                node.setStyle("-fx-pie-color: " + color + ";");
+                DropShadow glow = new DropShadow();
+                glow.setColor(Color.web(color));
+                glow.setRadius(18);
+                glow.setSpread(0.35);
+                long pieTotal = (long) pie.getData().stream().mapToDouble(PieChart.Data::getPieValue).sum();
+                Tooltip tip = new Tooltip(
+                        d.getName().split("  ")[0] + "\n" +
+                        (long) d.getPieValue() + " habitaciones\n" +
+                        String.format("%.1f%%", d.getPieValue() * 100.0 / Math.max(1, pieTotal)));
+                tip.setStyle("-fx-background-color:#1e293b; -fx-text-fill:white;" +
+                        "-fx-background-radius:10px; -fx-padding:8px 13px;" +
+                        "-fx-font-size:12px; -fx-font-weight:600;");
+                Tooltip.install(node, tip);
+                node.setOnMouseEntered(e -> {
+                    node.setEffect(glow);
+                    ScaleTransition st = new ScaleTransition(Duration.millis(160), node);
+                    st.setToX(1.07); st.setToY(1.07); st.play();
+                });
+                node.setOnMouseExited(e -> {
+                    node.setEffect(null);
+                    ScaleTransition st = new ScaleTransition(Duration.millis(160), node);
+                    st.setToX(1.0); st.setToY(1.0); st.play();
+                });
+            });
+        });
+    }
  }
