@@ -108,7 +108,7 @@ public class ReservaDAOImpl extends BaseDAO implements IReservaDAO, IReservaBusq
     private static final String SQL_ELIMINAR = "DELETE FROM RESERVA WHERE id_reserva=?";
 
     public ReservaDAOImpl() { super(); }
-}
+
 @Override
     public Reserva insertar(Reserva reserva) {
         String sql = "INSERT INTO RESERVA " +
@@ -328,3 +328,4 @@ private Reserva armarReserva(ResultSet rs, Cliente cliente, Habitacion habitacio
         r.setPrecioTotal(rs.getDouble("precio_total"));
         return r;
     }
+}
