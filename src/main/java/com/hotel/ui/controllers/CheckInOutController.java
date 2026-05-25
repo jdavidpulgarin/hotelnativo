@@ -205,4 +205,60 @@ public class CheckInOutController {
             chip(" Check-outs hoy: " + checkoutsHoy, "#dcfce7", "#15803d")
         );
     }
+     
+       private Label chip(String t, String bg, String fg) {
+        Label l = new Label(t);
+        l.setStyle("-fx-background-color:" + bg + "; -fx-text-fill:" + fg + ";" +
+                "-fx-background-radius:20px; -fx-padding:4px 12px; -fx-font-size:12px;");
+        return l;
+    }
+
+    private TextField tf(String placeholder) {
+        TextField f = new TextField();
+        f.setPromptText(placeholder);
+        f.setStyle("-fx-background-color:#f8fafc; -fx-border-color:#e2e8f0;" +
+                "-fx-border-width:1.5px; -fx-border-radius:8px;" +
+                "-fx-background-radius:8px; -fx-padding:8px 12px;");
+        f.setPrefWidth(160);
+        return f;
+    }
+
+    private Label lab(String t) {
+        Label l = new Label(t);
+        l.setStyle("-fx-font-size:12px; -fx-font-weight:bold; -fx-text-fill:#374151;");
+        return l;
+    }
+
+    private Label seccion(String t) {
+        Label l = new Label(t);
+        l.setStyle("-fx-font-size:13px; -fx-font-weight:bold; -fx-text-fill:#1a3a5c;" +
+                "-fx-padding:4px 0 2px 0;");
+        return l;
+    }
+    
+     private void mostrarFormularioCheckin() {
+        Dialog<ButtonType> dialog = new Dialog<>();
+        dialog.setTitle("Realizar Check-in");
+
+        GridPane gridBusqueda = new GridPane();
+        gridBusqueda.setHgap(12); gridBusqueda.setVgap(10);
+        TextField fCedulaBuscar = tf("Número de cédula");
+        fCedulaBuscar.setPrefWidth(220);
+        Button btnBuscar = new Button("🔍 Buscar");
+        btnBuscar.setStyle("-fx-background-color:#2563a8; -fx-text-fill:white;" +
+                           "-fx-background-radius:8px; -fx-font-size:12px; -fx-padding:7px 14px;");
+        gridBusqueda.add(lab("Cédula:"), 0, 0);
+        gridBusqueda.add(fCedulaBuscar, 1, 0);
+        gridBusqueda.add(btnBuscar, 2, 0);
+
+        Label lblClienteInfo = new Label("Ingresa la cédula y haz clic en Buscar.");
+        lblClienteInfo.setStyle("-fx-font-size:11px; -fx-text-fill:#64748b;");
+
+        // Grid de datos cliente...
+        final int[] clienteIdRef = {-1};
+
+        btnBuscar.setOnAction(e -> {
+            // Lógica de búsqueda
+        });
+    }
 }
