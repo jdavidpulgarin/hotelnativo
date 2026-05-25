@@ -403,6 +403,65 @@ public class DashboardController {
                 "-fx-cursor: hand;";
 
         card.setStyle(baseStyle);
-    
+       // Ícono pill semitransparente
+        Label ico = new Label(icon);
+        ico.setStyle("-fx-font-size:20px;" +
+                     "-fx-background-color:rgba(255,255,255,0.17);" +
+                     "-fx-background-radius:12px; -fx-padding:10px 12px;");
+
+        Region spacer = new Region();
+        spacer.setPrefHeight(10);
+
+        // Valor principal: blanco, grande
+        Label val = new Label(value);
+        val.setStyle("-fx-font-size:28px; -fx-font-weight:900; -fx-text-fill:white;");
+        val.setWrapText(false);
+
+        // Etiqueta: blanco semitransparente en mayúsculas
+        Label lbl = new Label(label.toUpperCase());
+        lbl.setStyle("-fx-font-size:9.5px; -fx-font-weight:700;" +
+                     "-fx-text-fill:rgba(255,255,255,0.65);" +
+                     "-fx-padding:2px 0 0 0;");
+
+        // Hint inferior
+        Label hint = new Label("Doble clic para detalles ›");
+        hint.setStyle("-fx-font-size:9.5px; -fx-text-fill:rgba(255,255,255,0.30);" +
+                      "-fx-padding:8px 0 0 0;");
+
+        card.getChildren().addAll(ico, spacer, val, lbl, hint);
+
+        // Hover: escala + sombra más intensa
+        card.setOnMouseEntered(e -> {
+            ScaleTransition st = new ScaleTransition(Duration.millis(160), card);
+            st.setToX(1.03); st.setToY(1.03);
+            st.play();
+            card.setStyle(hoverStyle);
+        });
+        card.setOnMouseExited(e -> {
+            ScaleTransition st = new ScaleTransition(Duration.millis(160), card);
+            st.setToX(1.0); st.setToY(1.0);
+            st.play();
+            card.setStyle(baseStyle);
+        });
+
+        // Doble clic abre modal
+        card.setOnMouseClicked((MouseEvent e) -> {
+            if (e.getClickCount() == 2 && onDoubleClick != null) onDoubleClick.run();
+        });
+
+        // Animación de entrada escalonada (fadeUp)
+        card.setOpacity(0);
+        card.setTranslateY(22);
+        PauseTransition pause = new PauseTransition(Duration.millis(delayMs));
+        pause.setOnFinished(ev -> {
+            FadeTransition ft = new FadeTransition(Duration.millis(380), card);
+            ft.setFromValue(0); ft.setToValue(1);
+            TranslateTransition tt = new TranslateTransition(Duration.millis(380), card);
+            tt.setFromY(22); tt.setToY(0);
+            new ParallelTransition(ft, tt).play();
+        });
+        pause.play();
+
+        return card;
     }
  }
