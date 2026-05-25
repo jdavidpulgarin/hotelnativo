@@ -168,7 +168,19 @@ public class EmpleadoService {
         obtenerEmpleadoOLanzarError(idEmpleado);
         empleadoDAO.eliminar(idEmpleado);
     }
-    // ── Métodos privados ──────────────────────────────────────────────────────
+
+    /**
+     * Resetea la contraseña de un empleado. Solo puede ejecutarlo un
+     * administrador (verificar permiso en la vista).
+     *
+     * @throws ExcepcionNegocio si el empleado no existe
+     */
+    public void resetearPassword(int idEmpleado, String nuevaPassword) throws ExcepcionNegocio {
+        ValidadorEntradas.validarIdPositivo(idEmpleado, "empleado");
+        ValidadorEntradas.validarCampoRequerido(nuevaPassword, "nuevaPassword");
+
+        Empleado empleado = obtenerEmpleadoOLanzarError(idEmpleado);
+        // ── Métodos privados ──────────────────────────────────────────────────────
 
     private Empleado obtenerEmpleadoOLanzarError(int idEmpleado) throws ExcepcionNegocio {
         return empleadoDAO.buscarPorId(idEmpleado)
