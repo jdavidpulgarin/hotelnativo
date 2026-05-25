@@ -43,4 +43,58 @@ public class ClienteService {
         this.clienteBusqueda = clienteBusqueda;
         this.reservaBusqueda = reservaBusqueda;
     }
+
+    /**
+     * Registra un nuevo cliente validando datos de entrada. GRASP: Creador -
+     * ClienteService crea instancias de Cliente.
+     *
+     * @param dto datos del cliente a registrar
+     * @return cliente creado con ID asignado
+     * @throws ExcepcionNegocio si el email o documento ya están registrados
+     * @throws ExcepcionValidacion si algún campo tiene formato inválido
+     */
+    public Cliente registrarCliente(ClienteDTO dto) throws ExcepcionNegocio {
+        validarDatosCliente(dto);
+        verificarEmailNoRegistrado(dto.getEmail());
+
+        // GRASP: Creador - esta clase tiene los datos para crear Cliente
+        Cliente nuevoCliente = construirClienteDesdeDTO(dto);
+        return clienteDAO.insertar(nuevoCliente);
+    }
+
+    // ── métodos privados de apoyo ──────────────────────────────────────────────
+    private void validarDatosCliente(ClienteDTO dto) throws ExcepcionValidacion {
+        ValidadorEntradas.validarCampoRequerido(dto.getCedula(), "cédula");
+        ValidadorEntradas.validarSoloNumeros(dto.getCedula(), "cédula");
+        ValidadorEntradas.validarLargoNombre(dto.getNombre(), "nombre");
+        ValidadorEntradas.validarLargoNombre(dto.getApellido(), "apellido");
+        ValidadorEntradas.validarFormatoEmail(dto.getEmail());
+        ValidadorEntradas.validarFormatoTelefono(dto.getTelefono());
+        ValidadorEntradas.validarCampoRequerido(dto.getNacionalidad(), "nacionalidad");
+    }
+
+    private void verificarEmailNoRegistrado(String email) throws ExcepcionNegocio {
+        boolean emailYaRegistrado = clienteBusqueda.buscarPorEmail(email).isPresent();
+        if (emailYaRegistrado) {
+            throw new ExcepcionNegocio("EMAIL_DUPLICADO",
+                    "El email '" + email + "' ya está registrado en el sistema.");
+        }
+    }
+
+    private Cliente obtenerClienteOLanzarError(int idCliente) throws ExcepcionNegocio {
+        return clienteDAO.buscarPorId(idCliente)
+                .orElseThrow(() -> new ExcepcionNegocio("CLIENTE_NOT_FOUND",
+                "No se encontró el cliente con ID: " + idCliente));
+    }
+
+    private Cliente construirClienteDesdeDTO(ClienteDTO dto) {
+        Cliente c = new Cliente(0, dto.getNombre(), dto.getApellido(), dto.getEmail(),
+                dto.getTelefono(), dto.getCedula(), dto.getNacionalidad(), LocalDate.now());
+        c.setDocumento(dto.getCedula());
+        c.setSegundoNombre(dto.getSegundoNombre());
+        c.setApellido2(dto.getApellido2());
+        c.setCiudadOrigen(dto.getCiudadOrigen());
+        return c;
+    }
+
 }
