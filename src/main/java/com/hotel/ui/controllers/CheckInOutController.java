@@ -170,4 +170,25 @@ public class CheckInOutController {
         }
         mostrarDialogCheckout(sel);
     }
+    
+      @FXML
+    public void checkoutsAutomaticos() {
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+        confirm.setTitle("Checkouts Automáticos 11AM");
+        confirm.setHeaderText("¿Procesar checkouts automáticos?");
+        confirm.setContentText(
+                "Se procesarán todos los check-ins activos cuya fecha de salida ya venció.");
+        confirm.showAndWait().ifPresent(btn -> {
+            if (btn == ButtonType.OK) {
+                new Thread(() -> {
+                    int procesados = ctx.getCheckInOutService().procesarCheckoutsAutomaticos();
+                    Platform.runLater(() -> {
+                        NotificationUtil.exito(
+                                "Checkouts automáticos: " + procesados + " procesado(s).");
+                        cargarDatos();
+                    });
+                }).start();
+            }
+        });
+    }
 }
