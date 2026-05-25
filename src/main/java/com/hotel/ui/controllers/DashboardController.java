@@ -634,4 +634,58 @@ public class DashboardController {
         dialog.getDialogPane().setContent(content);
         dialog.showAndWait();
     }
+     
+      private void abrirModalIngresos(List<Factura> facturas) {
+        List<Factura> pagadas = facturas.stream()
+                .filter(f -> f.getEstadoPago() == Factura.EstadoPago.PAGADA)
+                .sorted((a, b) -> {
+                    if (a.getFechaEmision() == null) return 1;
+                    if (b.getFechaEmision() == null) return -1;
+                    return b.getFechaEmision().compareTo(a.getFechaEmision());
+                })
+                .collect(Collectors.toList());
+        double total = pagadas.stream().mapToDouble(Factura::getTotal).sum();
+
+        Dialog<Void> dialog = new Dialog<>();
+        dialog.setTitle("Detalle de ingresos");
+        dialog.getDialogPane().setPrefSize(680, 520);
+        dialog.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
+        dialog.getDialogPane().setStyle("-fx-background-color:white;");
+
+        Label totalLbl = new Label("Total acumulado:  " + String.format("$%,.2f", total));
+        totalLbl.setStyle("-fx-font-size:16px; -fx-font-weight:bold; -fx-text-fill:#059669;" +
+                "-fx-background-color:#d1fae5; -fx-background-radius:8px; -fx-padding:8px 16px;");
+
+        TableView<Factura> tabla = new TableView<>();
+        tabla.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
+        tabla.setStyle("-fx-background-color:transparent; -fx-border-color:transparent;");
+        VBox.setVgrow(tabla, Priority.ALWAYS);
+
+        tabla.getColumns().addAll(List.of(
+            colS("# Factura",  f -> "#" + f.getId()),
+            colS("Fecha",      f -> f.getFechaEmision() != null ? f.getFechaEmision().toString() : "—"),
+            colS("Total",      f -> String.format("$%,.0f", f.getTotal())),
+            colS("Estado",     f -> f.getEstadoPago().name())
+        ));
+        tabla.getItems().addAll(pagadas);
+
+        VBox content = new VBox(12,
+            modalHeader("Facturas pagadas  (" + pagadas.size() + " registros)"),
+            totalLbl, new Separator(), tabla);
+        content.setPadding(new Insets(22));
+        dialog.getDialogPane().setContent(content);
+        dialog.showAndWait();
+    }
+
+    private void abrirModalSalidasHoy(List<Reserva> reservas) {
+        LocalDate hoy = LocalDate.now();
+        List<Reserva> salidas = reservas.stream()
+                .filter(r -> hoy.equals(r.getFechaSalida()))
+                .collect(Collectors.toList());
+
+        Dialog<Void> dialog = new Dialog<>();
+        dialog.setTitle("Salidas programadas hoy");
+        dialog.getDialogPane().setPrefSize(820, 500);
+        dialog.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
+        dialog.getDialogPane().setStyle("-fx-background-color:white;");
  }
