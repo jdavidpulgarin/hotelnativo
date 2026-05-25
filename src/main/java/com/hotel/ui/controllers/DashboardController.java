@@ -1368,4 +1368,43 @@ public class DashboardController {
                 "-fx-font-size:9px; -fx-font-weight:700;");
         top.getChildren().addAll(numBox, spacerTop, badge);
         body.getChildren().add(top);
+        
+         if (estado == Habitacion.EstadoHabitacion.DISPONIBLE) {
+            StackPane checkCircle = new StackPane();
+            checkCircle.setPrefSize(46, 46);
+            checkCircle.setMaxSize(46, 46);
+            checkCircle.setStyle("-fx-background-color:linear-gradient(135deg,#dcfce7,#bbf7d0);" +
+                    "-fx-background-radius:50%;" +
+                    "-fx-effect:dropshadow(gaussian,rgba(34,197,94,0.22),8,0,0,2);");
+            Label check = new Label("✓");
+            check.setStyle("-fx-font-size:20px; -fx-text-fill:#16a34a; -fx-font-weight:bold;");
+            checkCircle.getChildren().add(check);
+            HBox cb = new HBox(checkCircle);
+            cb.setAlignment(Pos.CENTER);
+            cb.setPadding(new Insets(4, 0, 4, 0));
+            Label dispTxt = new Label("Disponible");
+            dispTxt.setStyle("-fx-font-size:12px; -fx-font-weight:600; -fx-text-fill:#16a34a;");
+            HBox dtb = new HBox(dispTxt);
+            dtb.setAlignment(Pos.CENTER);
+            body.getChildren().addAll(cb, dtb);
+
+        } else if (estado == Habitacion.EstadoHabitacion.MANTENIMIENTO) {
+            Label iconLbl = new Label("🔧");
+            iconLbl.setStyle("-fx-font-size:30px;");
+            HBox ib = new HBox(iconLbl);
+            ib.setAlignment(Pos.CENTER);
+            ib.setPadding(new Insets(4, 0, 2, 0));
+            Label txt = new Label("En Mantenimiento");
+            txt.setStyle("-fx-font-size:11.5px; -fx-font-weight:600; -fx-text-fill:#a16207;");
+            HBox tb = new HBox(txt);
+            tb.setAlignment(Pos.CENTER);
+            body.getChildren().addAll(ib, tb);
+
+        } else {
+            Label bedIco = new Label(estado == Habitacion.EstadoHabitacion.OCUPADA ? "🛏️" : "🔔");
+            bedIco.setStyle("-fx-font-size:28px; -fx-opacity:0.85;");
+            HBox bedBox = new HBox(bedIco);
+            bedBox.setAlignment(Pos.CENTER);
+            bedBox.setPadding(new Insets(2, 0, 4, 0));
+            body.getChildren().add(bedBox);
     }
