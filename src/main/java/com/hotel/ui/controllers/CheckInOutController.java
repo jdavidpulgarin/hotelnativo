@@ -42,8 +42,8 @@ public class CheckInOutController {
     private final AppContext ctx = AppContext.getInstance();
     private ObservableList<CheckInOut> datos    = FXCollections.observableArrayList();
     private FilteredList<CheckInOut>   filtradas;
-    
-     @FXML
+
+    @FXML
     public void initialize() {
         configurarColumnas();
         filtradas = new FilteredList<>(datos, p -> true);
@@ -51,8 +51,8 @@ public class CheckInOutController {
         tabla.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
         cargarDatos();
     }
-    
-       private void configurarColumnas() {
+
+    private void configurarColumnas() {
         colId.setCellValueFactory(c -> new SimpleStringProperty(
                 "#" + c.getValue().getId()));
         colCliente.setCellValueFactory(c -> {
@@ -67,9 +67,7 @@ public class CheckInOutController {
                     r != null && r.getHabitacion() != null
                             ? r.getHabitacion().getNumero() : "—");
         });
-    }
-       
-          colEntrada.setCellValueFactory(c -> {
+        colEntrada.setCellValueFactory(c -> {
             Reserva r = c.getValue().getReserva();
             return new SimpleStringProperty(
                     r != null && r.getFechaEntrada() != null
@@ -90,7 +88,7 @@ public class CheckInOutController {
         colHoraCheckout.setCellValueFactory(c -> new SimpleStringProperty(
                 c.getValue().getFechaHoraCheckout() != null
                         ? c.getValue().getFechaHoraCheckout().format(FMT) : "—"));
-        
+
         colEstado.setCellValueFactory(c -> {
             Reserva r = c.getValue().getReserva();
             return new SimpleStringProperty(
@@ -106,8 +104,8 @@ public class CheckInOutController {
                 setAlignment(Pos.CENTER);
             }
         });
-        
-         tabla.setRowFactory(tv -> new TableRow<>() {
+
+        tabla.setRowFactory(tv -> new TableRow<>() {
             @Override protected void updateItem(CheckInOut ci, boolean empty) {
                 super.updateItem(ci, empty);
                 if (ci == null || empty) { setStyle(""); return; }
@@ -116,9 +114,9 @@ public class CheckInOutController {
                         : "-fx-background-color:#fffbeb;");
             }
         });
-        
-        
-          @FXML
+    }
+
+    @FXML
     public void cargarDatos() {
         progressBar.setVisible(true);
         new Thread(() -> {
@@ -137,8 +135,8 @@ public class CheckInOutController {
             }
         }).start();
     }
-    
-      @FXML
+
+    @FXML
     public void filtrar() {
         String texto = searchField.getText().toLowerCase().trim();
         filtradas.setPredicate(ci -> {
@@ -154,7 +152,8 @@ public class CheckInOutController {
                                 .toLowerCase().contains(texto));
         });
     }
-      @FXML
+
+    @FXML
     public void realizarCheckin() { mostrarFormularioCheckin(); }
 
     @FXML
@@ -170,8 +169,8 @@ public class CheckInOutController {
         }
         mostrarDialogCheckout(sel);
     }
-    
-      @FXML
+
+    @FXML
     public void checkoutsAutomaticos() {
         Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
         confirm.setTitle("Checkouts Automáticos 11AM");
@@ -191,7 +190,273 @@ public class CheckInOutController {
             }
         });
     }
-     private void actualizarStats(List<CheckInOut> lista) {
+
+    // ── Formulario Check-in ───────────────────────────────────────────────────
+
+    private void mostrarFormularioCheckin() {
+        Dialog<ButtonType> dialog = new Dialog<>();
+        dialog.setTitle("Realizar Check-in");
+
+        // ── Sección búsqueda por cédula ────────────────────────────────────────
+        GridPane gridBusqueda = new GridPane();
+        gridBusqueda.setHgap(12); gridBusqueda.setVgap(10);
+        TextField fCedulaBuscar = tf("Número de cédula");
+        fCedulaBuscar.setPrefWidth(220);
+        Button btnBuscar = new Button("🔍 Buscar");
+        btnBuscar.setStyle("-fx-background-color:#2563a8; -fx-text-fill:white;" +
+                           "-fx-background-radius:8px; -fx-font-size:12px; -fx-padding:7px 14px;");
+        gridBusqueda.add(lab("Cédula:"), 0, 0);
+        gridBusqueda.add(fCedulaBuscar, 1, 0);
+        gridBusqueda.add(btnBuscar, 2, 0);
+
+        Label lblClienteInfo = new Label("Ingresa la cédula y haz clic en Buscar.");
+        lblClienteInfo.setStyle("-fx-font-size:11px; -fx-text-fill:#64748b;");
+
+        // ── Sección datos cliente ───────────────────────────────────────────────
+        GridPane gridCliente = new GridPane();
+        gridCliente.setHgap(12); gridCliente.setVgap(10);
+        TextField fCedula        = tf("Cédula *");
+        TextField fNombre        = tf("Primer nombre *");
+        TextField fSegundoNombre = tf("Segundo nombre");
+        TextField fApellido      = tf("Primer apellido *");
+        TextField fApellido2     = tf("Segundo apellido");
+        TextField fEmail         = tf("Email *");
+        TextField fTelefono      = tf("Teléfono *");
+        TextField fNacionalidad  = tf("Nacionalidad *");
+        TextField fCiudad        = tf("Ciudad origen");
+        setClienteFieldsDisabled(true, fCedula, fNombre, fSegundoNombre, fApellido, fApellido2,
+                                       fEmail, fTelefono, fNacionalidad, fCiudad);
+        gridCliente.addRow(0, lab("Cédula *:"),          fCedula);
+        GridPane.setColumnSpan(fCedula, 3);
+        gridCliente.addRow(1, lab("Primer nombre *:"),  fNombre,      lab("Segundo nombre:"),  fSegundoNombre);
+        gridCliente.addRow(2, lab("Primer apellido *:"), fApellido,   lab("Segundo apellido:"), fApellido2);
+        gridCliente.addRow(3, lab("Email *:"),            fEmail,      lab("Teléfono *:"),      fTelefono);
+        gridCliente.addRow(4, lab("Nacionalidad *:"),     fNacionalidad, lab("Ciudad origen:"), fCiudad);
+
+        // ── Sección datos reserva ───────────────────────────────────────────────
+        GridPane gridReserva = new GridPane();
+        gridReserva.setHgap(12); gridReserva.setVgap(10);
+        TextField fIdReserva  = tf("ID de la reserva (CONFIRMADA)");
+        TextField fIdEmpleado = tf("ID del empleado que atiende");
+        TextArea  fObs        = new TextArea();
+        fObs.setPromptText("Observaciones (opcional)");
+        fObs.setPrefRowCount(2);
+        fObs.setStyle("-fx-background-color:#f8fafc; -fx-border-color:#e2e8f0;" +
+                      "-fx-border-width:1.5px; -fx-border-radius:8px;");
+        Label lblHoraIngreso = new Label("⏱ " + LocalDateTime.now().format(
+                DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")));
+        lblHoraIngreso.setStyle("-fx-font-size:11px; -fx-text-fill:#475569;");
+        gridReserva.addRow(0, lab("ID Reserva:"),    fIdReserva,    lab("ID Empleado:"),  fIdEmpleado);
+        gridReserva.addRow(1, lab("Hora ingreso:"),  lblHoraIngreso);
+        gridReserva.addRow(2, lab("Observaciones:"), fObs);
+        GridPane.setColumnSpan(fObs, 3);
+
+        final int[] clienteIdRef = {-1};
+
+        btnBuscar.setOnAction(e -> {
+            String cedulaBusq = fCedulaBuscar.getText().trim();
+            if (cedulaBusq.isEmpty()) {
+                lblClienteInfo.setText("Ingresa la cédula.");
+                lblClienteInfo.setStyle("-fx-font-size:11px; -fx-text-fill:#b45309;");
+                return;
+            }
+            try {
+                Optional<Cliente> encontrado = ctx.getClienteService()
+                        .listarTodosLosClientes().stream()
+                        .filter(c -> cedulaBusq.equals(c.getDocumento())
+                                  || cedulaBusq.equals(String.valueOf(c.getId())))
+                        .findFirst();
+                if (encontrado.isPresent()) {
+                    Cliente c = encontrado.get();
+                    clienteIdRef[0] = c.getId();
+                    String cedStr = c.getDocumento() != null ? c.getDocumento() : String.valueOf(c.getId());
+                    fCedula.setText(cedStr);
+                    fNombre.setText(c.getNombre());
+                    fSegundoNombre.setText(c.getSegundoNombre() != null ? c.getSegundoNombre() : "");
+                    fApellido.setText(c.getApellido());
+                    fApellido2.setText(c.getApellido2() != null ? c.getApellido2() : "");
+                    fEmail.setText(c.getEmail());
+                    fTelefono.setText(c.getTelefono() != null ? c.getTelefono() : "");
+                    fNacionalidad.setText(c.getNacionalidad() != null ? c.getNacionalidad() : "");
+                    fCiudad.setText(c.getCiudadOrigen() != null ? c.getCiudadOrigen() : "");
+                    setClienteFieldsDisabled(true, fCedula, fNombre, fSegundoNombre, fApellido, fApellido2,
+                                                   fEmail, fTelefono, fNacionalidad, fCiudad);
+                    lblClienteInfo.setText("✓ Cliente encontrado: " + c.obtenerNombreCompleto()
+                            + "  (Cédula: " + cedStr + ")");
+                    lblClienteInfo.setStyle("-fx-font-size:11px; -fx-text-fill:#16a34a;");
+                } else {
+                    clienteIdRef[0] = -1;
+                    fCedula.setText(cedulaBusq);
+                    fNombre.clear(); fSegundoNombre.clear();
+                    fApellido.clear(); fApellido2.clear();
+                    fEmail.clear(); fTelefono.clear(); fNacionalidad.clear(); fCiudad.clear();
+                    setClienteFieldsDisabled(false, fCedula, fNombre, fSegundoNombre, fApellido, fApellido2,
+                                                    fEmail, fTelefono, fNacionalidad, fCiudad);
+                    fCedula.setEditable(false);
+                    lblClienteInfo.setText("⚠ Cliente no encontrado. Completa los datos para registrarlo.");
+                    lblClienteInfo.setStyle("-fx-font-size:11px; -fx-text-fill:#b45309;");
+                }
+            } catch (Exception ex) {
+                NotificationUtil.error("Error buscando cliente: " + ex.getMessage());
+            }
+        });
+
+        Label header = new Label("🔑 Realizar Check-in");
+        header.setStyle("-fx-font-size:16px; -fx-font-weight:bold; -fx-text-fill:#1a3a5c;");
+        Label errLabel = new Label("");
+        errLabel.setStyle("-fx-text-fill:#dc2626; -fx-font-size:12px;");
+        errLabel.setWrapText(true);
+
+        VBox content = new VBox(12);
+        content.setPadding(new Insets(12, 8, 4, 8));
+        content.setPrefWidth(560);
+        content.getChildren().addAll(header, new Separator(),
+                seccion("Búsqueda de cliente"), gridBusqueda, lblClienteInfo, gridCliente,
+                new Separator(), seccion("Datos de la reserva"), gridReserva, errLabel);
+
+        ScrollPane scroll = new ScrollPane(content);
+        scroll.setFitToWidth(true);
+        scroll.setPrefHeight(520);
+        scroll.setStyle("-fx-background-color:white; -fx-border-color:transparent;");
+
+        ButtonType btnCheckin = new ButtonType("Registrar Check-in", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().setContent(scroll);
+        dialog.getDialogPane().setPrefWidth(620);
+        dialog.getDialogPane().getButtonTypes().addAll(btnCheckin, ButtonType.CANCEL);
+        dialog.getDialogPane().setStyle("-fx-background-color:white; -fx-background-radius:12px;");
+
+        Button okBtn = (Button) dialog.getDialogPane().lookupButton(btnCheckin);
+        okBtn.addEventFilter(javafx.event.ActionEvent.ACTION, event -> {
+            errLabel.setText("");
+            try {
+                int idReserva  = Integer.parseInt(fIdReserva.getText().trim());
+                int idEmpleado = Integer.parseInt(fIdEmpleado.getText().trim());
+                if (clienteIdRef[0] < 0) {
+                    String sn    = fSegundoNombre.getText().trim();
+                    String a2    = fApellido2.getText().trim();
+                    String ciudad = fCiudad.getText().trim();
+                    ClienteDTO dto = new ClienteDTO(
+                            fCedula.getText().trim(),
+                            fNombre.getText().trim(),
+                            sn.isEmpty() ? null : sn,
+                            fApellido.getText().trim(),
+                            a2.isEmpty() ? null : a2,
+                            fEmail.getText().trim(),
+                            fTelefono.getText().trim(),
+                            fNacionalidad.getText().trim(),
+                            ciudad.isEmpty() ? null : ciudad);
+                    ctx.getClienteService().registrarCliente(dto);
+                    NotificationUtil.info("Nuevo cliente registrado.");
+                }
+                ctx.getCheckInOutService().realizarCheckin(
+                        idReserva, idEmpleado, fObs.getText().trim());
+                NotificationUtil.exito(
+                        "Check-in registrado correctamente (Reserva #" + idReserva + ").");
+                cargarDatos();
+            } catch (NumberFormatException e) {
+                errLabel.setText("ID de reserva e ID de empleado deben ser números enteros.");
+                event.consume();
+            } catch (ExcepcionNegocio e) {
+                errLabel.setText("Error: " + e.getMessage());
+                event.consume();
+            } catch (Exception e) {
+                e.printStackTrace();
+                errLabel.setText("Error: " + e.getMessage());
+                event.consume();
+            }
+        });
+
+        dialog.setResultConverter(btn -> btn);
+        dialog.showAndWait();
+    }
+
+    // ── Diálogo Check-out ─────────────────────────────────────────────────────
+
+    private void mostrarDialogCheckout(CheckInOut sel) {
+        Dialog<ButtonType> dialog = new Dialog<>();
+        dialog.setTitle("Realizar Check-out");
+
+        TextArea fObs = new TextArea();
+        fObs.setPromptText("Observaciones del check-out (opcional)");
+        fObs.setPrefRowCount(3);
+        fObs.setStyle("-fx-background-color:#f8fafc; -fx-border-color:#e2e8f0;" +
+                      "-fx-border-width:1.5px; -fx-border-radius:8px;");
+
+        Reserva r = sel.getReserva();
+        Label infoCliente = new Label(
+                "Cliente: " + (r != null && r.getCliente() != null
+                        ? r.getCliente().obtenerNombreCompleto() : "—")
+                + "   |   Hab: " + (r != null && r.getHabitacion() != null
+                        ? r.getHabitacion().getNumero() : "—")
+                + "   |   Check-in: " + (sel.getFechaHoraCheckin() != null
+                        ? sel.getFechaHoraCheckin().format(FMT) : "—"));
+        infoCliente.setStyle("-fx-font-size:12px; -fx-text-fill:#64748b;");
+
+        Label errLabel = new Label("");
+        errLabel.setStyle("-fx-text-fill:#dc2626; -fx-font-size:12px;");
+        errLabel.setWrapText(true);
+
+        ProgressIndicator spinner = new ProgressIndicator();
+        spinner.setPrefSize(24, 24);
+        spinner.setVisible(false);
+
+        Label header = new Label("🔓 Check-out — Registro #" + sel.getId());
+        header.setStyle("-fx-font-size:16px; -fx-font-weight:bold; -fx-text-fill:#1a3a5c;");
+        VBox content = new VBox(12, header, infoCliente, new Separator(),
+                                lab("Observaciones:"), fObs, spinner, errLabel);
+        content.setPadding(new Insets(20, 24, 12, 24));
+        content.setPrefWidth(420);
+
+        ButtonType btnConfirmar = new ButtonType("Confirmar Check-out", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().setContent(content);
+        dialog.getDialogPane().getButtonTypes().addAll(btnConfirmar, ButtonType.CANCEL);
+        dialog.getDialogPane().setStyle("-fx-background-color:white; -fx-background-radius:12px;");
+
+        Button okBtn = (Button) dialog.getDialogPane().lookupButton(btnConfirmar);
+        okBtn.addEventFilter(javafx.event.ActionEvent.ACTION, event -> {
+            event.consume();
+            if (r == null) {
+                errLabel.setText("No se puede hacer checkout: reserva no encontrada.");
+                return;
+            }
+            okBtn.setDisable(true);
+            spinner.setVisible(true);
+            errLabel.setText("");
+            String obs = fObs.getText().trim();
+            int idReserva = r.getId();
+
+            new Thread(() -> {
+                try {
+                    ctx.getCheckInOutService().realizarCheckout(idReserva, obs);
+                    Platform.runLater(() -> {
+                        NotificationUtil.exito("Check-out registrado (Reserva #" + idReserva + ").");
+                        cargarDatos();
+                        dialog.close();
+                    });
+                } catch (ExcepcionNegocio e) {
+                    Platform.runLater(() -> {
+                        errLabel.setText("Error: " + e.getMessage());
+                        okBtn.setDisable(false);
+                        spinner.setVisible(false);
+                    });
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Platform.runLater(() -> {
+                        errLabel.setText("Error inesperado: " + e.getMessage());
+                        okBtn.setDisable(false);
+                        spinner.setVisible(false);
+                    });
+                }
+            }).start();
+        });
+
+        dialog.setResultConverter(btn -> btn);
+        dialog.showAndWait();
+    }
+
+    // ── Helpers ───────────────────────────────────────────────────────────────
+
+    private void actualizarStats(List<CheckInOut> lista) {
         LocalDate hoy = LocalDate.now();
         long activos = lista.stream().filter(ci -> !ci.haRealizadoCheckout()).count();
         // BUG 6 FIX: filtrar solo checkouts registrados hoy, no el total histórico
@@ -201,12 +466,38 @@ public class CheckInOutController {
                 .count();
         statsRow.getChildren().clear();
         statsRow.getChildren().addAll(
-            chip(" Check-ins activos: " + activos,   "#ede9fe", "#6d28d9"),
-            chip(" Check-outs hoy: " + checkoutsHoy, "#dcfce7", "#15803d")
+            chip("🔑 Check-ins activos: " + activos,   "#ede9fe", "#6d28d9"),
+            chip("🔓 Check-outs hoy: " + checkoutsHoy, "#dcfce7", "#15803d")
         );
     }
-     
-       private Label chip(String t, String bg, String fg) {
+
+    private void setClienteFieldsDisabled(boolean disabled,
+            TextField cedula, TextField nombre, TextField segundoNombre,
+            TextField apellido, TextField apellido2,
+            TextField email, TextField telefono, TextField nacionalidad, TextField ciudad) {
+        cedula.setDisable(disabled);
+        nombre.setDisable(disabled);
+        segundoNombre.setDisable(disabled);
+        apellido.setDisable(disabled);
+        apellido2.setDisable(disabled);
+        email.setDisable(disabled);
+        telefono.setDisable(disabled);
+        nacionalidad.setDisable(disabled);
+        ciudad.setDisable(disabled);
+    }
+
+    private String getBadgeEstilo(String estado) {
+        switch (estado) {
+            case "EN_PROCESO": return "-fx-background-color:#ede9fe; -fx-text-fill:#6d28d9;" +
+                    "-fx-background-radius:20px; -fx-padding:3px 10px; -fx-font-size:10px; -fx-font-weight:bold;";
+            case "COMPLETADA": return "-fx-background-color:#dbeafe; -fx-text-fill:#1d4ed8;" +
+                    "-fx-background-radius:20px; -fx-padding:3px 10px; -fx-font-size:10px; -fx-font-weight:bold;";
+            default:           return "-fx-background-color:#f1f5f9; -fx-text-fill:#475569;" +
+                    "-fx-background-radius:20px; -fx-padding:3px 10px; -fx-font-size:10px;";
+        }
+    }
+
+    private Label chip(String t, String bg, String fg) {
         Label l = new Label(t);
         l.setStyle("-fx-background-color:" + bg + "; -fx-text-fill:" + fg + ";" +
                 "-fx-background-radius:20px; -fx-padding:4px 12px; -fx-font-size:12px;");
@@ -234,88 +525,5 @@ public class CheckInOutController {
         l.setStyle("-fx-font-size:13px; -fx-font-weight:bold; -fx-text-fill:#1a3a5c;" +
                 "-fx-padding:4px 0 2px 0;");
         return l;
-    }
-    
-     private void mostrarFormularioCheckin() {
-        Dialog<ButtonType> dialog = new Dialog<>();
-        dialog.setTitle("Realizar Check-in");
-
-        GridPane gridBusqueda = new GridPane();
-        gridBusqueda.setHgap(12); gridBusqueda.setVgap(10);
-        TextField fCedulaBuscar = tf("Número de cédula");
-        fCedulaBuscar.setPrefWidth(220);
-        Button btnBuscar = new Button("🔍 Buscar");
-        btnBuscar.setStyle("-fx-background-color:#2563a8; -fx-text-fill:white;" +
-                           "-fx-background-radius:8px; -fx-font-size:12px; -fx-padding:7px 14px;");
-        gridBusqueda.add(lab("Cédula:"), 0, 0);
-        gridBusqueda.add(fCedulaBuscar, 1, 0);
-        gridBusqueda.add(btnBuscar, 2, 0);
-
-        Label lblClienteInfo = new Label("Ingresa la cédula y haz clic en Buscar.");
-        lblClienteInfo.setStyle("-fx-font-size:11px; -fx-text-fill:#64748b;");
-
-        // Grid de datos cliente...
-        final int[] clienteIdRef = {-1};
-
-        btnBuscar.setOnAction(e -> {
-            // Lógica de búsqueda
-        });
-    }
-     
-        // Grid de datos cliente
-        GridPane gridCliente = new GridPane();
-        gridCliente.setHgap(12); gridCliente.setVgap(10);
-        TextField fCedula        = tf("Cédula *");
-        TextField fNombre        = tf("Primer nombre *");
-        TextField fSegundoNombre = tf("Segundo nombre");
-        TextField fApellido      = tf("Primer apellido *");
-        TextField fApellido2     = tf("Segundo apellido");
-        TextField fEmail         = tf("Email *");
-        TextField fTelefono      = tf("Teléfono *");
-        TextField fNacionalidad  = tf("Nacionalidad *");
-        TextField fCiudad        = tf("Ciudad origen");
-        
-        // Grid de reserva
-        GridPane gridReserva = new GridPane();
-        gridReserva.setHgap(12); gridReserva.setVgap(10);
-        TextField fIdReserva  = tf("ID de la reserva (CONFIRMADA)");
-        TextField fIdEmpleado = tf("ID del empleado que atiende");
-        TextArea  fObs        = new TextArea();
-        fObs.setPromptText("Observaciones (opcional)");
-        fObs.setPrefRowCount(2);
-        
-        Label lblHoraIngreso = new Label("⏱ " + LocalDateTime.now().format(
-                DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")));
-        
-        private void mostrarDialogCheckout(CheckInOut sel) {
-        Dialog<ButtonType> dialog = new Dialog<>();
-        dialog.setTitle("Realizar Check-out");
-
-        TextArea fObs = new TextArea();
-        fObs.setPromptText("Observaciones del check-out (opcional)");
-        fObs.setPrefRowCount(3);
-
-        Reserva r = sel.getReserva();
-        Label infoCliente = new Label(
-                "Cliente: " + (r != null && r.getCliente() != null
-                        ? r.getCliente().obtenerNombreCompleto() : "—")
-                + "   |   Hab: " + (r != null && r.getHabitacion() != null
-                        ? r.getHabitacion().getNumero() : "—")
-                + "   |   Check-in: " + (sel.getFechaHoraCheckin() != null
-                        ? sel.getFechaHoraCheckin().format(FMT) : "—"));
-        
-        ProgressIndicator spinner = new ProgressIndicator();
-        spinner.setPrefSize(24, 24);
-        spinner.setVisible(false);
-
-        ButtonType btnConfirmar = new ButtonType("Confirmar Check-out", ButtonBar.ButtonData.OK_DONE);
-        
-        Button okBtn = (Button) dialog.getDialogPane().lookupButton(btnConfirmar);
-        okBtn.addEventFilter(javafx.event.ActionEvent.ACTION, event -> {
-            event.consume();
-            okBtn.setDisable(true);
-            spinner.setVisible(true);
-            // Lógica asíncrona de check-out...
-        });
     }
 }
