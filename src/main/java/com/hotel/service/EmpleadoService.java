@@ -180,7 +180,15 @@ public class EmpleadoService {
         ValidadorEntradas.validarCampoRequerido(nuevaPassword, "nuevaPassword");
 
         Empleado empleado = obtenerEmpleadoOLanzarError(idEmpleado);
-        // ── Métodos privados ──────────────────────────────────────────────────────
+
+        // Generar hash una sola vez y usarlo tanto en memoria como en BD
+        String hash = authService.generarHash(nuevaPassword);
+        authService.registrarCredencialesConHash(empleado, hash);
+        empleadoDAO.actualizarPasswordHash(idEmpleado, hash);
+
+        System.out.println("[EMPLEADO] Contraseña reseteada y persistida para: " + empleado.getEmail());
+    }
+    // ── Métodos privados ──────────────────────────────────────────────────────
 
     private Empleado obtenerEmpleadoOLanzarError(int idEmpleado) throws ExcepcionNegocio {
         return empleadoDAO.buscarPorId(idEmpleado)
