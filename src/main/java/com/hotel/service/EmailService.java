@@ -260,5 +260,11 @@ public class EmailService {
         return sb.toString();
     }
 
+    /**
+     * Indica si el SMTP está configurado con credenciales reales.
+     */
+    public boolean isConfigurado() {
+        return configurado;
+    }
 
 }
