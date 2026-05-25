@@ -77,4 +77,12 @@ public class EmailService {
                 "Confirmación Reserva #" + reserva.getId() + " - Hotel Nativo",
                 construirCuerpoConfirmacion(cliente, reserva), null);
     }
+
+    public void notificarCancelacionReserva(Cliente cliente, Reserva reserva) {
+        enviarEmail(cliente.getEmail(),
+                "Cancelación Reserva #" + reserva.getId() + " - Hotel Nativo",
+                "Estimado " + cliente.obtenerNombreCompleto()
+                + ", su reserva #" + reserva.getId() + " fue cancelada exitosamente.",
+                null);
+    }
 }
