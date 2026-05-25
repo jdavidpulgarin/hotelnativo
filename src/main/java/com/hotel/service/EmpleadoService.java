@@ -198,6 +198,18 @@ public class EmpleadoService {
         empleadoDAO.actualizarPasswordHash(idEmpleado, hash);
     }
 
+    
+    /**
+     * Persiste el flag debe_cambiar_password en BD. Llamar con {@code false}
+     * tras un cambio de contraseña exitoso para no volver a pedirlo.
+     */
+    public void actualizarDebeCambiarPassword(int idEmpleado, boolean debe) throws ExcepcionNegocio {
+        ValidadorEntradas.validarIdPositivo(idEmpleado, "empleado");
+        empleadoDAO.actualizarDebeCambiarPassword(idEmpleado, debe);
+    }
+    
+    
+
     // ── Métodos privados ──────────────────────────────────────────────────────
     private Empleado obtenerEmpleadoOLanzarError(int idEmpleado) throws ExcepcionNegocio {
         return empleadoDAO.buscarPorId(idEmpleado)
