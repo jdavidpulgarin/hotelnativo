@@ -1407,4 +1407,49 @@ public class DashboardController {
             bedBox.setAlignment(Pos.CENTER);
             bedBox.setPadding(new Insets(2, 0, 4, 0));
             body.getChildren().add(bedBox);
+            if (reserva != null && reserva.getCliente() != null) {
+                Label guest = new Label(reserva.getCliente().obtenerNombreCompleto());
+                guest.setStyle("-fx-font-size:11.5px; -fx-font-weight:600; -fx-text-fill:#334155;");
+                guest.setWrapText(true);
+                body.getChildren().add(guest);
+
+                if (reserva.getFechaEntrada() != null && reserva.getFechaSalida() != null) {
+                    HBox times = new HBox(8);
+                    VBox entBox = new VBox(2);
+                    Label entLbl = new Label("ENTRADA");
+                    entLbl.setStyle("-fx-font-size:8px; -fx-font-weight:700; -fx-text-fill:#3b82f6;");
+                    Label entVal = new Label(reserva.getFechaEntrada().toString());
+                    entVal.setStyle("-fx-font-size:10px; -fx-font-weight:600; -fx-text-fill:#334155;");
+                    entBox.getChildren().addAll(entLbl, entVal);
+                    Region timeSp = new Region();
+                    HBox.setHgrow(timeSp, Priority.ALWAYS);
+                    VBox salBox = new VBox(2);
+                    salBox.setAlignment(Pos.TOP_RIGHT);
+                    Label salLbl = new Label("SALIDA");
+                    salLbl.setStyle("-fx-font-size:8px; -fx-font-weight:700; -fx-text-fill:#f43f5e;");
+                    Label salVal = new Label(reserva.getFechaSalida().toString());
+                    salVal.setStyle("-fx-font-size:10px; -fx-font-weight:600; -fx-text-fill:#334155;");
+                    salBox.getChildren().addAll(salLbl, salVal);
+                    times.getChildren().addAll(entBox, timeSp, salBox);
+                    body.getChildren().add(times);
+                }
+            }
+        }
+
+        card.getChildren().addAll(stripe, body);
+
+        // Hover elevation
+        card.setOnMouseEntered(e -> {
+            ScaleTransition st = new ScaleTransition(Duration.millis(150), card);
+            st.setToX(1.025); st.setToY(1.025);
+            st.play();
+        });
+        card.setOnMouseExited(e -> {
+            ScaleTransition st = new ScaleTransition(Duration.millis(150), card);
+            st.setToX(1.0); st.setToY(1.0);
+            st.play();
+        });
+
+        return card;
+    }
     }
