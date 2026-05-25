@@ -70,4 +70,11 @@ public class EmailService {
             System.err.println("[EMAIL] Error leyendo email.properties: " + e.getMessage());
         }
     }
+
+    // ── Notificaciones de Reserva ─────────────────────────────────────────────
+    public void notificarConfirmacionReserva(Cliente cliente, Reserva reserva) {
+        enviarEmail(cliente.getEmail(),
+                "Confirmación Reserva #" + reserva.getId() + " - Hotel Nativo",
+                construirCuerpoConfirmacion(cliente, reserva), null);
+    }
 }
