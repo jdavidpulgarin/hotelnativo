@@ -44,4 +44,87 @@ public class CheckInOutService {
         this.empleadoDAO = empleadoDAO;
     }
 
+    /**
+     * Registra el check-in de una reserva. Transiciona la habitación a OCUPADA
+     * y la reserva a EN_PROCESO.
+     */
+    public CheckInOut realizarCheckin(int idReserva, int idEmpleado, String observaciones)
+            throws ExcepcionNegocio {
+        ValidadorEntradas.validarIdPositivo(idReserva, "reserva");
+        ValidadorEntradas.validarIdPositivo(idEmpleado, "empleado");
+
+        Reserva reserva = obtenerReservaConfirmadaOLanzarError(idReserva);
+        Empleado empleado = obtenerEmpleadoOLanzarError(idEmpleado);
+
+        verificarQueNoExisteCheckinActivo(idReserva);
+
+        Habitacion habitacion = reserva.getHabitacion();
+        if (habitacion == null) {
+            throw new ExcepcionNegocio("HABITACION_NO_ENCONTRADA",
+                    "La reserva #" + idReserva + " no tiene habitación asociada.");
+        }
+
+        habitacion.ocupar();
+        habitacionDAO.actualizarEstado(habitacion.getId(),
+                Habitacion.EstadoHabitacion.OCUPADA.name());
+
+        try {
+            reserva.iniciarEstadia();
+            reservaDAO.actualizar(reserva);
+
+            CheckInOut registroCheckin = new CheckInOut(0, reserva, empleado, LocalDateTime.now());
+            registroCheckin.setObservaciones(observaciones);
+            return checkInOutDAO.insertar(registroCheckin);
+        } catch (Exception e) {
+            // Compensar: revertir estado de habitación
+            try {
+                habitacionDAO.actualizarEstado(habitacion.getId(),
+                        Habitacion.EstadoHabitacion.DISPONIBLE.name());
+            } catch (Exception ex) {
+                System.err.println("[CHECKIN] Error al revertir habitación: " + ex.getMessage());
+            }
+            if (e instanceof ExcepcionNegocio) {
+                throw (ExcepcionNegocio) e;
+            }
+            throw new ExcepcionNegocio("ERROR_CHECKIN",
+                    "Error al registrar check-in: " + e.getMessage());
+        }
+    }
+
+    // ── Métodos privados de apoyo ─────────────────────────────────────────────
+    private Reserva obtenerReservaConfirmadaOLanzarError(int idReserva) throws ExcepcionNegocio {
+        Reserva reserva = obtenerReservaOLanzarError(idReserva);
+        if (!Reserva.EstadoReserva.CONFIRMADA.equals(reserva.getEstado())) {
+            throw new ExcepcionNegocio("RESERVA_NO_CONFIRMADA",
+                    "Solo se puede hacer check-in de reservas CONFIRMADAS. "
+                    + "Estado actual: " + reserva.getEstado());
+        }
+        return reserva;
+    }
+
+    private Reserva obtenerReservaOLanzarError(int idReserva) throws ExcepcionNegocio {
+        return reservaDAO.buscarPorId(idReserva)
+                .orElseThrow(() -> new ExcepcionNegocio("RESERVA_NOT_FOUND",
+                "No se encontró la reserva con ID: " + idReserva));
+    }
+
+    private Empleado obtenerEmpleadoOLanzarError(int idEmpleado) throws ExcepcionNegocio {
+        return empleadoDAO.buscarPorId(idEmpleado)
+                .orElseThrow(() -> new ExcepcionNegocio("EMPLEADO_NOT_FOUND",
+                "No se encontró el empleado con ID: " + idEmpleado));
+    }
+
+    private void verificarQueNoExisteCheckinActivo(int idReserva) throws ExcepcionNegocio {
+        if (checkInOutDAO.buscarCheckinActivoPorReserva(idReserva).isPresent()) {
+            throw new ExcepcionNegocio("CHECKIN_DUPLICADO",
+                    "La reserva " + idReserva + " ya tiene un check-in activo registrado.");
+        }
+    }
+
+    private CheckInOut obtenerCheckinActivoOLanzarError(int idReserva) throws ExcepcionNegocio {
+        return checkInOutDAO.buscarCheckinActivoPorReserva(idReserva)
+                .orElseThrow(() -> new ExcepcionNegocio("CHECKIN_NOT_FOUND",
+                "No se encontró check-in activo para la reserva " + idReserva));
+    }
+
 }
