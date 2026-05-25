@@ -131,4 +131,15 @@ public class EmailService {
                 + " - Hab. " + habitacion.getNumero(),
                 cuerpo, null);
     }
+
+    public void notificarMantenimientoCompletado(Mantenimiento mantenimiento) {
+        String cuerpo = "El mantenimiento #" + mantenimiento.getId()
+                + " de la habitación " + mantenimiento.getHabitacion().getNumero()
+                + " fue completado.\n"
+                + "Costo: $" + String.format("%,.0f", mantenimiento.getCosto()) + "\n"
+                + "La habitación está disponible nuevamente.";
+        enviarEmail(fromAddress.isEmpty() ? "recepcion@hotel.com" : fromAddress,
+                "Mantenimiento completado – Hab. " + mantenimiento.getHabitacion().getNumero(),
+                cuerpo, null);
+    }
 }
