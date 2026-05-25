@@ -210,6 +210,29 @@ public class DashboardController {
         typing.setStyle("-fx-text-fill:#94a3b8; -fx-font-size:11px; -fx-padding:4px 14px;");
         mensajesBox.getChildren().add(typing);
         scrollAlFinal();
+        
+          new Thread(() -> {
+            try {
+                String contextoLocal = ctx.getChatbotService().procesarMensaje(texto);
+                String respuesta;
+                GeminiApiService gemini = ctx.getGeminiApiService();
+                if (gemini != null && gemini.estaConfigurado()) {
+                    try {
+                        respuesta = gemini.consultar(contextoLocal, texto);
+                    } catch (Exception ex) {
+                        respuesta = contextoLocal;
+                        System.err.println("[Chatbot] Gemini falló: " + ex.getMessage());
+                    }
+                } else {
+                    respuesta = contextoLocal;
+                }
+                final String r = respuesta;
+                Platform.runLater(() -> { mensajesBox.getChildren().remove(typing); agregarMensajeBot(r); });
+            } catch (Exception e) {
+                Platform.runLater(() -> { mensajesBox.getChildren().remove(typing);
+                    agregarMensajeBot("Ocurrió un error. Por favor intenta de nuevo."); });
+            }
+        }).start();
 }
     
 }
