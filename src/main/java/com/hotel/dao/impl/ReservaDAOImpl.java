@@ -285,3 +285,30 @@ public class ReservaDAOImpl extends BaseDAO implements IReservaDAO, IReservaBusq
         }
         return lista;
     }
+private Reserva mapearFilaCompleta(ResultSet rs) throws SQLException {
+        Cliente cliente = new Cliente();
+        cliente.setId(rs.getInt("id_cliente"));
+        cliente.setDocumento(rs.getString("documento"));
+        cliente.setNombre(rs.getString("c_nombre"));
+        cliente.setApellido(rs.getString("c_apellido"));
+        cliente.setEmail(rs.getString("c_email"));
+        cliente.setTelefono(rs.getString("c_telefono"));
+        cliente.setNacionalidad(rs.getString("nacionalidad"));
+        cliente.setEsVip(rs.getInt("es_vip") == 1);
+
+        Habitacion habitacion = new Habitacion();
+        habitacion.setId(rs.getInt("id_habitacion"));
+        habitacion.setNumero(rs.getString("h_numero"));
+        habitacion.setPrecioBase(rs.getDouble("precio_base"));
+
+        return armarReserva(rs, cliente, habitacion);
+    }
+
+    private Reserva mapearFilaSimple(ResultSet rs) throws SQLException {
+        Cliente c = new Cliente();
+        c.setId(rs.getInt("id_cliente"));
+        c.setDocumento(rs.getString("documento_cliente"));
+        Habitacion h = new Habitacion();
+        h.setId(rs.getInt("id_habitacion"));
+        return armarReserva(rs, c, h);
+    }
