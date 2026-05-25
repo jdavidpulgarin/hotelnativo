@@ -1330,4 +1330,42 @@ public class DashboardController {
                 badgeText   = "MANTENIM.";
                 badgeStyle  = "-fx-background-color:#fef9c3; -fx-text-fill:#a16207;";
         }
+            VBox card = new VBox(0);
+        card.setPrefWidth(190);
+        card.setStyle(
+                "-fx-background-color:" + bgColor + ";" +
+                "-fx-background-radius:16px;" +
+                "-fx-border-color:" + borderColor + ";" +
+                "-fx-border-width:1.5px; -fx-border-radius:16px;" +
+                "-fx-effect:dropshadow(gaussian,rgba(0,0,0,0.06),12,0,0,3);" +
+                "-fx-cursor:hand;");
+
+        // Franja superior de color
+        javafx.scene.layout.Pane stripe = new javafx.scene.layout.Pane();
+        stripe.setPrefHeight(4);
+        stripe.setStyle("-fx-background-color:" + stripeColor + "; -fx-background-radius:14px 14px 0 0;");
+
+        // Contenido
+        VBox body = new VBox(8);
+        body.setPadding(new Insets(12, 14, 14, 14));
+
+        // Fila: número + badge
+        HBox top = new HBox();
+        top.setAlignment(Pos.TOP_LEFT);
+        VBox numBox = new VBox(1);
+        Label numLbl = new Label(hab.getNumero());
+        numLbl.setStyle("-fx-font-size:24px; -fx-font-weight:900; -fx-text-fill:#0f172a;");
+        String tipo = hab.getTipoHabitacion() != null
+                ? hab.getTipoHabitacion().obtenerEtiquetaTipo().toUpperCase() : "SIMPLE";
+        Label typeLbl = new Label(tipo);
+        typeLbl.setStyle("-fx-font-size:9px; -fx-text-fill:#94a3b8; -fx-font-weight:700;");
+        numBox.getChildren().addAll(numLbl, typeLbl);
+        Region spacerTop = new Region();
+        HBox.setHgrow(spacerTop, Priority.ALWAYS);
+        Label badge = new Label(badgeText);
+        badge.setStyle(badgeStyle +
+                "-fx-background-radius:20px; -fx-padding:3px 8px;" +
+                "-fx-font-size:9px; -fx-font-weight:700;");
+        top.getChildren().addAll(numBox, spacerTop, badge);
+        body.getChildren().add(top);
     }
