@@ -200,4 +200,74 @@ public class ClientesController {
             NotificationUtil.error(e.getMessage());
         }
     }
+    
+       // ── Formulario modal ──────────────────────────────────────────────────────
+
+    private void mostrarFormulario(Cliente clienteEditar) {
+        Dialog<ButtonType> dialog = new Dialog<>();
+        dialog.setTitle(clienteEditar == null ? "Nuevo Cliente" : "Editar Cliente");
+        dialog.setHeaderText(null);
+
+        GridPane grid = new GridPane();
+        grid.setHgap(14);
+        grid.setVgap(14);
+        grid.setPadding(new Insets(20, 24, 20, 24));
+        grid.setPrefWidth(540);
+
+        TextField fCedula        = campo("Cédula *");
+        TextField fNombre        = campo("Primer nombre *");
+        TextField fSegundoNombre = campo("Segundo nombre");
+        TextField fApellido      = campo("Primer apellido *");
+        TextField fApellido2     = campo("Segundo apellido");
+        TextField fEmail         = campo("Email *");
+        TextField fTelefono      = campo("Teléfono *");
+        TextField fNacionalidad  = campo("Nacionalidad *");
+        TextField fCiudad        = campo("Ciudad de origen");
+
+        // Labels de error para validación en tiempo real
+        Label errCedula       = new Label();
+        Label errNombre       = new Label(); Label errApellido = new Label();
+        Label errEmail        = new Label(); Label errTelefono = new Label();
+
+        // Aplicar validaciones en tiempo real
+        ValidacionCampo.aplicarSoloNumeros(fCedula,   errCedula);
+        ValidacionCampo.aplicarMaxLength(fCedula,     10);
+        ValidacionCampo.aplicarSoloLetras(fNombre,   errNombre);
+        ValidacionCampo.aplicarSoloLetras(fApellido, errApellido);
+        ValidacionCampo.aplicarEmail(fEmail,         errEmail);
+        ValidacionCampo.aplicarTelefono(fTelefono,   errTelefono);
+        ValidacionCampo.aplicarMaxLength(fNombre,     100);
+        ValidacionCampo.aplicarMaxLength(fApellido,   100);
+
+        if (clienteEditar != null) {
+            // La cédula es el PK — no se permite cambiar
+            String cedula = clienteEditar.getDocumento() != null
+                    ? clienteEditar.getDocumento() : String.valueOf(clienteEditar.getId());
+            fCedula.setText(cedula);
+            fCedula.setEditable(false);
+            fCedula.setStyle(fCedula.getStyle() + " -fx-opacity:0.7;");
+            fNombre.setText(clienteEditar.getNombre());
+            fSegundoNombre.setText(clienteEditar.getSegundoNombre() != null ? clienteEditar.getSegundoNombre() : "");
+            fApellido.setText(clienteEditar.getApellido());
+            fApellido2.setText(clienteEditar.getApellido2() != null ? clienteEditar.getApellido2() : "");
+            fEmail.setText(clienteEditar.getEmail());
+            fTelefono.setText(clienteEditar.getTelefono() != null ? clienteEditar.getTelefono() : "");
+            fNacionalidad.setText(clienteEditar.getNacionalidad() != null ? clienteEditar.getNacionalidad() : "");
+            fCiudad.setText(clienteEditar.getCiudadOrigen() != null ? clienteEditar.getCiudadOrigen() : "");
+        }
+
+        VBox vbCedula   = new VBox(2, fCedula,   errCedula);
+        VBox vbNombre   = new VBox(2, fNombre,   errNombre);
+        VBox vbApellido = new VBox(2, fApellido, errApellido);
+        VBox vbEmail    = new VBox(2, fEmail,    errEmail);
+        VBox vbTelefono = new VBox(2, fTelefono, errTelefono);
+        // Fila 0: Cédula ocupa las dos columnas de valor
+        grid.addRow(0, etiqueta("Cédula *:"), vbCedula);
+        GridPane.setColumnSpan(vbCedula, 3);
+        grid.addRow(1, etiqueta("Primer nombre *:"),    vbNombre,    etiqueta("Segundo nombre:"),   fSegundoNombre);
+        grid.addRow(2, etiqueta("Primer apellido *:"),  vbApellido,  etiqueta("Segundo apellido:"), fApellido2);
+        grid.addRow(3, etiqueta("Email *:"),             vbEmail,     etiqueta("Teléfono *:"),       vbTelefono);
+        grid.addRow(4, etiqueta("Nacionalidad *:"),      fNacionalidad, etiqueta("Ciudad origen:"),  fCiudad);
+    
+}
 }
