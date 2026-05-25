@@ -95,4 +95,21 @@ public class EmailService {
                 + " por $" + String.format("%,.0f", total) + " está lista.",
                 null);
     }
+
+    /**
+     * Envía la factura al correo del cliente con el PDF adjunto.
+     *
+     * @param factura datos de la factura
+     * @param pdfPath ruta del PDF a adjuntar (null = solo texto sin adjunto)
+     * @return true si el envío fue exitoso
+     */
+    public boolean enviarFacturaPorEmail(Factura factura, String pdfPath) {
+        if (factura.getCliente() == null || factura.getCliente().getEmail() == null) {
+            System.err.println("[EMAIL] Factura sin cliente/email — no se envía.");
+            return false;
+        }
+        String asunto = "Factura #" + factura.getId() + " — Hotel Nativo";
+        String cuerpo = construirCuerpoFactura(factura);
+        return enviarEmail(factura.getCliente().getEmail(), asunto, cuerpo, pdfPath);
+    }
 }
