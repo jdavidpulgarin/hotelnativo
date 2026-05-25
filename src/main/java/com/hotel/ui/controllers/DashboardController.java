@@ -742,4 +742,41 @@ public class DashboardController {
         l.setStyle("-fx-font-size:16px; -fx-font-weight:bold; -fx-text-fill:#1a3a5c;");
         return l;
     }
+    
+      // ── Gráficos ──────────────────────────────────────────────────────────────
+
+    private void actualizarChartsRow(VBox chartsContainer, List<Reserva> reservas,
+                                      List<Habitacion> habs, List<Factura> facturas) {
+        chartsContainer.getChildren().clear();
+
+        int anioActual   = LocalDate.now().getYear();
+        java.time.Month mesActual = LocalDate.now().getMonth();
+        int diasEnMes    = LocalDate.now().lengthOfMonth();
+        int mesActualNum = LocalDate.now().getMonthValue();
+        String mesNombre = mesActual.getDisplayName(java.time.format.TextStyle.FULL, LOCALE_ES);
+
+        List<Factura> facturasPagadas = facturas.stream()
+                .filter(f -> f.getEstadoPago() == Factura.EstadoPago.PAGADA
+                          && f.getFechaEmision() != null)
+                .collect(Collectors.toList());
+
+        // ── Datos de ocupación para el centro del donut ───────────────────────
+        long totalHabsCount = habs.size();
+        long ocupadasCount  = habs.stream()
+                .filter(h -> h.getEstado() == Habitacion.EstadoHabitacion.OCUPADA).count();
+        double pctOcupacion = totalHabsCount > 0 ? (ocupadasCount * 100.0 / totalHabsCount) : 0;
+
+        PieChart pie = new PieChart();
+        pie.setTitle("");
+        pie.setLegendVisible(false);
+        pie.setPrefHeight(240);
+        pie.setAnimated(true);
+        pie.getStyleClass().add("pie-chart-hotel");
+
+        Map<String, Long> estados = habs.stream()
+                .collect(Collectors.groupingBy(h -> h.getEstado().name(), Collectors.counting()));
+
+        String[] ORDEN_PIE   = { "DISPONIBLE", "OCUPADA",   "RESERVADA", "MANTENIMIENTO" };
+        String[] COLORES_PIE = { "#10b981",    "#f43f5e",   "#f97316",   "#8b5cf6"       };
+        String[] LABELS_PIE  = { "Disponible", "Ocupada",   "Reservada", "Mantenim."     };
  }
