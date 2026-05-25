@@ -286,4 +286,36 @@ public class CheckInOutController {
         
         Label lblHoraIngreso = new Label("⏱ " + LocalDateTime.now().format(
                 DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")));
+        
+        private void mostrarDialogCheckout(CheckInOut sel) {
+        Dialog<ButtonType> dialog = new Dialog<>();
+        dialog.setTitle("Realizar Check-out");
+
+        TextArea fObs = new TextArea();
+        fObs.setPromptText("Observaciones del check-out (opcional)");
+        fObs.setPrefRowCount(3);
+
+        Reserva r = sel.getReserva();
+        Label infoCliente = new Label(
+                "Cliente: " + (r != null && r.getCliente() != null
+                        ? r.getCliente().obtenerNombreCompleto() : "—")
+                + "   |   Hab: " + (r != null && r.getHabitacion() != null
+                        ? r.getHabitacion().getNumero() : "—")
+                + "   |   Check-in: " + (sel.getFechaHoraCheckin() != null
+                        ? sel.getFechaHoraCheckin().format(FMT) : "—"));
+        
+        ProgressIndicator spinner = new ProgressIndicator();
+        spinner.setPrefSize(24, 24);
+        spinner.setVisible(false);
+
+        ButtonType btnConfirmar = new ButtonType("Confirmar Check-out", ButtonBar.ButtonData.OK_DONE);
+        
+        Button okBtn = (Button) dialog.getDialogPane().lookupButton(btnConfirmar);
+        okBtn.addEventFilter(javafx.event.ActionEvent.ACTION, event -> {
+            event.consume();
+            okBtn.setDisable(true);
+            spinner.setVisible(true);
+            // Lógica asíncrona de check-out...
+        });
+    }
 }
