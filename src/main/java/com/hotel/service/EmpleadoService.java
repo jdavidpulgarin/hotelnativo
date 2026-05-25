@@ -106,6 +106,40 @@ public class EmpleadoService {
 
         return guardado;
     }
-    
-    
+
+    /**
+     * Actualiza los datos de un empleado existente. No modifica contraseña
+     * (usar resetearPassword para eso).
+     *
+     * @throws ExcepcionNegocio si el empleado no existe
+     */
+    public Empleado actualizarEmpleado(int idEmpleado, String nombre, String segundoNombre,
+            String apellido, String apellido2,
+            String email, String telefono, int idCargo,
+            LocalDate fechaContratacion,
+            double salario, String tipoContrato,
+            String tipoPago, LocalDate fechaFinContrato)
+            throws ExcepcionNegocio {
+        ValidadorEntradas.validarIdPositivo(idEmpleado, "empleado");
+        ValidadorEntradas.validarLargoNombre(nombre, "nombre");
+        ValidadorEntradas.validarLargoNombre(apellido, "apellido");
+        ValidadorEntradas.validarFormatoEmail(email);
+        ValidadorEntradas.validarFormatoTelefono(telefono);
+        ValidadorEntradas.validarIdPositivo(idCargo, "cargo");
+
+        Empleado empleado = obtenerEmpleadoOLanzarError(idEmpleado);
+
+        // Solo verificar duplicado si el email cambió
+        if (!email.equalsIgnoreCase(empleado.getEmail())
+                && authService.obtenerEmpleadoPorEmail(email).isPresent()) {
+            throw new ExcepcionNegocio("EMAIL_DUPLICADO",
+                    "Ya existe un empleado registrado con el email: " + email);
+        }
+        // ── Métodos privados ──────────────────────────────────────────────────────
+
+    private Empleado obtenerEmpleadoOLanzarError(int idEmpleado) throws ExcepcionNegocio {
+        return empleadoDAO.buscarPorId(idEmpleado)
+                .orElseThrow(() -> new ExcepcionNegocio("EMPLEADO_NOT_FOUND",
+                "No se encontró el empleado con ID: " + idEmpleado));
+    }
 }
