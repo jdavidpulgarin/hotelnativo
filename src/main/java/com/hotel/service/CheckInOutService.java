@@ -152,6 +152,25 @@ public class CheckInOutService {
         return checkInOutDAO.listarTodos();
     }
 
+    public int procesarCheckoutsAutomaticos() {
+        LocalDate hoy = LocalDate.now();
+        List<CheckInOut> pendientes
+                = checkInOutDAO.buscarCheckinsActivosPendientesCheckout(hoy);
+
+        int procesados = 0;
+        for (CheckInOut ci : pendientes) {
+            try {
+                realizarCheckout(ci.getReserva().getId(),
+                        "Checkout automático — 11:00 AM");
+                procesados++;
+            } catch (ExcepcionNegocio e) {
+                System.err.println("[AUTO-CHECKOUT] Error en reserva "
+                        + ci.getReserva().getId() + ": " + e.getMessage());
+            }
+        }
+        return procesados;
+    }
+
     // ── Métodos privados de apoyo ─────────────────────────────────────────────
     private Reserva obtenerReservaConfirmadaOLanzarError(int idReserva) throws ExcepcionNegocio {
         Reserva reserva = obtenerReservaOLanzarError(idReserva);
