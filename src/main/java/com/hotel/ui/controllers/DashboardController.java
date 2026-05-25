@@ -110,4 +110,32 @@ public class DashboardController {
     }
     
     
+       // ── Chatbot ───────────────────────────────────────────────────────────────
+
+    private void initChatbot() {
+        mensajesBox = new VBox(10);
+        mensajesBox.setPadding(new Insets(12));
+        mensajesBox.setFillWidth(true);
+
+        mensajesScroll = new ScrollPane(mensajesBox);
+        mensajesScroll.setFitToWidth(true);
+        mensajesScroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        mensajesScroll.setStyle("-fx-background-color:transparent; -fx-border-color:transparent;");
+        VBox.setVgrow(mensajesScroll, Priority.ALWAYS);
+
+        Label titulo = new Label("🤖 Asistente Hotel");
+        titulo.setStyle("-fx-font-size:14px; -fx-font-weight:bold; -fx-text-fill:white;");
+        Region spacerH = new Region();
+        HBox.setHgrow(spacerH, Priority.ALWAYS);
+        Button btnCerrar = new Button("✕");
+        btnCerrar.setStyle("-fx-background-color:transparent; -fx-text-fill:white;" +
+                           "-fx-font-size:14px; -fx-cursor:hand; -fx-padding:2px 8px;");
+        btnCerrar.setOnAction(e -> toggleChat());
+        HBox header = new HBox(8, titulo, spacerH, btnCerrar);
+        header.setAlignment(Pos.CENTER_LEFT);
+        header.setPadding(new Insets(14, 14, 14, 16));
+        header.setStyle("-fx-background-color:#1a3a5c; -fx-background-radius:16px 16px 0 0;");
+    
+    
+}
 }
