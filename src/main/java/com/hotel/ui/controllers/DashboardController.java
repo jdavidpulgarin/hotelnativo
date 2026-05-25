@@ -287,7 +287,35 @@ public class DashboardController {
         scroll.setContent(panel);
         setContenido(scroll);
         
-        
+           Thread hiloDashboard = new Thread(() -> {
+            try {
+                List<Reserva>    reservas     = ctx.getReservaService().listarTodasLasReservas();
+                List<Habitacion> habitaciones = ctx.getHabitacionService().listarTodasLasHabitaciones();
+                List<Cliente>    clientes     = ctx.getClienteService().listarTodosLosClientes();
+                List<Factura>    facturas     = ctx.getFacturaService().listarTodasLasFacturas();
+
+                long disponibles = habitaciones.stream()
+                        .filter(h -> h.getEstado() == Habitacion.EstadoHabitacion.DISPONIBLE).count();
+                long ocupadas    = habitaciones.stream()
+                        .filter(h -> h.getEstado() == Habitacion.EstadoHabitacion.OCUPADA).count();
+                double ingresos  = facturas.stream()
+                        .filter(f -> f.getEstadoPago() == Factura.EstadoPago.PAGADA)
+                        .mapToDouble(Factura::getTotal).sum();
+                long checkoutsHoy = reservas.stream()
+                        .filter(r -> LocalDate.now().equals(r.getFechaSalida())
+                                  && (r.getEstado() == Reserva.EstadoReserva.EN_PROCESO
+                                   || r.getEstado() == Reserva.EstadoReserva.COMPLETADA))
+                        .count();
+
+                Platform.runLater(() -> {
+                    actualizarKPIs(kpiRow,
+                            habitaciones.size(), disponibles, ocupadas,
+                            clientes.size(), ingresos, checkoutsHoy,
+                            habitaciones, clientes, facturas, reservas);
+
+                    actualizarChartsRow(chartsContainer, reservas, habitaciones, facturas);
+                    actualizarTablaRecientes(recentTable, reservas);
+                });
     }
 }
-    
+                   }
