@@ -113,6 +113,11 @@ public class ClienteService {
         return clienteBusqueda.buscarPorDocumento(documento);
     }
 
+    public List<Cliente> buscarPorNombre(String textoBusqueda) throws ExcepcionValidacion {
+        ValidadorEntradas.validarCampoRequerido(textoBusqueda, "textoBusqueda");
+        return clienteBusqueda.buscarPorNombre(textoBusqueda);
+    }
+
     // ── métodos privados de apoyo ──────────────────────────────────────────────
     private void validarDatosCliente(ClienteDTO dto) throws ExcepcionValidacion {
         ValidadorEntradas.validarCampoRequerido(dto.getCedula(), "cédula");
