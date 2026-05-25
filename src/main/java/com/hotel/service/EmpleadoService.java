@@ -96,4 +96,16 @@ public class EmpleadoService {
         nuevoEmpleado.setFechaFinContrato(fechaFinContrato);
 
         Empleado guardado = empleadoDAO.insertar(nuevoEmpleado);
+
+        // Hashear y persistir contraseña en BD + registrar en memoria
+        String hash = authService.generarHash(passwordInicial);
+        authService.registrarCredencialesConHash(guardado, hash);
+        empleadoDAO.actualizarPasswordHash(guardado.getId(), hash);
+        guardado.setDebeCambiarContrasena(true);
+        System.out.println("[EMPLEADO] Credenciales registradas para ID: " + guardado.getId());
+
+        return guardado;
     }
+    
+    
+}
