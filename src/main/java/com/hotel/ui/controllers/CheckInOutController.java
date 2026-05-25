@@ -191,4 +191,18 @@ public class CheckInOutController {
             }
         });
     }
+     private void actualizarStats(List<CheckInOut> lista) {
+        LocalDate hoy = LocalDate.now();
+        long activos = lista.stream().filter(ci -> !ci.haRealizadoCheckout()).count();
+        // BUG 6 FIX: filtrar solo checkouts registrados hoy, no el total histórico
+        long checkoutsHoy = lista.stream()
+                .filter(ci -> ci.getFechaHoraCheckout() != null
+                        && ci.getFechaHoraCheckout().toLocalDate().equals(hoy))
+                .count();
+        statsRow.getChildren().clear();
+        statsRow.getChildren().addAll(
+            chip(" Check-ins activos: " + activos,   "#ede9fe", "#6d28d9"),
+            chip(" Check-outs hoy: " + checkoutsHoy, "#dcfce7", "#15803d")
+        );
+    }
 }
