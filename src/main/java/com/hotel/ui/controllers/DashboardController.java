@@ -1226,4 +1226,31 @@ public class DashboardController {
         });
         pause.play();
     }
+    
+    // ── Hover premium sidebar ─────────────────────────────────────────────────
+
+    private void configurarHoverNav(Button btn) {
+        ScaleTransition stIn  = new ScaleTransition(Duration.millis(220), btn);
+        ScaleTransition stOut = new ScaleTransition(Duration.millis(220), btn);
+        stIn.setToX(1.05);  stIn.setToY(1.05);
+        stOut.setToX(1.0);  stOut.setToY(1.0);
+        stIn.setInterpolator(Interpolator.EASE_OUT);
+        stOut.setInterpolator(Interpolator.EASE_OUT);
+
+        btn.setOnMouseEntered(e -> { stOut.stop(); stIn.playFromStart(); });
+        btn.setOnMouseExited(e  -> { stIn.stop();  stOut.playFromStart(); });
+    }
+
+    // ── Wrappers de card (legacy) ─────────────────────────────────────────────
+
+    private VBox enCard(String titulo, Node contenido) {
+        VBox card = new VBox(10);
+        card.setPadding(new Insets(16));
+        card.setStyle("-fx-background-color:white; -fx-background-radius:14px;" +
+                      "-fx-effect:dropshadow(gaussian,rgba(0,0,0,0.08),14,0,0,3);");
+        Label t = new Label(titulo);
+        t.setStyle("-fx-font-size:14px; -fx-font-weight:bold; -fx-text-fill:#1e293b;");
+        card.getChildren().addAll(t, new Separator(), contenido);
+        return card;
+    }
     }
