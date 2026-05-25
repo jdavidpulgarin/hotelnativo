@@ -40,6 +40,30 @@ import javafx.scene.shape.Circle;
  * Gestiona navegación lateral, KPIs con hover+doble clic, gráficos mejorados y chatbot flotante.
  */
 public class DashboardController {
-    
+    // ── FXML ──────────────────────────────────────────────────────────────────
+    @FXML private StackPane centerRoot;
+    @FXML private StackPane contentArea;
+    @FXML private Label     labelUsuario, labelRol, labelFecha;
+    @FXML private Label     topbarTitle, topbarBreadcrumb;
+    @FXML private Label     userAvatarLabel;
+    @FXML private HBox      sidebarUserHBox;
+
+    // ── Chatbot ───────────────────────────────────────────────────────────────
+    private VBox       chatPanel;
+    private VBox       mensajesBox;
+    private ScrollPane mensajesScroll;
+    private TextField  chatInput;
+    private boolean    chatVisible = false;
+
+    // ── Navegación ────────────────────────────────────────────────────────────
+    @FXML private Button navDashboard, navReservas, navCheckin;
+    @FXML private Button navClientes, navHabitaciones, navMantenimiento;
+    @FXML private Button navFacturacion, navReportes, navEmpleados;
+    @FXML private Label  sectionOperaciones, sectionRecursos, sectionAdministracion;
+
+    private final AppContext ctx = AppContext.getInstance();
+    private Button navActivo;
+
+    private static final java.util.Locale LOCALE_ES = java.util.Locale.forLanguageTag("es-CO");
     
 }
