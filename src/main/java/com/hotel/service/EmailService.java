@@ -112,4 +112,23 @@ public class EmailService {
         String cuerpo = construirCuerpoFactura(factura);
         return enviarEmail(factura.getCliente().getEmail(), asunto, cuerpo, pdfPath);
     }
+
+    // ── Notificaciones de Mantenimiento ──────────────────────────────────────
+    public void notificarNuevoMantenimiento(Empleado empleado,
+            Habitacion habitacion,
+            Mantenimiento.TipoMantenimiento tipo,
+            String descripcion,
+            int idMantenimiento) {
+        String cuerpo = "Estimado " + empleado.obtenerNombreCompleto() + ",\n"
+                + "Se le ha asignado una solicitud de mantenimiento #" + idMantenimiento + ".\n"
+                + "Habitación: " + habitacion.getNumero() + "\n"
+                + "Tipo: " + tipo + "\n"
+                + "Descripción: " + descripcion + "\n"
+                + "La habitación ha sido bloqueada automáticamente (estado: MANTENIMIENTO).\n"
+                + "Por favor atender a la brevedad posible.";
+        enviarEmail(empleado.getEmail(),
+                "Nueva solicitud de mantenimiento #" + idMantenimiento
+                + " - Hab. " + habitacion.getNumero(),
+                cuerpo, null);
+    }
 }
