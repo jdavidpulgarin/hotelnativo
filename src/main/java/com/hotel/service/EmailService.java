@@ -192,4 +192,16 @@ public class EmailService {
             } else {
                 msg.setText(cuerpo, "UTF-8");
             }
+
+            Transport.send(msg);
+            System.out.println("[EMAIL] Enviado exitosamente a: " + destinatario);
+            System.out.println("[EMAIL] ─────────────────────────────────────────");
+            return true;
+        } catch (Exception e) {
+            System.err.println("[EMAIL] Error enviando a " + destinatario + ": " + e.getMessage());
+            return false;
         }
+    }
+    
+    
+}
