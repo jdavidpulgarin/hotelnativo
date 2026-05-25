@@ -286,5 +286,73 @@ public class ClientesController {
                 dialog.getDialogPane().getButtonTypes().get(0));
         btnGuardar.setStyle("-fx-background-color:#1a3a5c; -fx-text-fill:white; " +
                             "-fx-font-weight:bold; -fx-background-radius:8px; -fx-padding:8px 18px;");
-}
+
+    btnGuardar.addEventFilter(javafx.event.ActionEvent.ACTION, event -> {
+            if (ValidacionCampo.tieneError(errCedula)
+                    || ValidacionCampo.tieneError(errNombre) || ValidacionCampo.tieneError(errApellido)
+                    || ValidacionCampo.tieneError(errEmail) || ValidacionCampo.tieneError(errTelefono)) {
+                errorLbl.setText("Corrige los campos marcados en rojo antes de continuar.");
+                event.consume(); return;
+            }
+            if (fCedula.getText().trim().isEmpty()) {
+                errorLbl.setText("La cédula es obligatoria.");
+                event.consume(); return;
+            }
+            if (fNombre.getText().trim().isEmpty()) {
+                errorLbl.setText("El primer nombre es obligatorio.");
+                event.consume(); return;
+            }
+            if (fApellido.getText().trim().isEmpty()) {
+                errorLbl.setText("El primer apellido es obligatorio.");
+                event.consume(); return;
+            }
+            if (fEmail.getText().trim().isEmpty()) {
+                errorLbl.setText("El email es obligatorio.");
+                event.consume(); return;
+            }
+            if (fTelefono.getText().trim().isEmpty()) {
+                errorLbl.setText("El teléfono es obligatorio.");
+                event.consume(); return;
+            }
+            if (fNacionalidad.getText().trim().isEmpty()) {
+                errorLbl.setText("La nacionalidad es obligatoria.");
+                event.consume(); return;
+            }
+            try {
+                String sn = fSegundoNombre.getText().trim();
+                String a2 = fApellido2.getText().trim();
+                String ciudad = fCiudad.getText().trim();
+                ClienteDTO dto = new ClienteDTO(
+                        fCedula.getText().trim(),
+                        fNombre.getText().trim(),
+                        sn.isEmpty() ? null : sn,
+                        fApellido.getText().trim(),
+                        a2.isEmpty() ? null : a2,
+                        fEmail.getText().trim(),
+                        fTelefono.getText().trim(),
+                        fNacionalidad.getText().trim(),
+                        ciudad.isEmpty() ? null : ciudad);
+
+                if (clienteEditar == null) {
+                    ctx.getClienteService().registrarCliente(dto);
+                    NotificationUtil.exito("Cliente registrado correctamente.");
+                } else {
+                    ctx.getClienteService().actualizarCliente(clienteEditar.getId(), dto);
+                    NotificationUtil.exito("Cliente actualizado correctamente.");
+                }
+                Platform.runLater(() -> cargarDatos());
+            } catch (ExcepcionNegocio e) {
+                errorLbl.setText("Error: " + e.getMessage());
+                event.consume();
+            } catch (Exception e) {
+                errorLbl.setText("Error inesperado: " + e.getMessage());
+                event.consume();
+            }
+        });
+        dialog.setResultConverter(btn -> btn);
+        dialog.showAndWait();
+    }     
+        
+    
+    }
 }
