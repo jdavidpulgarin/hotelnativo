@@ -1253,4 +1253,47 @@ public class DashboardController {
         card.getChildren().addAll(t, new Separator(), contenido);
         return card;
     }
+    
+      // ── Mapa de Habitaciones ──────────────────────────────────────────────
+
+    private VBox crearMapaHabitaciones(List<Habitacion> habitaciones, List<Reserva> reservas) {
+        VBox section = new VBox(16);
+
+        // Encabezado sección
+        HBox header = new HBox(10);
+        header.setAlignment(Pos.CENTER_LEFT);
+        Label titulo = new Label("Mapa de Habitaciones");
+        titulo.setStyle("-fx-font-size:17px; -fx-font-weight:800; -fx-text-fill:#0f172a;");
+        long total    = habitaciones.size();
+        long libres   = habitaciones.stream().filter(h -> h.getEstado() == Habitacion.EstadoHabitacion.DISPONIBLE).count();
+        long ocupadas = habitaciones.stream().filter(h -> h.getEstado() == Habitacion.EstadoHabitacion.OCUPADA).count();
+        Label meta = new Label(total + " habitaciones · " + libres + " libres · " + ocupadas + " ocupadas");
+        meta.setStyle("-fx-font-size:12.5px; -fx-text-fill:#94a3b8;");
+        Region sp = new Region();
+        HBox.setHgrow(sp, Priority.ALWAYS);
+        header.getChildren().addAll(titulo, meta, sp);
+
+        // Indexar reservas activas por número de habitación
+        Map<String, Reserva> reservaActiva = reservas.stream()
+                .filter(r -> r.getHabitacion() != null
+                        && (r.getEstado() == Reserva.EstadoReserva.EN_PROCESO
+                         || r.getEstado() == Reserva.EstadoReserva.COMPLETADA))
+                .collect(Collectors.toMap(
+                        r -> r.getHabitacion().getNumero(),
+                        r -> r,
+                        (a, b) -> a));
+
+        // Grid de cards
+        javafx.scene.layout.FlowPane grid = new javafx.scene.layout.FlowPane();
+        grid.setHgap(14);
+        grid.setVgap(14);
+
+        for (Habitacion hab : habitaciones) {
+            VBox card = construirRoomCard(hab, reservaActiva.get(hab.getNumero()));
+            grid.getChildren().add(card);
+        }
+
+        section.getChildren().addAll(header, grid);
+        return section;
+    }
     }
