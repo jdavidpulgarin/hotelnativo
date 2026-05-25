@@ -135,7 +135,29 @@ public class EmpleadoService {
             throw new ExcepcionNegocio("EMAIL_DUPLICADO",
                     "Ya existe un empleado registrado con el email: " + email);
         }
-        // ── Métodos privados ──────────────────────────────────────────────────────
+
+        Cargo cargoRef = new Cargo();
+        cargoRef.setId(idCargo);
+
+        empleado.setNombre(nombre);
+        empleado.setSegundoNombre(segundoNombre);
+        empleado.setApellido(apellido);
+        empleado.setApellido2(apellido2);
+        empleado.setEmail(email);
+        empleado.setTelefono(telefono);
+        empleado.setCargo(cargoRef);
+        if (fechaContratacion != null) {
+            empleado.setFechaContratacion(fechaContratacion);
+        }
+        empleado.setSalario(salario);
+        empleado.setTipoContrato(tipoContrato);
+        empleado.setTipoPago(tipoPago);
+        empleado.setFechaFinContrato(fechaFinContrato);
+
+        empleadoDAO.actualizar(empleado);
+        return empleado;
+    }
+    // ── Métodos privados ──────────────────────────────────────────────────────
 
     private Empleado obtenerEmpleadoOLanzarError(int idEmpleado) throws ExcepcionNegocio {
         return empleadoDAO.buscarPorId(idEmpleado)
