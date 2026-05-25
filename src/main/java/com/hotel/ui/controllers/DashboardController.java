@@ -1149,4 +1149,22 @@ public class DashboardController {
         nodo.setVisible(false);
         nodo.setManaged(false);
     }
+    
+      // ── Factories de columnas ─────────────────────────────────────────────────
+
+    /** Columna con extractor y ancho preferido (para la tabla de reservas recientes). */
+    private <S> TableColumn<S, String> col(String titulo,
+            Function<S, String> extractor, double width) {
+        TableColumn<S, String> c = new TableColumn<>(titulo);
+        c.setCellValueFactory(data -> new SimpleStringProperty(extractor.apply(data.getValue())));
+        c.setPrefWidth(width);
+        return c;
+    }
+
+    /** Columna simple sin ancho fijo (para los modales de detalle). */
+    private <S> TableColumn<S, String> colS(String titulo, Function<S, String> extractor) {
+        TableColumn<S, String> c = new TableColumn<>(titulo);
+        c.setCellValueFactory(data -> new SimpleStringProperty(extractor.apply(data.getValue())));
+        return c;
+    }
     }
