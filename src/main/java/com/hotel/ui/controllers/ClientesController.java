@@ -162,4 +162,42 @@ public class ClientesController {
         }
     }
 
+    
+       @FXML
+    public void eliminar() {
+        Cliente sel = tabla.getSelectionModel().getSelectedItem();
+        if (sel == null) { NotificationUtil.advertencia("Selecciona un cliente."); return; }
+
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+        confirm.setTitle("Confirmar eliminación");
+        confirm.setHeaderText("¿Eliminar a " + sel.obtenerNombreCompleto() + "?");
+        confirm.setContentText("Se eliminarán también sus reservas (completadas/canceladas),\n" +
+                "facturas e historial de check-in.\nEsta acción no se puede deshacer.");
+        confirm.showAndWait().ifPresent(btn -> {
+            if (btn == ButtonType.OK) {
+                try {
+                    ctx.getClienteService().eliminarCliente(sel.getId());
+                    NotificationUtil.exito("Cliente eliminado correctamente.");
+                    cargarDatos();
+                } catch (ExcepcionNegocio e) {
+                    NotificationUtil.error(e.getMessage());
+                } catch (Exception e) {
+                    NotificationUtil.error("No se pudo eliminar el cliente: " + e.getMessage());
+                }
+            }
+        });
+    }
+
+    @FXML
+    public void marcarVip() {
+        Cliente sel = tabla.getSelectionModel().getSelectedItem();
+        if (sel == null) { NotificationUtil.advertencia("Selecciona un cliente."); return; }
+        try {
+            ctx.getClienteService().marcarClienteComoVip(sel.getId());
+            NotificationUtil.exito(sel.obtenerNombreCompleto() + " marcado como VIP ⭐");
+            cargarDatos();
+        } catch (ExcepcionNegocio e) {
+            NotificationUtil.error(e.getMessage());
+        }
+    }
 }
