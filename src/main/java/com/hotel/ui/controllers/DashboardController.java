@@ -136,6 +136,41 @@ public class DashboardController {
         header.setPadding(new Insets(14, 14, 14, 16));
         header.setStyle("-fx-background-color:#1a3a5c; -fx-background-radius:16px 16px 0 0;");
     
-    
+         chatInput = new TextField();
+        chatInput.setPromptText("Escribe tu mensaje...");
+        chatInput.getStyleClass().add("chat-input-field");
+        HBox.setHgrow(chatInput, Priority.ALWAYS);
+        chatInput.setOnAction(e -> enviarMensaje());
+
+        Button btnEnviar = new Button("➤");
+        btnEnviar.getStyleClass().add("btn-enviar-chat");
+        btnEnviar.setOnAction(e -> enviarMensaje());
+
+        HBox inputArea = new HBox(8, chatInput, btnEnviar);
+        inputArea.setAlignment(Pos.CENTER);
+        inputArea.setPadding(new Insets(10, 14, 14, 14));
+        inputArea.setStyle("-fx-background-color:white; -fx-background-radius:0 0 16px 16px;" +
+                           "-fx-border-color:#e2e8f0; -fx-border-width:1px 0 0 0;");
+
+        chatPanel = new VBox(header, mensajesScroll, inputArea);
+        chatPanel.setPrefWidth(380);
+        chatPanel.setPrefHeight(520);
+        chatPanel.setMaxWidth(380);
+        chatPanel.setMaxHeight(520);
+        chatPanel.setStyle("-fx-background-color:white; -fx-background-radius:16px;" +
+                           "-fx-effect:dropshadow(gaussian,rgba(0,0,0,0.25),24,0,0,6);");
+        chatPanel.setVisible(false);
+        chatPanel.setManaged(false);
+        StackPane.setAlignment(chatPanel, Pos.BOTTOM_RIGHT);
+        StackPane.setMargin(chatPanel, new Insets(0, 20, 80, 0));
+
+        Button fab = new Button("💬");
+        fab.getStyleClass().add("btn-chat-flotante");
+        fab.setOnAction(e -> toggleChat());
+        StackPane.setAlignment(fab, Pos.BOTTOM_RIGHT);
+        StackPane.setMargin(fab, new Insets(0, 20, 20, 0));
+
+        centerRoot.getChildren().addAll(chatPanel, fab);
+        agregarMensajeBot(ctx.getChatbotService().obtenerMensajeBienvenida());
 }
 }
