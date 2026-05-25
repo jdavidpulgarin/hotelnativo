@@ -584,4 +584,54 @@ public class DashboardController {
         dialog.getDialogPane().setContent(content);
         dialog.showAndWait();
     }
+    
+     private void abrirModalClientes(List<Cliente> clientes) {
+        Dialog<Void> dialog = new Dialog<>();
+        dialog.setTitle("Clientes registrados");
+        dialog.getDialogPane().setPrefSize(760, 520);
+        dialog.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
+        dialog.getDialogPane().setStyle("-fx-background-color:white;");
+
+        TableView<Cliente> tabla = new TableView<>();
+        tabla.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
+        tabla.setStyle("-fx-background-color:transparent; -fx-border-color:transparent;");
+        VBox.setVgrow(tabla, Priority.ALWAYS);
+
+        // Columna VIP con badge
+        TableColumn<Cliente, String> colVip = colS("VIP", c -> c.isEsVip() ? "⭐ VIP" : "");
+        colVip.setCellFactory(tc -> new TableCell<>() {
+            @Override protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null || item.isEmpty()) { setText(null); setStyle(""); return; }
+                setText(item);
+                setStyle("-fx-text-fill:#d97706; -fx-font-weight:bold;");
+            }
+        });
+
+        tabla.getColumns().addAll(List.of(
+            colS("ID",           c -> "#" + c.getId()),
+            colS("Nombre",       c -> c.obtenerNombreCompleto()),
+            colS("Documento",    c -> c.getDocumento() != null ? c.getDocumento() : "—"),
+            colS("Email",        c -> c.getEmail() != null ? c.getEmail() : "—"),
+            colS("Teléfono",     c -> c.getTelefono() != null ? c.getTelefono() : "—"),
+            colVip,
+            colS("Nacionalidad", c -> c.getNacionalidad() != null ? c.getNacionalidad() : "—")
+        ));
+        tabla.getItems().addAll(clientes);
+
+        long vips = clientes.stream().filter(Cliente::isEsVip).count();
+        Label badge = new Label("⭐ " + vips + " clientes VIP");
+        badge.setStyle("-fx-font-size:12px; -fx-text-fill:#d97706; -fx-font-weight:600;" +
+                "-fx-background-color:#fef3c7; -fx-background-radius:6px; -fx-padding:4px 10px;");
+
+        HBox subHdr = new HBox(12, badge);
+        subHdr.setAlignment(Pos.CENTER_LEFT);
+
+        VBox content = new VBox(12,
+            modalHeader("Clientes registrados  (" + clientes.size() + ")"),
+            subHdr, new Separator(), tabla);
+        content.setPadding(new Insets(22));
+        dialog.getDialogPane().setContent(content);
+        dialog.showAndWait();
+    }
  }
