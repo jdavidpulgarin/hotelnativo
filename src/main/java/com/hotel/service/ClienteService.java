@@ -117,10 +117,16 @@ public class ClienteService {
         ValidadorEntradas.validarCampoRequerido(textoBusqueda, "textoBusqueda");
         return clienteBusqueda.buscarPorNombre(textoBusqueda);
     }
-    
-        public List<Cliente> listarTodosLosClientes() {
+
+    public List<Cliente> listarTodosLosClientes() {
         return clienteDAO.listarTodos();
     }
+
+    public List<Cliente> listarClientesVip() {
+        return clienteBusqueda.listarClientesVip();
+    }
+    
+    
 
     // ── métodos privados de apoyo ──────────────────────────────────────────────
     private void validarDatosCliente(ClienteDTO dto) throws ExcepcionValidacion {
