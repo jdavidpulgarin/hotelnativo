@@ -12,21 +12,28 @@ import jakarta.mail.internet.MimeMultipart;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
+
 /**
  *
  * @author Pulgarin
  */
 /**
- * Servicio de notificaciones por correo electrónico.
- * Usa Jakarta Mail (angus-mail) con SMTP (Gmail por defecto).
+ * Servicio de notificaciones por correo electrónico. Usa Jakarta Mail
+ * (angus-mail) con SMTP (Gmail por defecto).
  *
- * Configurar el remitente en src/com/hotel/email.properties.
- * Para Gmail: generar una "Contraseña de aplicación" en
+ * Configurar el remitente en src/com/hotel/email.properties. Para Gmail:
+ * generar una "Contraseña de aplicación" en
  * https://myaccount.google.com/apppasswords (requiere 2FA activo).
  *
- * SOLID: S – responsabilidad única: envío de correos.
- * GRASP: Alta Cohesión – solo gestiona notificaciones.
+ * SOLID: S – responsabilidad única: envío de correos. GRASP: Alta Cohesión –
+ * solo gestiona notificaciones.
  */
 public class EmailService {
+
+    private final Properties smtpProps = new Properties();
+    private String fromAddress;
+    private String password;
+    private boolean configurado = false;
+    
     
 }
