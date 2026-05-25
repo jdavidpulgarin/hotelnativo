@@ -62,6 +62,23 @@ public class ClienteService {
         return clienteDAO.insertar(nuevoCliente);
     }
 
+    /**
+     * Actualiza datos de un cliente existente.
+     *
+     * @param idCliente identificador del cliente
+     * @param dto nuevos datos
+     * @return cliente actualizado
+     * @throws ExcepcionNegocio si el cliente no existe
+     */
+    public Cliente actualizarCliente(int idCliente, ClienteDTO dto) throws ExcepcionNegocio {
+        validarDatosCliente(dto);
+        Cliente clienteExistente = obtenerClienteOLanzarError(idCliente);
+
+        actualizarCamposCliente(clienteExistente, dto);
+        clienteDAO.actualizar(clienteExistente);
+        return clienteExistente;
+    }
+
     // ── métodos privados de apoyo ──────────────────────────────────────────────
     private void validarDatosCliente(ClienteDTO dto) throws ExcepcionValidacion {
         ValidadorEntradas.validarCampoRequerido(dto.getCedula(), "cédula");
@@ -95,6 +112,23 @@ public class ClienteService {
         c.setApellido2(dto.getApellido2());
         c.setCiudadOrigen(dto.getCiudadOrigen());
         return c;
+    }
+
+    private Cliente obtenerClienteOLanzarError(int idCliente) throws ExcepcionNegocio {
+        return clienteDAO.buscarPorId(idCliente)
+                .orElseThrow(() -> new ExcepcionNegocio("CLIENTE_NOT_FOUND",
+                "No se encontró el cliente con ID: " + idCliente));
+    }
+
+    private void actualizarCamposCliente(Cliente cliente, ClienteDTO dto) {
+        cliente.setNombre(dto.getNombre());
+        cliente.setSegundoNombre(dto.getSegundoNombre());
+        cliente.setApellido(dto.getApellido());
+        cliente.setApellido2(dto.getApellido2());
+        cliente.setEmail(dto.getEmail());
+        cliente.setTelefono(dto.getTelefono());
+        cliente.setNacionalidad(dto.getNacionalidad());
+        cliente.setCiudadOrigen(dto.getCiudadOrigen());
     }
 
 }
