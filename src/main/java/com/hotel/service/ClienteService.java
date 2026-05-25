@@ -79,6 +79,30 @@ public class ClienteService {
         return clienteExistente;
     }
 
+    /**
+     * Elimina un cliente por ID.
+     *
+     * @throws ExcepcionNegocio si el cliente no existe
+     */
+    public void eliminarCliente(int idCliente) throws ExcepcionNegocio {
+        ValidadorEntradas.validarIdPositivo(idCliente, "cliente");
+        obtenerClienteOLanzarError(idCliente);
+
+        List<Reserva> activas = reservaBusqueda.buscarReservasActivasPorCliente(idCliente);
+        if (!activas.isEmpty()) {
+            throw new ExcepcionNegocio("CLIENTE_CON_RESERVAS_ACTIVAS",
+                    "El cliente tiene " + activas.size() + " reserva(s) activa(s) "
+                    + "(PENDIENTE/CONFIRMADA/EN PROCESO). Cancélalas primero.");
+        }
+
+        try {
+            clienteDAO.purgarHistorialCliente(idCliente);
+            clienteDAO.eliminar(idCliente);
+        } catch (ExcepcionBaseDatos e) {
+            throw new ExcepcionNegocio("ERROR_BD", "Error al eliminar cliente: " + e.getMessage());
+        }
+    }
+
     // ── métodos privados de apoyo ──────────────────────────────────────────────
     private void validarDatosCliente(ClienteDTO dto) throws ExcepcionValidacion {
         ValidadorEntradas.validarCampoRequerido(dto.getCedula(), "cédula");
