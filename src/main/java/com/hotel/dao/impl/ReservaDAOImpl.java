@@ -213,3 +213,41 @@ public class ReservaDAOImpl extends BaseDAO implements IReservaDAO, IReservaBusq
         }
         return lista;
     }
+@Override
+    public List<Reserva> buscarReservasActivasPorCliente(int idCliente) {
+        List<Reserva> lista = new ArrayList<>();
+        Connection conn = obtener();
+        try (PreparedStatement stmt = conn.prepareStatement(SQL_RESERVAS_ACTIVAS_CLIENTE)) {
+            stmt.setString(1, String.valueOf(idCliente));
+            stmt.setString(2, fmt("CLI", idCliente));
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) lista.add(mapearFilaSimple(rs));
+            }
+        } catch (SQLException e) {
+            throw new ExcepcionBaseDatos("Error al buscar reservas activas: " + e.getMessage(), e);
+        } finally {
+            liberar(conn);
+        }
+        return lista;
+    }
+
+    @Override
+    public List<Reserva> buscarReservasSolapadas(int idHabitacion,
+                                                  LocalDate fechaEntrada,
+                                                  LocalDate fechaSalida) {
+        List<Reserva> lista = new ArrayList<>();
+        Connection conn = obtener();
+        try (PreparedStatement stmt = conn.prepareStatement(SQL_RESERVAS_SOLAPADAS)) {
+            stmt.setString(1, fmt("HAB", idHabitacion));
+            stmt.setDate(2, Date.valueOf(fechaSalida));
+            stmt.setDate(3, Date.valueOf(fechaEntrada));
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) lista.add(mapearFilaSimple(rs));
+            }
+        } catch (SQLException e) {
+            throw new ExcepcionBaseDatos("Error al buscar solapadas: " + e.getMessage(), e);
+        } finally {
+            liberar(conn);
+        }
+        return lista;
+    }
