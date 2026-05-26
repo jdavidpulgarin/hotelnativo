@@ -450,4 +450,68 @@ public class FacturacionController {
         Stage owner = (Stage) tabla.getScene().getWindow();
         new FacturaTermicaView(sel, cajero).mostrarVentanaPrevia(owner);
     }
+    // ── Constructores de paneles de pago ──────────────────────────────────────
+
+    private VBox seccionPago(String titulo, javafx.scene.Node... hijos) {
+        Label lbl = new Label(titulo);
+        lbl.setStyle("-fx-font-size:12px; -fx-font-weight:bold; -fx-text-fill:#1e3a5f;");
+
+        VBox box = new VBox(10);
+        box.setPadding(new Insets(12, 14, 12, 14));
+        box.setStyle("-fx-background-color:#f8fafc; -fx-border-color:#cbd5e1;" +
+                     "-fx-border-width:1.5px; -fx-border-radius:10px;" +
+                     "-fx-background-radius:10px;");
+        box.getChildren().add(lbl);
+        for (javafx.scene.Node n : hijos) box.getChildren().add(n);
+        return box;
+    }
+
+    private ComboBox<String> franquiciaCombo(boolean conAmex) {
+        ComboBox<String> cb = new ComboBox<>();
+        cb.getItems().addAll("VISA", "MASTERCARD");
+        if (conAmex) cb.getItems().addAll("AMEX", "DINNERS");
+        cb.setValue("VISA");
+        cb.setMaxWidth(Double.MAX_VALUE);
+        cb.setStyle("-fx-background-color:#f8fafc; -fx-border-color:#e2e8f0;" +
+                    "-fx-border-width:1.5px; -fx-border-radius:8px;");
+        return cb;
+    }
+
+    private static void mostrarPanel(VBox panel, boolean visible) {
+        panel.setVisible(visible);
+        panel.setManaged(visible);
+    }
+
+    // ── Helpers ───────────────────────────────────────────────────────────────
+
+    private String badgeEstilo(String estado) {
+        switch (estado) {
+            case "PAGADA":    return "-fx-background-color:#dcfce7; -fx-text-fill:#15803d;" +
+                    "-fx-background-radius:20px; -fx-padding:3px 10px; -fx-font-size:10px; -fx-font-weight:bold;";
+            case "PENDIENTE": return "-fx-background-color:#fef3c7; -fx-text-fill:#b45309;" +
+                    "-fx-background-radius:20px; -fx-padding:3px 10px; -fx-font-size:10px; -fx-font-weight:bold;";
+            case "ANULADA":   return "-fx-background-color:#fee2e2; -fx-text-fill:#b91c1c;" +
+                    "-fx-background-radius:20px; -fx-padding:3px 10px; -fx-font-size:10px; -fx-font-weight:bold;";
+            default:          return "-fx-background-color:#f1f5f9; -fx-text-fill:#475569;" +
+                    "-fx-background-radius:20px; -fx-padding:3px 10px; -fx-font-size:10px;";
+        }
+    }
+
+    private TextField tf(String placeholder) {
+        TextField f = new TextField();
+        f.setPromptText(placeholder);
+        f.setStyle("-fx-background-color:#f8fafc; -fx-border-color:#e2e8f0;" +
+                "-fx-border-width:1.5px; -fx-border-radius:8px;" +
+                "-fx-background-radius:8px; -fx-padding:8px 12px;");
+        f.setMaxWidth(Double.MAX_VALUE);
+        return f;
+    }
+
+    private Label lab(String t) {
+        Label l = new Label(t);
+        l.setStyle("-fx-font-size:12px; -fx-font-weight:bold; -fx-text-fill:#374151;");
+        l.setMinWidth(110);
+        return l;
+    }
+}
     
