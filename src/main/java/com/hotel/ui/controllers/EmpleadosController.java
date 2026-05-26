@@ -191,3 +191,33 @@ public class EmpleadosController {
             lblFechaFin.setVisible(esFijo); lblFechaFin.setManaged(esFijo);
             fFechaFin.setVisible(esFijo);   fFechaFin.setManaged(esFijo);
         });
+        
+  Label errNombreE  = new Label(); Label errApellidoE = new Label();
+        Label errEmailE   = new Label(); Label errTelefonoE = new Label();
+        ValidacionCampo.aplicarSoloLetras(fNombre,   errNombreE);
+        ValidacionCampo.aplicarSoloLetras(fApellido, errApellidoE);
+        ValidacionCampo.aplicarEmail(fEmail,         errEmailE);
+        ValidacionCampo.aplicarTelefono(fTelefono,   errTelefonoE);
+
+        if (editar != null) {
+            fNombre.setText(editar.getNombre());
+            fSegundoNombre.setText(editar.getSegundoNombre() != null ? editar.getSegundoNombre() : "");
+            fApellido.setText(editar.getApellido());
+            fApellido2.setText(editar.getApellido2() != null ? editar.getApellido2() : "");
+            fEmail.setText(editar.getEmail());
+            fTelefono.setText(editar.getTelefono());
+            fFecha.setValue(editar.getFechaContratacion() != null
+                    ? editar.getFechaContratacion() : LocalDate.now());
+            if (editar.getCargo() != null) {
+                int idCargoEditar = editar.getCargo().getId();
+                fCargo.getItems().stream()
+                        .filter(c -> c.getId() == idCargoEditar)
+                        .findFirst()
+                        .ifPresent(fCargo::setValue);
+            }
+            if (editar.getSalario() > 0)
+                fSalario.setText(String.format("%.0f", editar.getSalario()));
+            if (editar.getTipoContrato() != null)  fTipoContrato.setValue(editar.getTipoContrato());
+            if (editar.getTipoPago() != null)       fTipoPago.setValue(editar.getTipoPago());
+            if (editar.getFechaFinContrato() != null) fFechaFin.setValue(editar.getFechaFinContrato());
+        }
