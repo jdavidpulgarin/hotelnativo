@@ -298,3 +298,98 @@ private void configurarFocusWrapper(javafx.scene.control.Control campo, HBox wra
             "-fx-background-color: linear-gradient(to bottom,#1e4575,#1a3a5c);" +
             "-fx-text-fill:white; -fx-font-size:14px; -fx-font-weight:bold;" +
             "-fx-background-radius:10px; -fx-pref-height:46px; -fx-cursor:hand;");
+          btnCambiar.setOnAction(e -> {
+            String actual    = pfActual.getText();
+            String nueva     = pfNueva.getText();
+            String confirmar = pfConfirmar.getText();
+
+            if (actual.isBlank() || nueva.isBlank() || confirmar.isBlank()) {
+                mostrarErrorDialog(lblError, "Todos los campos son obligatorios.");
+                return;
+            }
+            if (!nueva.equals(confirmar)) {
+                mostrarErrorDialog(lblError, "Las contraseñas nuevas no coinciden.");
+                pfConfirmar.clear();
+                return;
+            }
+
+            btnCambiar.setDisable(true);
+
+            // Obtener email antes de que cambiarPassword consuma el token
+            String emailNorm = ctx.getAuthService().obtenerEmailDePreAuthToken(preAuthToken);
+
+            new Thread(() -> {
+                try {
+                    ctx.getAuthService().cambiarPassword(preAuthToken, actual, nueva);
+
+                    // Buscar empleado en el mapa en memoria de AuthService — O(1), sin query extra
+                    String nuevoHash = ctx.getAuthService().generarHash(nueva);
+                    if (emailNorm != null) {
+                        ctx.getAuthService().obtenerEmpleadoPorEmail(emailNorm).ifPresent(emp -> {
+                            try {
+                                ctx.getEmpleadoService().persistirHashEnBD(emp.getId(), nuevoHash);
+                                ctx.getEmpleadoService().actualizarDebeCambiarPassword(emp.getId(), false);
+                                emp.setDebeCambiarContrasena(false);
+                                ctx.getAuthService().registrarCredencialesConHash(emp, nuevoHash);
+                                System.out.println("[LOGIN] Hash y flag persistidos en BD para: " + emailNorm);
+                            } catch (Exception ex) {
+                                System.err.println("[LOGIN] Error persistiendo datos: " + ex.getMessage());
+                            }
+                        });
+                    }
+
+                    Platform.runLater(() -> {
+                        dialog.close();
+                        mostrarExito("Contraseña cambiada. Inicia sesión con tu nueva contraseña.");
+                        passwordField.clear();
+                    });
+                } catch (AuthService.AuthException | ExcepcionValidacion ex) {
+                    Platform.runLater(() -> {
+                        btnCambiar.setDisable(false);
+                        mostrarErrorDialog(lblError, ex.getMessage());
+                    });
+                } catch (Exception ex) {
+                    Platform.runLater(() -> {
+                        btnCambiar.setDisable(false);
+                        mostrarErrorDialog(lblError, "Error inesperado: " + ex.getMessage());
+                    });
+                }
+            }, "hilo-cambio-password").start();
+        });
+
+        card.getChildren().addAll(
+            titulo, subtitulo,
+            new Separator(),
+            lblActual, pfActual,
+            lblNueva, pfNueva,
+            lblConfirmar, pfConfirmar,
+            lblError,
+            btnCambiar
+        );
+
+        // ── Overlay semitransparente ──────────────────────────────────────────
+        StackPane overlay = new StackPane(card);
+        overlay.setStyle("-fx-background-color: rgba(0,0,0,0.55);");
+        overlay.setAlignment(Pos.CENTER);
+        overlay.setPadding(new Insets(40));
+
+        Scene scene = new Scene(overlay);
+        scene.setFill(Color.TRANSPARENT);
+        scene.getStylesheets().add(
+            getClass().getResource("/com/hotel/ui/styles/main.css").toExternalForm());
+
+        dialog.setScene(scene);
+
+        // ── Animación de entrada ──────────────────────────────────────────────
+        card.setOpacity(0);
+        card.setScaleX(0.88);
+        card.setScaleY(0.88);
+        dialog.show();
+
+        FadeTransition fadein  = new FadeTransition(Duration.millis(200), card);
+        fadein.setFromValue(0); fadein.setToValue(1);
+        ScaleTransition scalein = new ScaleTransition(Duration.millis(200), card);
+        scalein.setFromX(0.88); scalein.setToX(1.0);
+        scalein.setFromY(0.88); scalein.setToY(1.0);
+        new ParallelTransition(fadein, scalein).play();
+    }
