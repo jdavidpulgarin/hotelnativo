@@ -164,4 +164,88 @@ public class FacturacionController {
         baseGrid.addRow(1, lab("Método de pago:"), fMetodo);
         GridPane.setHgrow(fIdReserva, Priority.ALWAYS);
         GridPane.setHgrow(fMetodo,    Priority.ALWAYS);
+           // ── Panel EFECTIVO ────────────────────────────────────────────────────
+        TextField fMonto   = tf("Monto recibido del cliente ($)");
+        Label     lblCambio = new Label("Cambio estimado: —");
+        lblCambio.setStyle("-fx-font-size:13px; -fx-font-weight:bold; -fx-text-fill:#15803d;" +
+                           "-fx-padding:6px 10px; -fx-background-color:#f0fdf4;" +
+                           "-fx-background-radius:8px; -fx-border-color:#86efac;" +
+                           "-fx-border-width:1px; -fx-border-radius:8px;");
+        fMonto.textProperty().addListener((obs, oldVal, val) -> {
+            if (val == null || val.isBlank()) { lblCambio.setText("Cambio estimado: —"); return; }
+            try {
+                double monto = Double.parseDouble(val.trim().replace(",", "."));
+                lblCambio.setText(monto > 0
+                        ? String.format("Monto ingresado: $%,.0f", monto)
+                        : "Cambio estimado: —");
+            } catch (NumberFormatException e) {
+                lblCambio.setText("Cambio estimado: —");
+            }
+        });
+
+        GridPane efectivoGrid = new GridPane();
+        efectivoGrid.setHgap(14); efectivoGrid.setVgap(10);
+        efectivoGrid.addRow(0, lab("Monto recibido:"), fMonto);
+        GridPane.setHgrow(fMonto, Priority.ALWAYS);
+
+        VBox panelEfectivo = seccionPago("💵  Pago en Efectivo", efectivoGrid, lblCambio);
+
+        // ── Panel TARJETA CRÉDITO ─────────────────────────────────────────────
+        ComboBox<String> fFranquiciaCredito = franquiciaCombo(true);
+        Spinner<Integer> fCuotas = new Spinner<>(1, 36, 1);
+        fCuotas.setEditable(true);
+        fCuotas.setMaxWidth(Double.MAX_VALUE);
+        fCuotas.setStyle("-fx-background-color:#f8fafc;");
+
+        Label lblCuotaInfo = new Label("1 cuota = pago de contado");
+        lblCuotaInfo.setStyle("-fx-font-size:11px; -fx-text-fill:#6b7280;");
+        fCuotas.valueProperty().addListener((obs, o, n) ->
+                lblCuotaInfo.setText(n == 1 ? "1 cuota = pago de contado"
+                        : n + " cuotas mensuales"));
+
+        GridPane creditoGrid = new GridPane();
+        creditoGrid.setHgap(14); creditoGrid.setVgap(10);
+        creditoGrid.addRow(0, lab("Franquicia:"), fFranquiciaCredito);
+        creditoGrid.addRow(1, lab("Cuotas:"),     fCuotas);
+        GridPane.setHgrow(fFranquiciaCredito, Priority.ALWAYS);
+        GridPane.setHgrow(fCuotas, Priority.ALWAYS);
+
+        VBox panelCredito = seccionPago("💳  Tarjeta de Crédito", creditoGrid, lblCuotaInfo);
+
+        // ── Panel TARJETA DÉBITO ──────────────────────────────────────────────
+        ComboBox<String> fFranquiciaDebito = franquiciaCombo(false);
+
+        GridPane debitoGrid = new GridPane();
+        debitoGrid.setHgap(14); debitoGrid.setVgap(10);
+        debitoGrid.addRow(0, lab("Franquicia:"), fFranquiciaDebito);
+        GridPane.setHgrow(fFranquiciaDebito, Priority.ALWAYS);
+
+        VBox panelDebito = seccionPago("💳  Tarjeta de Débito", debitoGrid);
+
+        // ── Panel TRANSFERENCIA ───────────────────────────────────────────────
+        TextField fReferencia = tf("Número de referencia bancaria");
+
+        GridPane transGrid = new GridPane();
+        transGrid.setHgap(14); transGrid.setVgap(10);
+        transGrid.addRow(0, lab("Referencia:"), fReferencia);
+        GridPane.setHgrow(fReferencia, Priority.ALWAYS);
+
+        Label lblTransInfo = new Label("Ingresa el número de confirmación de la transferencia");
+        lblTransInfo.setStyle("-fx-font-size:11px; -fx-text-fill:#6b7280;");
+        lblTransInfo.setWrapText(true);
+
+        VBox panelTransfer = seccionPago("🏦  Transferencia Bancaria", transGrid, lblTransInfo);
+
+        // ── Control de visibilidad de paneles ─────────────────────────────────
+        mostrarPanel(panelEfectivo, true);
+        mostrarPanel(panelCredito,  false);
+        mostrarPanel(panelDebito,   false);
+        mostrarPanel(panelTransfer, false);
+
+        fMetodo.valueProperty().addListener((obs, old, nuevo) -> {
+            mostrarPanel(panelEfectivo, "EFECTIVO".equals(nuevo));
+            mostrarPanel(panelCredito,  "TARJETA_CREDITO".equals(nuevo));
+            mostrarPanel(panelDebito,   "TARJETA_DEBITO".equals(nuevo));
+            mostrarPanel(panelTransfer, "TRANSFERENCIA".equals(nuevo));
+        });
     
