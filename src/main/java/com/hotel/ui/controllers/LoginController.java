@@ -393,3 +393,24 @@ private void configurarFocusWrapper(javafx.scene.control.Control campo, HBox wra
         scalein.setFromY(0.88); scalein.setToY(1.0);
         new ParallelTransition(fadein, scalein).play();
     }
+     private void mostrarErrorDialog(Label label, String mensaje) {
+        label.setText(mensaje);
+        label.setVisible(true);
+        FadeTransition ft = new FadeTransition(Duration.millis(150), label);
+        ft.setFromValue(0); ft.setToValue(1);
+        ft.play();
+    }
+
+    private Label etiqueta(String texto) {
+        Label l = new Label(texto);
+        l.setStyle("-fx-font-size:11px; -fx-font-weight:bold; -fx-text-fill:#374151;");
+        return l;
+    }
+
+    private PasswordField campoPassword(String prompt) {
+        PasswordField pf = new PasswordField();
+        pf.setPromptText(prompt);
+        pf.getStyleClass().add("login-field");
+        return pf;
+    }
+}
