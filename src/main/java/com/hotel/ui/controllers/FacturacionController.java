@@ -370,4 +370,84 @@ public class FacturacionController {
 
         dialog.showAndWait();
     }
+      // ── Acciones sobre tabla ──────────────────────────────────────────────────
+
+    @FXML
+    public void enviarFacturaPorEmail() {
+        Factura sel = tabla.getSelectionModel().getSelectedItem();
+        if (sel == null) { NotificationUtil.advertencia("Selecciona una factura para enviar."); return; }
+        if (sel.getCliente() == null || sel.getCliente().getEmail() == null
+                || sel.getCliente().getEmail().isBlank()) {
+            NotificationUtil.error("El cliente no tiene email registrado.");
+            return;
+        }
+
+        String emailDestino = sel.getCliente().getEmail();
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+        confirm.setTitle("Enviar factura por correo");
+        confirm.setHeaderText("¿Enviar Factura #" + sel.getId() + " al cliente?");
+        confirm.setContentText("Destinatario: " + emailDestino);
+        confirm.showAndWait().ifPresent(btn -> {
+            if (btn != ButtonType.OK) return;
+
+            progressBar.setVisible(true);
+            Thread t = new Thread(() -> {
+                try {
+                    String pdfPath = ctx.getPdfReporteService().generarFacturaPdf(sel.getId());
+                    boolean enviado = ctx.getEmailService().enviarFacturaPorEmail(sel, pdfPath);
+                    Platform.runLater(() -> {
+                        progressBar.setVisible(false);
+                        if (enviado) {
+                            NotificationUtil.exito("Factura #" + sel.getId()
+                                    + " enviada con PDF a " + emailDestino);
+                        } else {
+                            NotificationUtil.advertencia(
+                                    "No se pudo enviar. Revisa la configuración en\n"
+                                    + "src/com/hotel/email.properties");
+                        }
+                    });
+                } catch (Exception ex) {
+                    Platform.runLater(() -> {
+                        progressBar.setVisible(false);
+                        NotificationUtil.error("Error al generar/enviar: " + ex.getMessage());
+                    });
+                }
+            }, "hilo-enviar-factura-email");
+            t.setDaemon(true);
+            t.start();
+        });
+    }
+
+    @FXML
+    public void verHTML() {
+        Factura sel = tabla.getSelectionModel().getSelectedItem();
+        if (sel == null) {
+            NotificationUtil.advertencia("Selecciona una factura para generar su HTML.");
+            return;
+        }
+        Thread t = new Thread(() -> {
+            try {
+                String ruta = ctx.getReporteService().guardarFacturaHTML(sel.getId());
+                Platform.runLater(() ->
+                    NotificationUtil.exito("Factura HTML guardada en:\n" + ruta));
+            } catch (Exception e) {
+                Platform.runLater(() ->
+                    NotificationUtil.error("Error generando HTML: " + e.getMessage()));
+            }
+        }, "hilo-factura-html");
+        t.setDaemon(true);
+        t.start();
+    }
+
+    @FXML
+    public void imprimirTermica() {
+        Factura sel = tabla.getSelectionModel().getSelectedItem();
+        if (sel == null) {
+            NotificationUtil.advertencia("Selecciona una factura para imprimir.");
+            return;
+        }
+        Empleado cajero = ctx.getEmpleadoActual();
+        Stage owner = (Stage) tabla.getScene().getWindow();
+        new FacturaTermicaView(sel, cajero).mostrarVentanaPrevia(owner);
+    }
     
