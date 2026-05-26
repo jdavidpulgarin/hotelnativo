@@ -194,3 +194,48 @@ public class HabitacionesController {
             chip(String.format("📊 Ocupación: %.0f%%", ocupacion), "#ede9fe", "#6d28d9")
         );
     }
+            // ── Formulario modal ──────────────────────────────────────────────────────
+
+    private void mostrarFormulario(Habitacion hab) {
+        Dialog<ButtonType> dialog = new Dialog<>();
+        dialog.setTitle(hab == null ? "Nueva Habitación" : "Habitación " + hab.getNumero());
+
+        GridPane grid = new GridPane();
+        grid.setHgap(14); grid.setVgap(14);
+        grid.setPadding(new Insets(20, 24, 20, 24));
+        grid.setPrefWidth(400);
+
+        TextField fNumero = new TextField(hab != null ? hab.getNumero() : "");
+        fNumero.setPromptText("Ej: 101");
+
+        ComboBox<String> fTipo = new ComboBox<>();
+        fTipo.getItems().addAll("1 - Simple", "2 - Doble", "3 - Suite");
+        if (hab != null && hab.getTipoHabitacion() != null) {
+            fTipo.setValue(hab.getTipoHabitacion().getId() + " - " +
+                           hab.getTipoHabitacion().obtenerEtiquetaTipo());
+        }
+
+        TextField fPiso = new TextField(hab != null && hab.getPiso() != null ?
+                String.valueOf(hab.getPiso().getId()) : "");
+        fPiso.setPromptText("ID del piso");
+
+        TextField fPrecio = new TextField(hab != null ?
+                String.valueOf(hab.getPrecioBase()) : "");
+        fPrecio.setPromptText("Precio base");
+
+        Label errNumero = new Label(); Label errPrecio = new Label();
+        ValidacionCampo.aplicarSoloNumeros(fNumero, errNumero);
+        ValidacionCampo.aplicarDecimal(fPrecio, errPrecio);
+
+        VBox vbNumero = new VBox(2, fNumero, errNumero);
+        VBox vbPrecio = new VBox(2, fPrecio, errPrecio);
+        grid.addRow(0, lab("Número:"), vbNumero);
+        grid.addRow(1, lab("Tipo:"),   fTipo);
+        grid.addRow(2, lab("ID Piso:"),fPiso);
+        grid.addRow(3, lab("Precio:"), vbPrecio);
+
+        VBox content = new VBox(12);
+        Label header = new Label(hab == null ? "➕ Registrar habitación" : "✏ Editar habitación");
+        header.setStyle("-fx-font-size:16px; -fx-font-weight:bold; -fx-text-fill:#1a3a5c;");
+        Label errLabel = new Label("");
+        errLabel.setStyle("-fx-text-fill:#dc2626; -fx-font-size:12px;");
