@@ -28,5 +28,8 @@ public class CheckInOut {
         this.empleadoResponsable = empleadoResponsable;
         this.fechaHoraCheckin = fechaHoraCheckin;
     }
-    
+    /** Indica si el huésped ya realizó checkout. */
+    public boolean haRealizadoCheckout() {
+        return fechaHoraCheckout != null;
+    }
 }
