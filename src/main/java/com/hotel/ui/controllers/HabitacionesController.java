@@ -239,3 +239,47 @@ public class HabitacionesController {
         header.setStyle("-fx-font-size:16px; -fx-font-weight:bold; -fx-text-fill:#1a3a5c;");
         Label errLabel = new Label("");
         errLabel.setStyle("-fx-text-fill:#dc2626; -fx-font-size:12px;");
+          // Botones de acción rápida si hay habitación seleccionada
+        if (hab != null) {
+            HBox acciones = new HBox(8);
+            Button btnMant = new Button("🔧 Enviar a Mantenimiento");
+            btnMant.setStyle("-fx-background-color:#fef3c7; -fx-text-fill:#b45309; -fx-background-radius:8px; -fx-cursor:hand; -fx-padding:6px 12px;");
+            btnMant.setOnAction(e -> {
+                btnMant.setDisable(true);
+                Thread t = new Thread(() -> {
+                    try {
+                        ctx.getHabitacionService().enviarHabitacionAMantenimiento(hab.getId());
+                        Platform.runLater(() -> {
+                            NotificationUtil.info("Habitación enviada a mantenimiento.");
+                            dialog.close();
+                            cargarDatos();
+                        });
+                    } catch (ExcepcionNegocio ex) {
+                        Platform.runLater(() -> { btnMant.setDisable(false); errLabel.setText(ex.getMessage()); });
+                    }
+                }, "accion-mantenimiento");
+                t.setDaemon(true); t.start();
+            });
+            Button btnLiberar = new Button("✓ Liberar");
+            btnLiberar.setStyle("-fx-background-color:#dcfce7; -fx-text-fill:#15803d; -fx-background-radius:8px; -fx-cursor:hand; -fx-padding:6px 12px;");
+            btnLiberar.setOnAction(e -> {
+                btnLiberar.setDisable(true);
+                Thread t = new Thread(() -> {
+                    try {
+                        ctx.getHabitacionService().devolverHabitacionAServicio(hab.getId());
+                        Platform.runLater(() -> {
+                            NotificationUtil.exito("Habitación disponible.");
+                            dialog.close();
+                            cargarDatos();
+                        });
+                    } catch (ExcepcionNegocio ex) {
+                        Platform.runLater(() -> { btnLiberar.setDisable(false); errLabel.setText(ex.getMessage()); });
+                    }
+                }, "accion-liberar");
+                t.setDaemon(true); t.start();
+            });
+            acciones.getChildren().addAll(btnMant, btnLiberar);
+            content.getChildren().addAll(header, new Separator(), acciones, new Separator(), grid, errLabel);
+        } else {
+            content.getChildren().addAll(header, new Separator(), grid, errLabel);
+        }
