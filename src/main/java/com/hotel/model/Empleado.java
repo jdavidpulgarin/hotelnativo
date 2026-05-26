@@ -78,4 +78,10 @@ public class Empleado extends Persona {
 
     public boolean isDebeCambiarContrasena()             { return debeCambiarContrasena; }
     public void    setDebeCambiarContrasena(boolean v)   { this.debeCambiarContrasena = v; }
+    @Override
+    public String toString() {
+        return String.format("Empleado[id=%d, nombre=%s, cargo=%s]",
+                getId(), obtenerNombreCompleto(),
+                cargo != null ? cargo.getNombreCargo() : "Sin cargo");
+    }
 }
