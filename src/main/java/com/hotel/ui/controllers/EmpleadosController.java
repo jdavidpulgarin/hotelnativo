@@ -250,3 +250,76 @@ public class EmpleadosController {
         dialog.getDialogPane().getButtonTypes().addAll(
                 new ButtonType("Guardar", ButtonBar.ButtonData.OK_DONE), ButtonType.CANCEL);
         dialog.getDialogPane().setStyle("-fx-background-color:white;");
+        
+ Button btnGuardar = (Button) dialog.getDialogPane()
+                .lookupButton(dialog.getDialogPane().getButtonTypes().get(0));
+        btnGuardar.addEventFilter(javafx.event.ActionEvent.ACTION, event -> {
+            event.consume();
+            if (ValidacionCampo.tieneError(errNombreE) || ValidacionCampo.tieneError(errApellidoE)
+                    || ValidacionCampo.tieneError(errEmailE) || ValidacionCampo.tieneError(errTelefonoE)) {
+                errLbl.setText("Corrige los campos marcados en rojo.");
+                return;
+            }
+            if (fCargo.getValue() == null) {
+                errLbl.setText("Selecciona un cargo para el empleado.");
+                return;
+            }
+            if (editar == null && fPassword.getText().trim().isEmpty()) {
+                errLbl.setText("La contraseña inicial es obligatoria.");
+                return;
+            }
+            int idCargo = fCargo.getValue().getId();
+            btnGuardar.setDisable(true);
+            spinner.setVisible(true);
+            errLbl.setText("");
+
+            double salarioVal = 0;
+            try { salarioVal = Double.parseDouble(
+                    fSalario.getText().trim().replace(",","").replace("$","")); }
+            catch (NumberFormatException ignored) {}
+            final double salarioFinal = salarioVal;
+            final LocalDate fechaFinVal = "TERMINO_FIJO".equals(fTipoContrato.getValue())
+                    ? fFechaFin.getValue() : null;
+
+            new Thread(() -> {
+                try {
+                    if (editar == null) {
+                        ctx.getEmpleadoService().registrarEmpleado(
+                                fNombre.getText().trim(), fSegundoNombre.getText().trim(),
+                                fApellido.getText().trim(), fApellido2.getText().trim(),
+                                fEmail.getText().trim(), fTelefono.getText().trim(),
+                                idCargo, fPassword.getText().trim(),
+                                salarioFinal, fTipoContrato.getValue(),
+                                fTipoPago.getValue(), fechaFinVal);
+                        Platform.runLater(() -> {
+                            NotificationUtil.exito("Empleado registrado.");
+                            cargarDatos();
+                            dialog.close();
+                        });
+                    } else {
+                        ctx.getEmpleadoService().actualizarEmpleado(
+                                editar.getId(), fNombre.getText().trim(),
+                                fSegundoNombre.getText().trim(),
+                                fApellido.getText().trim(), fApellido2.getText().trim(),
+                                fEmail.getText().trim(), fTelefono.getText().trim(), idCargo,
+                                fFecha.getValue(),
+                                salarioFinal, fTipoContrato.getValue(),
+                                fTipoPago.getValue(), fechaFinVal);
+                        Platform.runLater(() -> {
+                            NotificationUtil.exito("Empleado actualizado.");
+                            cargarDatos();
+                            dialog.close();
+                        });
+                    }
+                } catch (Exception ex) {
+                    Platform.runLater(() -> {
+                        errLbl.setText("Error: " + ex.getMessage());
+                        btnGuardar.setDisable(false);
+                        spinner.setVisible(false);
+                    });
+                }
+            }).start();
+        });
+        dialog.setResultConverter(btn -> btn);
+        dialog.showAndWait();
+    }
