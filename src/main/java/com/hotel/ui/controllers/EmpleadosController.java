@@ -115,3 +115,53 @@ public class EmpleadosController {
             }
         });
     }
+     private void mostrarFormulario(Empleado editar) {
+        Dialog<ButtonType> dialog = new Dialog<>();
+        dialog.setTitle(editar == null ? "Nuevo Empleado" : "Editar Empleado");
+        GridPane grid = new GridPane();
+        grid.setHgap(14); grid.setVgap(14);
+        grid.setPadding(new Insets(20, 24, 20, 24));
+        grid.setPrefWidth(460);
+
+        TextField fNombre        = campo("Primer nombre *");
+        TextField fSegundoNombre = campo("Segundo nombre");
+        TextField fApellido      = campo("Primer apellido *");
+        TextField fApellido2     = campo("Segundo apellido");
+        TextField fEmail         = campo("Email *");
+        TextField fTelefono      = campo("Telefono");
+        DatePicker fFecha        = new DatePicker(LocalDate.now());
+        fFecha.setPromptText("Fecha contratación");
+        fFecha.setPrefWidth(170);
+
+        // Cargos dinámicos desde la BD
+        List<Cargo> cargos = ctx.getEmpleadoService().listarCargos();
+        ComboBox<Cargo> fCargo = new ComboBox<>();
+        fCargo.getItems().addAll(cargos);
+        fCargo.setPromptText("Seleccionar cargo");
+        fCargo.setCellFactory(lv -> new javafx.scene.control.ListCell<Cargo>() {
+            @Override protected void updateItem(Cargo c, boolean empty) {
+                super.updateItem(c, empty);
+                setText(empty || c == null ? null : c.getNombreCargo());
+            }
+        });
+        fCargo.setButtonCell(fCargo.getCellFactory().call(null));
+
+        Label lblSalario = new Label("—");
+        lblSalario.setStyle("-fx-font-size:13px; -fx-font-weight:bold; -fx-text-fill:#15803d;" +
+                "-fx-background-color:#f0fdf4; -fx-border-color:#bbf7d0;" +
+                "-fx-border-radius:6px; -fx-background-radius:6px; -fx-padding:6px 14px;");
+        fCargo.valueProperty().addListener((obs, oldC, newC) -> {
+            if (newC != null && newC.getSalarioBase() > 0) {
+                lblSalario.setText(String.format("$%,.0f / mes", newC.getSalarioBase()));
+            } else {
+                lblSalario.setText("—");
+            }
+        });
+        if (editar != null && editar.getCargo() != null) {
+            fCargo.getItems().stream()
+                    .filter(c -> c.getId() == editar.getCargo().getId())
+                    .findFirst()
+                    .ifPresent(c -> lblSalario.setText(String.format("$%,.0f / mes", c.getSalarioBase())));
+        }
+
+        TextField fPassword = campo("Contraseña inicial *");
