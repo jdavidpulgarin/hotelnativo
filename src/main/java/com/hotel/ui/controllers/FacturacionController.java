@@ -47,3 +47,53 @@ public class FacturacionController {
         tabla.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
         cargarDatos();
     }
+     private void configurarColumnas() {
+        colId.setCellValueFactory(c -> new SimpleStringProperty(
+                "#" + c.getValue().getId()));
+        colCliente.setCellValueFactory(c -> new SimpleStringProperty(
+                c.getValue().getCliente() != null
+                        ? c.getValue().getCliente().obtenerNombreCompleto() : "—"));
+        colReserva.setCellValueFactory(c -> new SimpleStringProperty(
+                c.getValue().getReserva() != null
+                        ? "#" + c.getValue().getReserva().getId() : "—"));
+        colFecha.setCellValueFactory(c -> new SimpleStringProperty(
+                c.getValue().getFechaEmision() != null
+                        ? c.getValue().getFechaEmision().toString() : "—"));
+        colSubtotal.setCellValueFactory(c -> new SimpleStringProperty(
+                String.format("$%,.0f", c.getValue().getSubtotal())));
+        colImpuestos.setCellValueFactory(c -> new SimpleStringProperty(
+                String.format("$%,.0f", c.getValue().getImpuestos())));
+        colTotal.setCellValueFactory(c -> new SimpleStringProperty(
+                String.format("$%,.0f", c.getValue().getTotal())));
+        colMetodo.setCellValueFactory(c -> new SimpleStringProperty(
+                c.getValue().getMetodoPago() != null
+                        ? c.getValue().getMetodoPago().name().replace("_", " ") : "—"));
+
+        colEstado.setCellValueFactory(c -> new SimpleStringProperty(
+                c.getValue().getEstadoPago() != null
+                        ? c.getValue().getEstadoPago().name() : "—"));
+        colEstado.setCellFactory(col -> new TableCell<>() {
+            @Override protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) { setGraphic(null); return; }
+                Label badge = new Label(item);
+                badge.setStyle(badgeEstilo(item));
+                setGraphic(badge); setText(null);
+                setAlignment(Pos.CENTER);
+            }
+        });
+
+        tabla.setRowFactory(tv -> new TableRow<>() {
+            @Override protected void updateItem(Factura f, boolean empty) {
+                super.updateItem(f, empty);
+                if (f == null || empty || f.getEstadoPago() == null) { setStyle(""); return; }
+                switch (f.getEstadoPago()) {
+                    case PAGADA:    setStyle("-fx-background-color:#f0fdf4;"); break;
+                    case PENDIENTE: setStyle("-fx-background-color:#fefce8;"); break;
+                    case ANULADA:   setStyle("-fx-background-color:#fff1f2;"); break;
+                    default:        setStyle(""); break;
+                }
+            }
+        });
+    }
+    
