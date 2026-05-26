@@ -44,4 +44,29 @@ public class Cliente extends Persona {
         this.subtipoDocumento = (subtipoDocumento != null) ? subtipoDocumento : "COLOMBIANA";
         this.ciudadOrigen     = ciudadOrigen;
     }
+    public String getSegundoNombre() { return segundoNombre; }
+    public void setSegundoNombre(String segundoNombre) { this.segundoNombre = segundoNombre; }
+
+    public String getApellido2() { return apellido2; }
+    public void setApellido2(String apellido2) { this.apellido2 = apellido2; }
+
+    public String getDocumento() { return documento; }
+    public void setDocumento(String documento) { this.documento = documento; }
+
+    public String getNacionalidad() { return nacionalidad; }
+    public void setNacionalidad(String nacionalidad) { this.nacionalidad = nacionalidad; }
+
+    public LocalDate getFechaRegistro() { return fechaRegistro; }
+    public void setFechaRegistro(LocalDate fechaRegistro) { this.fechaRegistro = fechaRegistro; }
+
+    public boolean isEsVip() { return esVip; }
+    public void setEsVip(boolean esVip) { this.esVip = esVip; }
+
+    public String getSubtipoDocumento() { return subtipoDocumento; }
+    public void setSubtipoDocumento(String subtipoDocumento) {
+        this.subtipoDocumento = (subtipoDocumento != null) ? subtipoDocumento : "COLOMBIANA";
+    }
+
+    public String getCiudadOrigen() { return ciudadOrigen; }
+    public void setCiudadOrigen(String ciudadOrigen) { this.ciudadOrigen = ciudadOrigen; }
 }
