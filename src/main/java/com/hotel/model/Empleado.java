@@ -47,4 +47,35 @@ public class Empleado extends Persona {
         this.cargo              = cargo;
         this.fechaContratacion  = fechaContratacion;
     }
+     public String getSegundoNombre()                { return segundoNombre; }
+    public void   setSegundoNombre(String v)        { this.segundoNombre = v; }
+
+    public String getApellido2()                    { return apellido2; }
+    public void   setApellido2(String v)            { this.apellido2 = v; }
+
+    public Cargo getCargo() { return cargo; }
+    public void  setCargo(Cargo cargo) { this.cargo = cargo; }
+
+    public LocalDate getFechaContratacion() { return fechaContratacion; }
+    public void      setFechaContratacion(LocalDate fechaContratacion) {
+        this.fechaContratacion = fechaContratacion;
+    }
+
+    public double getSalario()              { return salario; }
+    public void   setSalario(double v)      { this.salario = v; }
+
+    public String getTipoContrato()         { return tipoContrato; }
+    public void   setTipoContrato(String v) { this.tipoContrato = v != null ? v : "INDEFINIDO"; }
+
+    public String getTipoPago()             { return tipoPago; }
+    public void   setTipoPago(String v)     { this.tipoPago = v != null ? v : "MENSUAL"; }
+
+    public LocalDate getFechaFinContrato()              { return fechaFinContrato; }
+    public void      setFechaFinContrato(LocalDate v)   { this.fechaFinContrato = v; }
+
+    public String getHashContrasena()                    { return hashContrasena; }
+    public void   setHashContrasena(String hash)         { this.hashContrasena = hash; }
+
+    public boolean isDebeCambiarContrasena()             { return debeCambiarContrasena; }
+    public void    setDebeCambiarContrasena(boolean v)   { this.debeCambiarContrasena = v; }
 }
