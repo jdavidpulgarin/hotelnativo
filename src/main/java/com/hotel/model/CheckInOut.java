@@ -32,4 +32,27 @@ public class CheckInOut {
     public boolean haRealizadoCheckout() {
         return fechaHoraCheckout != null;
     }
+    public int getId() { return id; }
+    public void setId(int id) { this.id = id; }
+
+    public Reserva getReserva() { return reserva; }
+    public void setReserva(Reserva reserva) { this.reserva = reserva; }
+
+    public Empleado getEmpleadoResponsable() { return empleadoResponsable; }
+    public void setEmpleadoResponsable(Empleado empleadoResponsable) {
+        this.empleadoResponsable = empleadoResponsable;
+    }
+
+    public LocalDateTime getFechaHoraCheckin() { return fechaHoraCheckin; }
+    public void setFechaHoraCheckin(LocalDateTime fechaHoraCheckin) {
+        this.fechaHoraCheckin = fechaHoraCheckin;
+    }
+
+    public LocalDateTime getFechaHoraCheckout() { return fechaHoraCheckout; }
+    public void setFechaHoraCheckout(LocalDateTime fechaHoraCheckout) {
+        this.fechaHoraCheckout = fechaHoraCheckout;
+    }
+
+    public String getObservaciones() { return observaciones; }
+    public void setObservaciones(String observaciones) { this.observaciones = observaciones; }
 }
