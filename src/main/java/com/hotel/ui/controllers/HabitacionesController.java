@@ -345,3 +345,73 @@ public class HabitacionesController {
         dialog.setResultConverter(btn -> btn);
         dialog.showAndWait();
     }
+    
+    // ── Estilos dinámicos ─────────────────────────────────────────────────────
+
+    private String getCardStyle(Habitacion.EstadoHabitacion estado) {
+        switch (estado) {
+            case DISPONIBLE:   return "-fx-background-color:#f0fdf4; -fx-border-color:#86efac; -fx-border-width:1.5px; -fx-background-radius:12px; -fx-border-radius:12px; -fx-effect:dropshadow(gaussian,rgba(0,0,0,0.06),10,0,0,2); -fx-cursor:hand;";
+            case RESERVADA:    return "-fx-background-color:#eff6ff; -fx-border-color:#93c5fd; -fx-border-width:1.5px; -fx-background-radius:12px; -fx-border-radius:12px; -fx-effect:dropshadow(gaussian,rgba(0,0,0,0.06),10,0,0,2); -fx-cursor:hand;";
+            case OCUPADA:      return "-fx-background-color:#fffbeb; -fx-border-color:#fcd34d; -fx-border-width:1.5px; -fx-background-radius:12px; -fx-border-radius:12px; -fx-effect:dropshadow(gaussian,rgba(0,0,0,0.06),10,0,0,2); -fx-cursor:hand;";
+            case MANTENIMIENTO:return "-fx-background-color:#fef2f2; -fx-border-color:#fca5a5; -fx-border-width:1.5px; -fx-background-radius:12px; -fx-border-radius:12px; -fx-effect:dropshadow(gaussian,rgba(0,0,0,0.06),10,0,0,2); -fx-cursor:hand;";
+            default:           return "-fx-background-color:#f8fafc; -fx-border-color:#cbd5e1; -fx-border-width:1.5px; -fx-background-radius:12px; -fx-border-radius:12px; -fx-cursor:hand;";
+        }
+    }
+
+    private String getCardStyleHover(Habitacion.EstadoHabitacion estado) {
+        return getCardStyle(estado) + " -fx-effect:dropshadow(gaussian,rgba(0,0,0,0.14),18,0,0,4); -fx-translate-y:-2;";
+    }
+
+    private String getTextColor(Habitacion.EstadoHabitacion estado) {
+        switch (estado) {
+            case DISPONIBLE:    return "#15803d";
+            case RESERVADA:     return "#1d4ed8";
+            case OCUPADA:       return "#b45309";
+            case MANTENIMIENTO: return "#b91c1c";
+            default:            return "#475569";
+        }
+    }
+
+    private String getEstadoLabel(Habitacion.EstadoHabitacion estado) {
+        switch (estado) {
+            case DISPONIBLE:    return "✓ Disponible";
+            case RESERVADA:     return "📅 Reservada";
+            case OCUPADA:       return "👥 Ocupada";
+            case MANTENIMIENTO: return "🔧 Mantenimiento";
+            default:            return estado.name();
+        }
+    }
+
+    private String getBadgeStyle(Habitacion.EstadoHabitacion estado) {
+        switch (estado) {
+            case DISPONIBLE:    return "-fx-background-color:#dcfce7; -fx-text-fill:#15803d; -fx-background-radius:20px; -fx-padding:3px 10px; -fx-font-size:10px; -fx-font-weight:bold;";
+            case RESERVADA:     return "-fx-background-color:#dbeafe; -fx-text-fill:#1d4ed8; -fx-background-radius:20px; -fx-padding:3px 10px; -fx-font-size:10px; -fx-font-weight:bold;";
+            case OCUPADA:       return "-fx-background-color:#fef3c7; -fx-text-fill:#b45309; -fx-background-radius:20px; -fx-padding:3px 10px; -fx-font-size:10px; -fx-font-weight:bold;";
+            case MANTENIMIENTO: return "-fx-background-color:#fee2e2; -fx-text-fill:#b91c1c; -fx-background-radius:20px; -fx-padding:3px 10px; -fx-font-size:10px; -fx-font-weight:bold;";
+            default:            return "-fx-background-color:#f1f5f9; -fx-text-fill:#475569; -fx-background-radius:20px; -fx-padding:3px 10px; -fx-font-size:10px;";
+        }
+    }
+
+    private String getTipoIcon(String tipo) {
+        if (tipo == null) return "🛏";
+        switch (tipo.toUpperCase()) {
+            case "SIMPLE": return "🛏";
+            case "DOBLE":  return "🛏🛏";
+            case "SUITE":  return "🌟";
+            default:       return "🛏";
+        }
+    }
+
+    private Label chip(String texto, String bg, String fg) {
+        Label l = new Label(texto);
+        l.setStyle("-fx-background-color:" + bg + "; -fx-text-fill:" + fg + ";" +
+                   "-fx-background-radius:20px; -fx-padding:5px 12px; -fx-font-size:12px;");
+        return l;
+    }
+
+    private Label lab(String t) {
+        Label l = new Label(t);
+        l.setStyle("-fx-font-size:12px; -fx-font-weight:bold; -fx-text-fill:#374151;");
+        return l;
+    }
+}
