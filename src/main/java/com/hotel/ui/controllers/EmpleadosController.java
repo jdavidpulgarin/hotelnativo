@@ -55,3 +55,63 @@ public class EmpleadosController {
         tabla.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
         cargarDatos();
     }
+     @FXML
+    public void cargarDatos() {
+        progressBar.setVisible(true);
+        new Thread(() -> {
+            try {
+                List<Empleado> lista = ctx.getEmpleadoService().listarTodosLosEmpleados();
+                Platform.runLater(() -> {
+                    datos.setAll(lista);
+                    lblTotal.setText("Total: " + lista.size());
+                    progressBar.setVisible(false);
+                });
+            } catch (Exception e) {
+                Platform.runLater(() -> {
+                    NotificationUtil.error("Error cargando empleados: " + e.getMessage());
+                    progressBar.setVisible(false);
+                });
+            }
+        }).start();
+    }
+
+    @FXML
+    public void filtrar() {
+        String texto = searchField.getText().toLowerCase().trim();
+        datosFiltrados.setPredicate(e -> {
+            if (texto.isEmpty()) return true;
+            return e.getNombre().toLowerCase().contains(texto)
+                || e.getApellido().toLowerCase().contains(texto)
+                || e.getEmail().toLowerCase().contains(texto)
+                || (e.getCargo() != null &&
+                    e.getCargo().getNombreCargo().toLowerCase().contains(texto));
+        });
+    }
+
+    @FXML public void abrirFormularioNuevo()  { mostrarFormulario(null); }
+    @FXML public void abrirFormularioEditar() {
+        Empleado sel = tabla.getSelectionModel().getSelectedItem();
+        if (sel == null) { NotificationUtil.advertencia("Selecciona un empleado."); return; }
+        mostrarFormulario(sel);
+    }
+    @FXML public void handleDobleClick(MouseEvent e) {
+        if (e.getClickCount() == 2) abrirFormularioEditar();
+    }
+    @FXML public void eliminar() {
+        Empleado sel = tabla.getSelectionModel().getSelectedItem();
+        if (sel == null) { NotificationUtil.advertencia("Selecciona un empleado."); return; }
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+        confirm.setTitle("Confirmar");
+        confirm.setHeaderText("Eliminar a " + sel.obtenerNombreCompleto() + "?");
+        confirm.showAndWait().ifPresent(btn -> {
+            if (btn == ButtonType.OK) {
+                try {
+                    ctx.getEmpleadoService().eliminarEmpleado(sel.getId());
+                    NotificationUtil.exito("Empleado eliminado.");
+                    cargarDatos();
+                } catch (ExcepcionNegocio ex) {
+                    NotificationUtil.error(ex.getMessage());
+                }
+            }
+        });
+    }
