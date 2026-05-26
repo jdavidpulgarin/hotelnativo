@@ -165,3 +165,83 @@ private void configurarFocusWrapper(javafx.scene.control.Control campo, HBox wra
         tLogin.setDaemon(true);
         tLogin.start();
     }
+    @FXML
+    public void handleClose() {
+        Platform.exit();
+        System.exit(0);
+    }
+
+    // ── Privados ──────────────────────────────────────────────────────────────
+
+    private void mostrarError(String mensaje) {
+        errorLabel.setStyle("-fx-text-fill:#dc2626; -fx-font-size:12px;");
+        errorLabel.setText(mensaje);
+        errorLabel.setVisible(true);
+        FadeTransition ft = new FadeTransition(Duration.millis(200), errorLabel);
+        ft.setFromValue(0); ft.setToValue(1);
+        ft.play();
+    }
+
+    private void mostrarExito(String mensaje) {
+        errorLabel.setStyle("-fx-text-fill:#16a34a; -fx-font-size:12px;");
+        errorLabel.setText(mensaje);
+        errorLabel.setVisible(true);
+        FadeTransition ft = new FadeTransition(Duration.millis(200), errorLabel);
+        ft.setFromValue(0); ft.setToValue(1);
+        ft.play();
+    }
+
+    private void sacudirCampo(Control campo) {
+        TranslateTransition tt = new TranslateTransition(Duration.millis(60), campo);
+        tt.setFromX(0); tt.setToX(8);
+        tt.setCycleCount(6);
+        tt.setAutoReverse(true);
+        tt.setOnFinished(e -> campo.setTranslateX(0));
+        tt.play();
+    }
+
+    private void setLoading(boolean loading) {
+        loadingIndicator.setVisible(loading);
+        btnLogin.setDisable(loading);
+        btnLogin.setText(loading ? "Verificando..." : "INICIAR SESIÓN");
+    }
+    @FXML
+    public void handleClose() {
+        Platform.exit();
+        System.exit(0);
+    }
+
+    // ── Privados ──────────────────────────────────────────────────────────────
+
+    private void mostrarError(String mensaje) {
+        errorLabel.setStyle("-fx-text-fill:#dc2626; -fx-font-size:12px;");
+        errorLabel.setText(mensaje);
+        errorLabel.setVisible(true);
+        FadeTransition ft = new FadeTransition(Duration.millis(200), errorLabel);
+        ft.setFromValue(0); ft.setToValue(1);
+        ft.play();
+    }
+
+    private void mostrarExito(String mensaje) {
+        errorLabel.setStyle("-fx-text-fill:#16a34a; -fx-font-size:12px;");
+        errorLabel.setText(mensaje);
+        errorLabel.setVisible(true);
+        FadeTransition ft = new FadeTransition(Duration.millis(200), errorLabel);
+        ft.setFromValue(0); ft.setToValue(1);
+        ft.play();
+    }
+
+    private void sacudirCampo(Control campo) {
+        TranslateTransition tt = new TranslateTransition(Duration.millis(60), campo);
+        tt.setFromX(0); tt.setToX(8);
+        tt.setCycleCount(6);
+        tt.setAutoReverse(true);
+        tt.setOnFinished(e -> campo.setTranslateX(0));
+        tt.play();
+    }
+
+    private void setLoading(boolean loading) {
+        loadingIndicator.setVisible(loading);
+        btnLogin.setDisable(loading);
+        btnLogin.setText(loading ? "Verificando..." : "INICIAR SESIÓN");
+    }
