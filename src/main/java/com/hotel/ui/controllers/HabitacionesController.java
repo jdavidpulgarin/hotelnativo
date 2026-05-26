@@ -177,3 +177,20 @@ public class HabitacionesController {
         card.getChildren().addAll(idLabel, numero, tipo, piso, spacer, precio, badge);
         return card;
     }
+        private void actualizarStats(List<Habitacion> lista) {
+        statsRow.getChildren().clear();
+        long disponibles   = lista.stream().filter(h -> h.getEstado() == Habitacion.EstadoHabitacion.DISPONIBLE).count();
+        long reservadas    = lista.stream().filter(h -> h.getEstado() == Habitacion.EstadoHabitacion.RESERVADA).count();
+        long ocupadas      = lista.stream().filter(h -> h.getEstado() == Habitacion.EstadoHabitacion.OCUPADA).count();
+        long mantenimiento = lista.stream().filter(h -> h.getEstado() == Habitacion.EstadoHabitacion.MANTENIMIENTO).count();
+        double ocupacion   = lista.isEmpty() ? 0 : ((ocupadas + reservadas) * 100.0) / lista.size();
+
+        statsRow.getChildren().addAll(
+            chip("🛏 Total: " + lista.size(),            "#dbeafe", "#1d4ed8"),
+            chip("✓ Disponibles: " + disponibles,         "#dcfce7", "#15803d"),
+            chip("📅 Reservadas: " + reservadas,          "#dbeafe", "#1d4ed8"),
+            chip("👥 Ocupadas: " + ocupadas,               "#fef3c7", "#b45309"),
+            chip("🔧 Mantenimiento: " + mantenimiento,    "#fee2e2", "#b91c1c"),
+            chip(String.format("📊 Ocupación: %.0f%%", ocupacion), "#ede9fe", "#6d28d9")
+        );
+    }
