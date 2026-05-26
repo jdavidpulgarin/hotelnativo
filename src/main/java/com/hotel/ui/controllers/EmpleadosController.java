@@ -221,3 +221,32 @@ public class EmpleadosController {
             if (editar.getTipoPago() != null)       fTipoPago.setValue(editar.getTipoPago());
             if (editar.getFechaFinContrato() != null) fFechaFin.setValue(editar.getFechaFinContrato());
         }
+ VBox vbNE = new VBox(2, fNombre,   errNombreE);
+        VBox vbAE = new VBox(2, fApellido, errApellidoE);
+        VBox vbEE = new VBox(2, fEmail,    errEmailE);
+        VBox vbTE = new VBox(2, fTelefono, errTelefonoE);
+        grid.addRow(0, lab("Primer nombre:"),    vbNE,  lab("Segundo nombre:"),   fSegundoNombre);
+        grid.addRow(1, lab("Primer apellido:"),  vbAE,  lab("Segundo apellido:"), fApellido2);
+        grid.addRow(2, lab("Email:"),            vbEE,  lab("Teléfono:"),         vbTE);
+        if (editar == null) {
+            grid.addRow(3, lab("Cargo:"), fCargo, lab("Contraseña inicial:"), fPassword);
+        } else {
+            grid.addRow(3, lab("Cargo:"), fCargo);
+        }
+        grid.addRow(4, lab("Salario del cargo:"),  lblSalario);
+        grid.addRow(5, lab("Fecha contratación:"), fFecha);
+        grid.addRow(6, lab("Salario individual:"), fSalario,      lab("Tipo contrato:"), fTipoContrato);
+        grid.addRow(7, lab("Tipo de pago:"),       fTipoPago,     lblFechaFin,           fFechaFin);
+
+        Label errLbl = new Label("");
+        errLbl.setStyle("-fx-text-fill:#dc2626; -fx-font-size:12px;");
+        ProgressIndicator spinner = new ProgressIndicator();
+        spinner.setPrefSize(22, 22);
+        spinner.setVisible(false);
+        Label header = new Label(editar == null ? "Registrar empleado" : "Editar empleado");
+        header.setStyle("-fx-font-size:16px; -fx-font-weight:bold; -fx-text-fill:#1a3a5c;");
+        VBox content = new VBox(12, header, new Separator(), grid, errLbl, spinner);
+        dialog.getDialogPane().setContent(content);
+        dialog.getDialogPane().getButtonTypes().addAll(
+                new ButtonType("Guardar", ButtonBar.ButtonData.OK_DONE), ButtonType.CANCEL);
+        dialog.getDialogPane().setStyle("-fx-background-color:white;");
