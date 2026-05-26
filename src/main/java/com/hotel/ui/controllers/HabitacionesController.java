@@ -71,3 +71,48 @@ public class HabitacionesController {
         t.setDaemon(true);
         t.start();
     }
+     @FXML public void filtrarTodas()        { filtrarPorEstado("TODAS"); }
+    @FXML public void filtrarDisponibles()  { filtrarPorEstado("DISPONIBLE"); }
+    @FXML public void filtrarReservadas()   { filtrarPorEstado("RESERVADA"); }
+    @FXML public void filtrarOcupadas()     { filtrarPorEstado("OCUPADA"); }
+    @FXML public void filtrarMantenimiento(){ filtrarPorEstado("MANTENIMIENTO"); }
+
+    /** Mantiene retrocompatibilidad con llamadas directas desde código. */
+    @FXML
+    public void filtrar() { filtrarPorEstado(filtroActual); }
+
+    private void filtrarPorEstado(String estado) {
+        if (todasLasHabitaciones == null) return;
+        filtroActual = estado;
+        List<Habitacion> filtradas;
+        switch (filtroActual) {
+            case "DISPONIBLE":
+                filtradas = todasLasHabitaciones.stream()
+                        .filter(h -> h.getEstado() == Habitacion.EstadoHabitacion.DISPONIBLE)
+                        .collect(Collectors.toList());
+                break;
+            case "RESERVADA":
+                filtradas = todasLasHabitaciones.stream()
+                        .filter(h -> h.getEstado() == Habitacion.EstadoHabitacion.RESERVADA)
+                        .collect(Collectors.toList());
+                break;
+            case "OCUPADA":
+                filtradas = todasLasHabitaciones.stream()
+                        .filter(h -> h.getEstado() == Habitacion.EstadoHabitacion.OCUPADA)
+                        .collect(Collectors.toList());
+                break;
+            case "MANTENIMIENTO":
+                filtradas = todasLasHabitaciones.stream()
+                        .filter(h -> h.getEstado() == Habitacion.EstadoHabitacion.MANTENIMIENTO)
+                        .collect(Collectors.toList());
+                break;
+            default:
+                filtradas = todasLasHabitaciones;
+        }
+        renderizarGrid(filtradas);
+    }
+
+    @FXML
+    public void nuevaHabitacion() {
+        mostrarFormulario(null);
+    }
