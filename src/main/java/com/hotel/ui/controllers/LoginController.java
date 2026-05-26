@@ -96,3 +96,72 @@ public class LoginController {
             }
         });
     }
+private void configurarFocusWrapper(javafx.scene.control.Control campo, HBox wrapper) {
+        if (wrapper == null) return;
+        campo.focusedProperty().addListener((obs, old, isFocused) -> {
+            if (isFocused) {
+                if (!wrapper.getStyleClass().contains("focused"))
+                    wrapper.getStyleClass().add("focused");
+            } else {
+                wrapper.getStyleClass().remove("focused");
+            }
+        });
+    }
+
+    @FXML
+    public void handleLogin() {
+        String email = emailField.getText().trim();
+        String pass  = passwordField.getText().trim();
+
+        if (email.isEmpty() || pass.isEmpty()) {
+            mostrarError("Por favor ingresa email y contraseña.");
+            sacudirCampo(email.isEmpty() ? emailField : passwordField);
+            return;
+        }
+
+        setLoading(true);
+        errorLabel.setVisible(false);
+
+        Thread tLogin = new Thread(() -> {
+            try {
+                ctx.getCredencialesCargadas().get(15, TimeUnit.SECONDS);
+
+                String token = ctx.getAuthService().login(email, pass);
+                Empleado emp = ctx.getAuthService().obtenerEmpleadoActual(token)
+                                  .orElseThrow(() -> new RuntimeException(
+                                      "Sesión creada pero no encontrada. Intenta de nuevo."));
+
+                ctx.setTokenSesion(token);
+                ctx.setEmpleadoActual(emp);
+
+                Platform.runLater(() -> {
+                    setLoading(false);
+                    NavigatorUtil.irAlDashboard();
+                });
+
+            } catch (TimeoutException e) {
+                Platform.runLater(() -> {
+                    setLoading(false);
+                    mostrarError("No se pudo conectar a la base de datos. Verifica la conexión.");
+                });
+            } catch (AuthService.AuthException ex) {
+                Platform.runLater(() -> {
+                    setLoading(false);
+                    if ("CAMBIO_PASSWORD_REQUERIDO".equals(ex.getCodigo())) {
+                        mostrarDialogoCambioPassword(ex.getPreAuthToken());
+                    } else {
+                        mostrarError(ex.getMessage());
+                        sacudirCampo(passwordField);
+                        passwordField.clear();
+                    }
+                });
+            } catch (Exception e) {
+                Platform.runLater(() -> {
+                    setLoading(false);
+                    mostrarError("Error inesperado: " + e.getMessage());
+                });
+            }
+        }, "hilo-login");
+        tLogin.setDaemon(true);
+        tLogin.start();
+    }
