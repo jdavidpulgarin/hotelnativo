@@ -116,3 +116,64 @@ public class HabitacionesController {
     public void nuevaHabitacion() {
         mostrarFormulario(null);
     }
+     // ── Renderizado del grid ──────────────────────────────────────────────────
+
+    private void renderizarGrid(List<Habitacion> habitaciones) {
+        gridHabitaciones.getChildren().clear();
+        for (Habitacion h : habitaciones) {
+            gridHabitaciones.getChildren().add(crearTarjeta(h));
+        }
+        if (habitaciones.isEmpty()) {
+            Label empty = new Label("Sin habitaciones en este estado");
+            empty.setStyle("-fx-text-fill:#94a3b8; -fx-font-size:14px;");
+            gridHabitaciones.getChildren().add(empty);
+        }
+    }
+
+    private VBox crearTarjeta(Habitacion h) {
+        VBox card = new VBox(10);
+        card.setPrefWidth(180);
+        card.setPrefHeight(160);
+        card.setPadding(new Insets(16));
+        card.setAlignment(Pos.TOP_LEFT);
+        card.setStyle(getCardStyle(h.getEstado()));
+        card.setOnMouseClicked(e -> {
+            if (e.getClickCount() == 2) mostrarFormulario(h);
+        });
+
+        // ID de base de datos (pequeño, en la esquina)
+        Label idLabel = new Label("ID: " + h.getId());
+        idLabel.setStyle("-fx-font-size:9px; -fx-text-fill:" + getTextColor(h.getEstado()) + "; -fx-opacity:0.55;");
+
+        // Número de habitación
+        Label numero = new Label("Hab. " + h.getNumero());
+        numero.setStyle("-fx-font-size:18px; -fx-font-weight:bold; -fx-text-fill:" + getTextColor(h.getEstado()) + ";");
+
+        // Tipo
+        String tipoStr = h.getTipoHabitacion() != null ?
+                h.getTipoHabitacion().obtenerEtiquetaTipo() : "—";
+        Label tipo = new Label(getTipoIcon(tipoStr) + "  " + tipoStr);
+        tipo.setStyle("-fx-font-size:12px; -fx-text-fill:" + getTextColor(h.getEstado()) + "; -fx-opacity:0.8;");
+
+        // Piso
+        Label piso = new Label("Piso " + (h.getPiso() != null ? h.getPiso().getNumeroPiso() : "?"));
+        piso.setStyle("-fx-font-size:11px; -fx-text-fill:" + getTextColor(h.getEstado()) + "; -fx-opacity:0.65;");
+
+        // Precio
+        Label precio = new Label(String.format("$%,.0f/noche", h.calcularPrecioFinal()));
+        precio.setStyle("-fx-font-size:12px; -fx-font-weight:bold; -fx-text-fill:" + getTextColor(h.getEstado()) + ";");
+
+        Region spacer = new Region();
+        VBox.setVgrow(spacer, Priority.ALWAYS);
+
+        // Badge de estado
+        Label badge = new Label(getEstadoLabel(h.getEstado()));
+        badge.setStyle(getBadgeStyle(h.getEstado()));
+
+        // Acciones al hover
+        card.setOnMouseEntered(e -> card.setStyle(getCardStyleHover(h.getEstado())));
+        card.setOnMouseExited(e ->  card.setStyle(getCardStyle(h.getEstado())));
+
+        card.getChildren().addAll(idLabel, numero, tipo, piso, spacer, precio, badge);
+        return card;
+    }
