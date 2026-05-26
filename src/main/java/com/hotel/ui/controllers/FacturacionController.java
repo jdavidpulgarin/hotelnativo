@@ -96,4 +96,43 @@ public class FacturacionController {
             }
         });
     }
+       @FXML
+    public void cargarDatos() {
+        progressBar.setVisible(true);
+        Thread t = new Thread(() -> {
+            try {
+                List<Factura> lista = ctx.getFacturaService().listarTodasLasFacturas();
+                Platform.runLater(() -> {
+                    datos.setAll(lista);
+                    long pagadas = lista.stream()
+                            .filter(f -> f.getEstadoPago() == Factura.EstadoPago.PAGADA)
+                            .count();
+                    lblTotal.setText("Total: " + lista.size());
+                    lblPagadas.setText("Pagadas: " + pagadas);
+                    progressBar.setVisible(false);
+                });
+            } catch (Exception e) {
+                Platform.runLater(() -> {
+                    NotificationUtil.error("Error cargando facturas: " + e.getMessage());
+                    progressBar.setVisible(false);
+                });
+            }
+        }, "hilo-cargar-facturas");
+        t.setDaemon(true);
+        t.start();
+    }
+
+    @FXML
+    public void filtrar() {
+        String texto = searchField.getText().toLowerCase().trim();
+        filtradas.setPredicate(f -> {
+            if (texto.isEmpty()) return true;
+            return (f.getCliente() != null
+                        && f.getCliente().obtenerNombreCompleto().toLowerCase().contains(texto))
+                || (f.getReserva() != null
+                        && String.valueOf(f.getReserva().getId()).contains(texto))
+                || (f.getEstadoPago() != null
+                        && f.getEstadoPago().name().toLowerCase().contains(texto));
+        });
+    }
     
