@@ -69,4 +69,11 @@ public class Cliente extends Persona {
 
     public String getCiudadOrigen() { return ciudadOrigen; }
     public void setCiudadOrigen(String ciudadOrigen) { this.ciudadOrigen = ciudadOrigen; }
+    
+    @Override
+    public String toString() {
+        return String.format("Cliente[id=%d, nombre=%s %s, apellido=%s %s]",
+                getId(), getNombre(), segundoNombre != null ? segundoNombre : "",
+                getApellido(), apellido2 != null ? apellido2 : "");
+    }
 }
