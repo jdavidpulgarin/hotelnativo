@@ -165,3 +165,29 @@ public class EmpleadosController {
         }
 
         TextField fPassword = campo("Contraseña inicial *");
+        
+ // ── Campos de contrato ────────────────────────────────────────────────
+        TextField fSalario = campo("Salario (vacío = base del cargo)");
+        fSalario.setPrefWidth(170);
+
+        ComboBox<String> fTipoContrato = new ComboBox<>();
+        fTipoContrato.getItems().addAll("INDEFINIDO", "TERMINO_FIJO", "PRESTACION_SERVICIOS");
+        fTipoContrato.setValue("INDEFINIDO");
+        fTipoContrato.setPrefWidth(170);
+
+        ComboBox<String> fTipoPago = new ComboBox<>();
+        fTipoPago.getItems().addAll("MENSUAL", "QUINCENAL", "DIARIO");
+        fTipoPago.setValue("MENSUAL");
+        fTipoPago.setPrefWidth(170);
+
+        Label lblFechaFin = lab("Fecha fin contrato:");
+        DatePicker fFechaFin = new DatePicker();
+        fFechaFin.setPromptText("dd/mm/aaaa");
+        fFechaFin.setPrefWidth(170);
+        lblFechaFin.setVisible(false);  lblFechaFin.setManaged(false);
+        fFechaFin.setVisible(false);    fFechaFin.setManaged(false);
+        fTipoContrato.valueProperty().addListener((obs, oldV, newV) -> {
+            boolean esFijo = "TERMINO_FIJO".equals(newV);
+            lblFechaFin.setVisible(esFijo); lblFechaFin.setManaged(esFijo);
+            fFechaFin.setVisible(esFijo);   fFechaFin.setManaged(esFijo);
+        });
