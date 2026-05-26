@@ -283,3 +283,65 @@ public class HabitacionesController {
         } else {
             content.getChildren().addAll(header, new Separator(), grid, errLabel);
         }
+              dialog.getDialogPane().setContent(content);
+        dialog.getDialogPane().getButtonTypes().addAll(
+                new ButtonType("Guardar", ButtonBar.ButtonData.OK_DONE), ButtonType.CANCEL);
+        dialog.getDialogPane().setStyle("-fx-background-color:white; -fx-background-radius:12px;");
+
+        Button btnGuardar = (Button) dialog.getDialogPane()
+                .lookupButton(dialog.getDialogPane().getButtonTypes().get(0));
+        btnGuardar.addEventFilter(javafx.event.ActionEvent.ACTION, event -> {
+            if (fNumero.getText().trim().isEmpty()) {
+                errLabel.setText("El número de habitación es obligatorio.");
+                event.consume(); return;
+            }
+            if (fTipo.getValue() == null) {
+                errLabel.setText("Debes seleccionar un tipo de habitación.");
+                event.consume(); return;
+            }
+            if (fPiso.getText().trim().isEmpty()) {
+                errLabel.setText("El ID de piso es obligatorio.");
+                event.consume(); return;
+            }
+            if (fPrecio.getText().trim().isEmpty()) {
+                errLabel.setText("El precio base es obligatorio.");
+                event.consume(); return;
+            }
+            try {
+                Integer.parseInt(fPiso.getText().trim());
+            } catch (NumberFormatException e) {
+                errLabel.setText("El ID de piso debe ser un número entero válido.");
+                event.consume(); return;
+            }
+            try {
+                double precioCheck = Double.parseDouble(fPrecio.getText().trim());
+                if (precioCheck <= 0) {
+                    errLabel.setText("El precio debe ser mayor a cero.");
+                    event.consume(); return;
+                }
+            } catch (NumberFormatException e) {
+                errLabel.setText("El precio debe ser un valor numérico válido.");
+                event.consume(); return;
+            }
+            try {
+                int idTipo = Integer.parseInt(fTipo.getValue().split(" ")[0]);
+                int idPiso = Integer.parseInt(fPiso.getText().trim());
+                double precio = Double.parseDouble(fPrecio.getText().trim());
+                HabitacionDTO dto = new HabitacionDTO(fNumero.getText().trim(), idTipo, idPiso, precio);
+
+                if (hab == null) {
+                    ctx.getHabitacionService().registrarHabitacion(dto);
+                    NotificationUtil.exito("Habitación registrada.");
+                } else {
+                    ctx.getHabitacionService().actualizarHabitacion(hab.getId(), dto);
+                    NotificationUtil.exito("Habitación actualizada.");
+                }
+                cargarDatos();
+            } catch (Exception e) {
+                errLabel.setText("Error: " + e.getMessage());
+                event.consume();
+            }
+        });
+        dialog.setResultConverter(btn -> btn);
+        dialog.showAndWait();
+    }
