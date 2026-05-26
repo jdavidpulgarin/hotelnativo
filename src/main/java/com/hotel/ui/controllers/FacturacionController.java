@@ -135,4 +135,33 @@ public class FacturacionController {
                         && f.getEstadoPago().name().toLowerCase().contains(texto));
         });
     }
+      // ── Diálogo de generación de factura ─────────────────────────────────────
+
+    @FXML
+    public void generarFactura() {
+        Dialog<ButtonType> dialog = new Dialog<>();
+        dialog.setTitle("Generar Factura");
+        dialog.getDialogPane().setPrefWidth(500);
+        dialog.getDialogPane().setStyle("-fx-background-color:white; -fx-background-radius:12px;");
+
+        // ── Encabezado ────────────────────────────────────────────────────────
+        Label header = new Label("💰 Generar Factura");
+        header.setStyle("-fx-font-size:16px; -fx-font-weight:bold; -fx-text-fill:#1a3a5c;");
+
+        // ── Campos base ───────────────────────────────────────────────────────
+        TextField fIdReserva = tf("ID de la reserva COMPLETADA");
+
+        ComboBox<String> fMetodo = new ComboBox<>();
+        fMetodo.getItems().addAll("EFECTIVO", "TARJETA_CREDITO", "TARJETA_DEBITO", "TRANSFERENCIA");
+        fMetodo.setValue("EFECTIVO");
+        fMetodo.setMaxWidth(Double.MAX_VALUE);
+        fMetodo.setStyle("-fx-background-color:#f8fafc; -fx-border-color:#e2e8f0;" +
+                         "-fx-border-width:1.5px; -fx-border-radius:8px;");
+
+        GridPane baseGrid = new GridPane();
+        baseGrid.setHgap(14); baseGrid.setVgap(12);
+        baseGrid.addRow(0, lab("ID Reserva:"),     fIdReserva);
+        baseGrid.addRow(1, lab("Método de pago:"), fMetodo);
+        GridPane.setHgrow(fIdReserva, Priority.ALWAYS);
+        GridPane.setHgrow(fMetodo,    Priority.ALWAYS);
     
