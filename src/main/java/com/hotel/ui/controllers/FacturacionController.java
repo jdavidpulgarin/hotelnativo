@@ -248,4 +248,126 @@ public class FacturacionController {
             mostrarPanel(panelDebito,   "TARJETA_DEBITO".equals(nuevo));
             mostrarPanel(panelTransfer, "TRANSFERENCIA".equals(nuevo));
         });
+        
+ // ── Ensamblado ────────────────────────────────────────────────────────
+        Label errLbl = new Label("");
+        errLbl.setStyle("-fx-text-fill:#dc2626; -fx-font-size:12px;");
+        errLbl.setWrapText(true);
+        errLbl.setMaxWidth(460);
+
+        ProgressIndicator spinner = new ProgressIndicator();
+        spinner.setPrefSize(22, 22);
+        spinner.setVisible(false);
+
+        VBox content = new VBox(14,
+                header, new Separator(),
+                baseGrid,
+                panelEfectivo, panelCredito, panelDebito, panelTransfer,
+                errLbl, spinner);
+        content.setPadding(new Insets(12, 20, 8, 20));
+
+        ButtonType btnCrear = new ButtonType("Generar", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().setContent(content);
+        dialog.getDialogPane().getButtonTypes().addAll(btnCrear, ButtonType.CANCEL);
+
+        Button okBtn = (Button) dialog.getDialogPane().lookupButton(btnCrear);
+
+        okBtn.addEventFilter(ActionEvent.ACTION, event -> {
+            event.consume();
+            errLbl.setText("");
+
+            // ── Validar ID de reserva ──────────────────────────────────────
+            int idReserva;
+            try {
+                idReserva = Integer.parseInt(fIdReserva.getText().trim());
+                if (idReserva <= 0) throw new NumberFormatException();
+            } catch (NumberFormatException ex) {
+                errLbl.setText("El ID de reserva debe ser un número entero positivo.");
+                return;
+            }
+
+            // ── Recopilar detalles según método ───────────────────────────
+            String metodoStr = fMetodo.getValue();
+            Factura.MetodoPago metodo = Factura.MetodoPago.valueOf(metodoStr);
+
+            double montoRecibido = 0;
+            if ("EFECTIVO".equals(metodoStr)) {
+                String montoTxt = fMonto.getText().trim();
+                if (montoTxt.isEmpty()) {
+                    errLbl.setText("Ingresa el monto recibido del cliente.");
+                    return;
+                }
+                try {
+                    montoRecibido = Double.parseDouble(montoTxt.replace(",", "."));
+                    if (montoRecibido <= 0) throw new NumberFormatException();
+                } catch (NumberFormatException ex) {
+                    errLbl.setText("El monto recibido debe ser un número positivo.");
+                    return;
+                }
+            }
+
+            if ("TRANSFERENCIA".equals(metodoStr) && fReferencia.getText().trim().isEmpty()) {
+                errLbl.setText("Ingresa el número de referencia de la transferencia.");
+                return;
+            }
+
+            String franquicia = null;
+            int    cuotas     = 1;
+            if ("TARJETA_CREDITO".equals(metodoStr)) {
+                franquicia = fFranquiciaCredito.getValue();
+                cuotas     = fCuotas.getValue();
+            } else if ("TARJETA_DEBITO".equals(metodoStr)) {
+                franquicia = fFranquiciaDebito.getValue();
+            }
+
+            String referencia = "TRANSFERENCIA".equals(metodoStr)
+                    ? fReferencia.getText().trim() : null;
+
+            // Capturar variables finales para el lambda
+            final double  montoFinal      = montoRecibido;
+            final String  franquiciaFinal = franquicia;
+            final int     cuotasFinal     = cuotas;
+            final String  refFinal        = referencia;
+
+            okBtn.setDisable(true);
+            spinner.setVisible(true);
+
+            Thread t = new Thread(() -> {
+                try {
+                    Factura f = ctx.getFacturaService().generarFactura(
+                            idReserva, metodo, montoFinal, franquiciaFinal, cuotasFinal, refFinal);
+
+                    Platform.runLater(() -> {
+                        String msg = "Factura #" + f.getId() + " generada.  "
+                                + "Total: " + String.format("$%,.0f", f.getTotal());
+                        if (metodo == Factura.MetodoPago.EFECTIVO && f.getCambio() > 0) {
+                            msg += "\nCambio a devolver: "
+                                    + String.format("$%,.0f", f.getCambio());
+                        }
+                        NotificationUtil.exito(msg);
+                        cargarDatos();
+                        dialog.close();
+                    });
+                } catch (ExcepcionNegocio ex) {
+                    Platform.runLater(() -> {
+                        errLbl.setText("Error: " + ex.getMessage());
+                        okBtn.setDisable(false);
+                        spinner.setVisible(false);
+                    });
+                } catch (Exception ex) {
+                    Platform.runLater(() -> {
+                        String msg = ex.getMessage() != null
+                                ? ex.getMessage() : ex.getClass().getSimpleName();
+                        errLbl.setText("Error inesperado: " + msg);
+                        okBtn.setDisable(false);
+                        spinner.setVisible(false);
+                    });
+                }
+            }, "hilo-generar-factura");
+            t.setDaemon(true);
+            t.start();
+        });
+
+        dialog.showAndWait();
+    }
     
