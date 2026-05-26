@@ -323,3 +323,18 @@ public class EmpleadosController {
         dialog.setResultConverter(btn -> btn);
         dialog.showAndWait();
     }
+         private TextField campo(String p) {
+        TextField tf = new TextField();
+        tf.setPromptText(p);
+        tf.setStyle("-fx-background-color:#f8fafc; -fx-border-color:#e2e8f0;" +
+                    "-fx-border-width:1.5px; -fx-border-radius:8px;" +
+                    "-fx-background-radius:8px; -fx-padding:8px 12px;");
+        tf.setPrefWidth(170);
+        return tf;
+    }
+    private Label lab(String t) {
+        Label l = new Label(t);
+        l.setStyle("-fx-font-size:12px; -fx-font-weight:bold; -fx-text-fill:#374151;");
+        return l;
+    }
+}
