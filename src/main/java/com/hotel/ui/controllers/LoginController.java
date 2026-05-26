@@ -245,3 +245,56 @@ private void configurarFocusWrapper(javafx.scene.control.Control campo, HBox wra
         btnLogin.setDisable(loading);
         btnLogin.setText(loading ? "Verificando..." : "INICIAR SESIÓN");
     }
+     // ── Diálogo de cambio de contraseña obligatorio ───────────────────────────
+
+    /**
+     * Muestra una ventana modal para que el empleado cambie su contraseña
+     * antes de continuar. Se activa únicamente cuando AuthService emite
+     * el código CAMBIO_PASSWORD_REQUERIDO en el primer login.
+     */
+    private void mostrarDialogoCambioPassword(String preAuthToken) {
+        Stage dialog = new Stage();
+        dialog.initModality(Modality.APPLICATION_MODAL);
+        dialog.initStyle(StageStyle.TRANSPARENT);
+        dialog.initOwner(btnLogin.getScene().getWindow());
+        dialog.setTitle("Cambiar contraseña");
+
+        // ── Card central ──────────────────────────────────────────────────────
+        VBox card = new VBox(14);
+        card.setMaxWidth(400);
+        card.setPadding(new Insets(28, 32, 28, 32));
+        card.setStyle(
+            "-fx-background-color: white;" +
+            "-fx-background-radius: 16px;" +
+            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.45), 28, 0, 0, 8);");
+
+        Label titulo = new Label("Cambiar contraseña");
+        titulo.setStyle("-fx-font-size:18px; -fx-font-weight:bold; -fx-text-fill:#1e293b;");
+
+        Label subtitulo = new Label(
+            "Por seguridad debes crear una nueva contraseña antes de continuar.");
+        subtitulo.setStyle("-fx-font-size:13px; -fx-text-fill:#64748b;");
+        subtitulo.setWrapText(true);
+
+        // Campos
+        Label lblActual = etiqueta("CONTRASEÑA ACTUAL");
+        PasswordField pfActual = campoPassword("Tu contraseña actual");
+
+        Label lblNueva = etiqueta("NUEVA CONTRASEÑA");
+        PasswordField pfNueva = campoPassword("Mínimo 8 caracteres, mayúscula, número y símbolo");
+
+        Label lblConfirmar = etiqueta("CONFIRMAR NUEVA CONTRASEÑA");
+        PasswordField pfConfirmar = campoPassword("Repite la nueva contraseña");
+
+        Label lblError = new Label();
+        lblError.setStyle("-fx-text-fill:#dc2626; -fx-font-size:12px;");
+        lblError.setVisible(false);
+        lblError.setWrapText(true);
+        lblError.setMaxWidth(336);
+
+        Button btnCambiar = new Button("Cambiar contraseña");
+        btnCambiar.setMaxWidth(Double.MAX_VALUE);
+        btnCambiar.setStyle(
+            "-fx-background-color: linear-gradient(to bottom,#1e4575,#1a3a5c);" +
+            "-fx-text-fill:white; -fx-font-size:14px; -fx-font-weight:bold;" +
+            "-fx-background-radius:10px; -fx-pref-height:46px; -fx-cursor:hand;");
