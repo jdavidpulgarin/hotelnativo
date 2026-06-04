@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.hotel.ui.components;
 
 import javafx.animation.*;
@@ -29,8 +25,19 @@ import javafx.util.Duration;
 public final class ModalUtil {
 
     private ModalUtil() {}
-    
-    // ── Header ────────────────────────────────────────────────────────────
+
+    /**
+     * Crea un modal y lo devuelve como StackPane listo para agregar al contenedor padre.
+     * El llamador es responsable de añadirlo y de eliminarlo mediante {@code onCerrar}.
+     *
+     * @param contenido  nodo que aparece en el cuerpo del modal
+     * @param titulo     texto del encabezado
+     * @param onCerrar   acción ejecutada tras la animación de cierre (ej: remover del padre)
+     * @return           StackPane overlay con el modal embebido
+     */
+    public static StackPane crearModal(Node contenido, String titulo, Runnable onCerrar) {
+
+        // ── Header ────────────────────────────────────────────────────────────
         Label lblTitulo = new Label(titulo);
         lblTitulo.setStyle(
             "-fx-font-size:16px; -fx-font-weight:bold; -fx-text-fill:#1e293b;");
@@ -55,7 +62,7 @@ public final class ModalUtil {
         HBox header = new HBox(lblTitulo, spacer, btnCerrar);
         header.setAlignment(Pos.CENTER_LEFT);
         header.setPadding(new Insets(0, 0, 12, 0));
-        
+
         // ── Body con scroll ────────────────────────────────────────────────
         ScrollPane scroll = new ScrollPane(contenido);
         scroll.setFitToWidth(true);
@@ -71,9 +78,8 @@ public final class ModalUtil {
             "-fx-background-color:white;" +
             "-fx-background-radius:16px;" +
             "-fx-effect:dropshadow(gaussian,rgba(0,0,0,0.30),24,0,0,6);");
-        
-        
-         // ── Overlay ────────────────────────────────────────────────────────
+
+        // ── Overlay ────────────────────────────────────────────────────────
         StackPane overlay = new StackPane(card);
         overlay.setAlignment(Pos.CENTER);
         overlay.setStyle("-fx-background-color:rgba(0,0,0,0.50);");
@@ -85,8 +91,8 @@ public final class ModalUtil {
         });
 
         btnCerrar.setOnAction(e -> cerrarModal(overlay, onCerrar));
-        
-                // ── Animación de entrada ───────────────────────────────────────────
+
+        // ── Animación de entrada ───────────────────────────────────────────
         overlay.setOpacity(0);
         card.setScaleX(0.9);
         card.setScaleY(0.9);
@@ -99,9 +105,9 @@ public final class ModalUtil {
         new ParallelTransition(fadeIn, scaleIn).play();
 
         return overlay;
-        
-        
-         /** Animación de salida (fade-out 150ms) y luego ejecuta {@code onCerrar}. */
+    }
+
+    /** Animación de salida (fade-out 150ms) y luego ejecuta {@code onCerrar}. */
     static void cerrarModal(StackPane overlay, Runnable onCerrar) {
         FadeTransition fadeOut = new FadeTransition(Duration.millis(150), overlay);
         fadeOut.setFromValue(overlay.getOpacity());
