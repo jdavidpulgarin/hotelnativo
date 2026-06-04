@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.hotel.ui.controllers;
 
 import com.hotel.AppContext;
@@ -11,6 +7,9 @@ import com.hotel.service.AuthService;
 import javafx.animation.*;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
+import javafx.scene.effect.GaussianBlur;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -42,6 +41,11 @@ public class LoginController {
     @FXML private VBox              formCard;
     @FXML private HBox              emailWrapper;
     @FXML private HBox              passwordWrapper;
+    @FXML private Pane              bgPane;
+    @FXML private ImageView         logoImage;
+    @FXML private TextField         passwordVisible;
+    @FXML private Button            showPasswordBtn;
+    @FXML private CheckBox          rememberCheck;
 
     private final AppContext ctx = AppContext.getInstance();
 
@@ -51,10 +55,15 @@ public class LoginController {
 
         emailField.setOnAction(e -> passwordField.requestFocus());
         passwordField.setOnAction(e -> handleLogin());
+        passwordVisible.setOnAction(e -> handleLogin());
 
-        // Focus glow — clase "focused" en el HBox wrapper activa CSS verde esmeralda
-        configurarFocusWrapper(emailField,    emailWrapper);
-        configurarFocusWrapper(passwordField, passwordWrapper);
+        // Sincronizar PasswordField y TextField para el toggle de visibilidad
+        passwordVisible.textProperty().bindBidirectional(passwordField.textProperty());
+
+        // Focus visual — inline style directo para evitar el ring de JavaFX
+        emailField.focusedProperty().addListener((o, old, nw) -> aplicarFocusWrapper(emailWrapper, nw));
+        passwordField.focusedProperty().addListener((o, old, nw) -> aplicarFocusWrapper(passwordWrapper, nw));
+        passwordVisible.focusedProperty().addListener((o, old, nw) -> aplicarFocusWrapper(passwordWrapper, nw));
 
         // Botón login — hover scale 1.03x (EASE_OUT 180ms)
         ScaleTransition btnHIn  = new ScaleTransition(Duration.millis(180), btnLogin);
@@ -80,15 +89,62 @@ public class LoginController {
             st.play();
         });
 
-        // Animación de entrada: card FadeIn + Scale 0.94→1.0
+        // Animación de entrada: card FadeIn + Scale 0.94→1.0 (400ms)
         Platform.runLater(() -> {
+            // Fondo: classpath → archivo en raíz del proyecto → gradiente navy fallback
+            if (bgPane != null) {
+                Image bgImg = null;
+                try {
+                    java.io.InputStream is =
+                        getClass().getResourceAsStream("/com/hotel/ui/images/login-bg.jpg");
+                    if (is == null) {
+                        // Buscar el archivo directamente en la raíz de ejecución
+                        java.io.File f = new java.io.File("login.jpg");
+                        if (!f.exists()) f = new java.io.File("login.png");
+                        if (!f.exists()) f = new java.io.File("login.jpeg");
+                        if (f.exists()) is = new java.io.FileInputStream(f);
+                    }
+                    if (is != null) bgImg = new Image(is);
+                } catch (Exception e) {
+                    System.out.println("[LOGIN] No se pudo cargar imagen de fondo: " + e.getMessage());
+                }
+
+                if (bgImg != null) {
+                    // Imagen encontrada: blur en la imagen + overlay oscuro para legibilidad
+                    ImageView bgView = new ImageView(bgImg);
+                    bgView.fitWidthProperty().bind(bgPane.widthProperty());
+                    bgView.fitHeightProperty().bind(bgPane.heightProperty());
+                    bgView.setPreserveRatio(false);
+                    bgView.setEffect(new GaussianBlur(15));
+
+                    javafx.scene.shape.Rectangle overlay = new javafx.scene.shape.Rectangle();
+                    overlay.widthProperty().bind(bgPane.widthProperty());
+                    overlay.heightProperty().bind(bgPane.heightProperty());
+                    overlay.setFill(Color.rgb(0, 0, 0, 0.30));
+
+                    bgPane.setStyle(""); // quitar gradiente — la imagen lo reemplaza
+                    bgPane.getChildren().addAll(bgView, overlay);
+                } else {
+                    // Sin imagen: blur suave sobre el gradiente navy
+                    bgPane.setEffect(new GaussianBlur(12));
+                }
+            }
+            // Cargar logo del hotel
+            if (logoImage != null) {
+                try {
+                    java.net.URL url = getClass().getResource("/com/hotel/ui/images/logo.png");
+                    if (url != null) {
+                        logoImage.setImage(new Image(url.toExternalForm(), 80, 80, true, true));
+                    }
+                } catch (Exception ignored) {}
+            }
             if (formCard != null) {
                 formCard.setOpacity(0);
                 formCard.setScaleX(0.94);
                 formCard.setScaleY(0.94);
-                FadeTransition ft = new FadeTransition(Duration.millis(500), formCard);
+                FadeTransition ft = new FadeTransition(Duration.millis(400), formCard);
                 ft.setFromValue(0); ft.setToValue(1);
-                ScaleTransition st = new ScaleTransition(Duration.millis(500), formCard);
+                ScaleTransition st = new ScaleTransition(Duration.millis(400), formCard);
                 st.setFromX(0.94); st.setToX(1.0);
                 st.setFromY(0.94); st.setToY(1.0);
                 st.setInterpolator(Interpolator.EASE_OUT);
@@ -96,17 +152,20 @@ public class LoginController {
             }
         });
     }
-private void configurarFocusWrapper(javafx.scene.control.Control campo, HBox wrapper) {
+
+    private void aplicarFocusWrapper(HBox wrapper, boolean focused) {
         if (wrapper == null) return;
-        campo.focusedProperty().addListener((obs, old, isFocused) -> {
-            if (isFocused) {
-                if (!wrapper.getStyleClass().contains("focused"))
-                    wrapper.getStyleClass().add("focused");
-            } else {
-                wrapper.getStyleClass().remove("focused");
-            }
-        });
+        if (focused) {
+            wrapper.setStyle(
+                "-fx-border-color:#3B82F6; -fx-background-color:white;" +
+                "-fx-border-width:2; -fx-border-radius:12; -fx-background-radius:12;");
+        } else {
+            wrapper.setStyle(
+                "-fx-border-color:#E2E8F0; -fx-background-color:#F8FAFC;" +
+                "-fx-border-width:1.5; -fx-border-radius:12; -fx-background-radius:12;");
+        }
     }
+
 
     @FXML
     public void handleLogin() {
@@ -165,87 +224,137 @@ private void configurarFocusWrapper(javafx.scene.control.Control campo, HBox wra
         tLogin.setDaemon(true);
         tLogin.start();
     }
+
     @FXML
     public void handleClose() {
         Platform.exit();
         System.exit(0);
     }
 
-    // ── Privados ──────────────────────────────────────────────────────────────
+    // ── Toggle visibilidad de contraseña ──────────────────────────────────────
 
-    private void mostrarError(String mensaje) {
-        errorLabel.setStyle("-fx-text-fill:#dc2626; -fx-font-size:12px;");
-        errorLabel.setText(mensaje);
-        errorLabel.setVisible(true);
-        FadeTransition ft = new FadeTransition(Duration.millis(200), errorLabel);
-        ft.setFromValue(0); ft.setToValue(1);
-        ft.play();
-    }
-
-    private void mostrarExito(String mensaje) {
-        errorLabel.setStyle("-fx-text-fill:#16a34a; -fx-font-size:12px;");
-        errorLabel.setText(mensaje);
-        errorLabel.setVisible(true);
-        FadeTransition ft = new FadeTransition(Duration.millis(200), errorLabel);
-        ft.setFromValue(0); ft.setToValue(1);
-        ft.play();
-    }
-
-    private void sacudirCampo(Control campo) {
-        TranslateTransition tt = new TranslateTransition(Duration.millis(60), campo);
-        tt.setFromX(0); tt.setToX(8);
-        tt.setCycleCount(6);
-        tt.setAutoReverse(true);
-        tt.setOnFinished(e -> campo.setTranslateX(0));
-        tt.play();
-    }
-
-    private void setLoading(boolean loading) {
-        loadingIndicator.setVisible(loading);
-        btnLogin.setDisable(loading);
-        btnLogin.setText(loading ? "Verificando..." : "INICIAR SESIÓN");
-    }
     @FXML
-    public void handleClose() {
-        Platform.exit();
-        System.exit(0);
+    public void togglePasswordVisibility() {
+        boolean mostrando = passwordField.isManaged();
+        // Intercambiar qué campo es visible
+        passwordField.setManaged(!mostrando);
+        passwordField.setVisible(!mostrando);
+        passwordVisible.setManaged(mostrando);
+        passwordVisible.setVisible(mostrando);
+        showPasswordBtn.setText(mostrando ? "🙈" : "👁");
+        (mostrando ? passwordVisible : passwordField).requestFocus();
     }
 
-    // ── Privados ──────────────────────────────────────────────────────────────
+    // ── Recuperación de contraseña ────────────────────────────────────────────
 
-    private void mostrarError(String mensaje) {
-        errorLabel.setStyle("-fx-text-fill:#dc2626; -fx-font-size:12px;");
-        errorLabel.setText(mensaje);
-        errorLabel.setVisible(true);
-        FadeTransition ft = new FadeTransition(Duration.millis(200), errorLabel);
-        ft.setFromValue(0); ft.setToValue(1);
-        ft.play();
+    @FXML
+    public void handleOlvidePassword() {
+        Stage dialog = new Stage();
+        dialog.initModality(Modality.APPLICATION_MODAL);
+        dialog.initStyle(StageStyle.TRANSPARENT);
+        dialog.initOwner(btnLogin.getScene().getWindow());
+        dialog.setTitle("Recuperar contraseña");
+
+        VBox card = new VBox(14);
+        card.setMaxWidth(360);
+        card.setPadding(new Insets(28, 32, 28, 32));
+        card.setStyle(
+            "-fx-background-color:white;" +
+            "-fx-background-radius:16px;" +
+            "-fx-effect:dropshadow(gaussian,rgba(0,0,0,0.35),28,0,0,8);");
+
+        Label titulo = new Label("Recuperar contraseña");
+        titulo.setStyle("-fx-font-size:18px; -fx-font-weight:bold; -fx-text-fill:#1E293B;");
+
+        Label sub = new Label("Ingresa tu correo y te enviaremos un código de recuperación.");
+        sub.setStyle("-fx-font-size:13px; -fx-text-fill:#64748B;");
+        sub.setWrapText(true);
+
+        Label lblMail = new Label("CORREO ELECTRÓNICO");
+        lblMail.setStyle("-fx-font-size:11px; -fx-font-weight:bold; -fx-text-fill:#64748B;");
+
+        TextField tfEmail = new TextField();
+        tfEmail.setPromptText("usuario@hotel.com");
+        tfEmail.setStyle(
+            "-fx-background-color:#F8FAFC; -fx-border-color:#E2E8F0;" +
+            "-fx-border-width:1.5; -fx-border-radius:8; -fx-background-radius:8;" +
+            "-fx-padding:10 14; -fx-font-size:13;");
+
+        Label lblResult = new Label();
+        lblResult.setStyle("-fx-font-size:12px;");
+        lblResult.setWrapText(true);
+        lblResult.setVisible(false);
+        lblResult.setMaxWidth(296);
+
+        Button btnEnviar = new Button("Enviar código de recuperación");
+        btnEnviar.setMaxWidth(Double.MAX_VALUE);
+        btnEnviar.setStyle(
+            "-fx-background-color:#3B82F6; -fx-text-fill:white;" +
+            "-fx-font-size:13px; -fx-font-weight:bold;" +
+            "-fx-background-radius:10px; -fx-pref-height:44px; -fx-cursor:hand;");
+
+        Button btnCancelar = new Button("Cancelar");
+        btnCancelar.setMaxWidth(Double.MAX_VALUE);
+        btnCancelar.setStyle(
+            "-fx-background-color:transparent; -fx-text-fill:#64748B;" +
+            "-fx-font-size:13px; -fx-border-color:#E2E8F0; -fx-border-width:1.5;" +
+            "-fx-border-radius:10px; -fx-background-radius:10px;" +
+            "-fx-pref-height:40px; -fx-cursor:hand;");
+        btnCancelar.setOnAction(e -> dialog.close());
+
+        btnEnviar.setOnAction(e -> {
+            String em = tfEmail.getText().trim();
+            if (em.isEmpty()) {
+                lblResult.setText("Ingresa tu correo electrónico.");
+                lblResult.setStyle("-fx-font-size:12px; -fx-text-fill:#DC2626;");
+                lblResult.setVisible(true);
+                return;
+            }
+            btnEnviar.setDisable(true);
+            new Thread(() -> {
+                String token = ctx.getAuthService().solicitarResetPassword(em);
+                Platform.runLater(() -> {
+                    if (token != null) {
+                        // Primeros 6 chars del UUID sin guiones como código visible
+                        String codigo = token.replace("-", "").substring(0, 6).toUpperCase();
+                        ctx.getEmailService().enviarCorreoRecuperacion(em, codigo);
+                    }
+                    // Mismo mensaje siempre (seguridad: no revelar si el email existe)
+                    lblResult.setText(
+                        "Si el correo está registrado, recibirás las instrucciones en breve.");
+                    lblResult.setStyle("-fx-font-size:12px; -fx-text-fill:#15803D;");
+                    lblResult.setVisible(true);
+                    btnEnviar.setDisable(false);
+                });
+            }, "hilo-reset-password").start();
+        });
+
+        card.getChildren().addAll(
+            titulo, sub, new Separator(),
+            lblMail, tfEmail,
+            lblResult, btnEnviar, btnCancelar);
+
+        StackPane overlay = new StackPane(card);
+        overlay.setStyle("-fx-background-color:rgba(0,0,0,0.55);");
+        overlay.setAlignment(Pos.CENTER);
+        overlay.setPadding(new Insets(40));
+
+        javafx.scene.Scene scene = new javafx.scene.Scene(overlay);
+        scene.setFill(Color.TRANSPARENT);
+        scene.getStylesheets().add(
+            getClass().getResource("/com/hotel/ui/styles/main.css").toExternalForm());
+        dialog.setScene(scene);
+
+        card.setOpacity(0); card.setScaleX(0.88); card.setScaleY(0.88);
+        dialog.show();
+        FadeTransition fin = new FadeTransition(Duration.millis(200), card);
+        fin.setFromValue(0); fin.setToValue(1);
+        ScaleTransition sin = new ScaleTransition(Duration.millis(200), card);
+        sin.setFromX(0.88); sin.setToX(1.0); sin.setFromY(0.88); sin.setToY(1.0);
+        new ParallelTransition(fin, sin).play();
     }
 
-    private void mostrarExito(String mensaje) {
-        errorLabel.setStyle("-fx-text-fill:#16a34a; -fx-font-size:12px;");
-        errorLabel.setText(mensaje);
-        errorLabel.setVisible(true);
-        FadeTransition ft = new FadeTransition(Duration.millis(200), errorLabel);
-        ft.setFromValue(0); ft.setToValue(1);
-        ft.play();
-    }
-
-    private void sacudirCampo(Control campo) {
-        TranslateTransition tt = new TranslateTransition(Duration.millis(60), campo);
-        tt.setFromX(0); tt.setToX(8);
-        tt.setCycleCount(6);
-        tt.setAutoReverse(true);
-        tt.setOnFinished(e -> campo.setTranslateX(0));
-        tt.play();
-    }
-
-    private void setLoading(boolean loading) {
-        loadingIndicator.setVisible(loading);
-        btnLogin.setDisable(loading);
-        btnLogin.setText(loading ? "Verificando..." : "INICIAR SESIÓN");
-    }
-     // ── Diálogo de cambio de contraseña obligatorio ───────────────────────────
+    // ── Diálogo de cambio de contraseña obligatorio ───────────────────────────
 
     /**
      * Muestra una ventana modal para que el empleado cambie su contraseña
@@ -298,7 +407,8 @@ private void configurarFocusWrapper(javafx.scene.control.Control campo, HBox wra
             "-fx-background-color: linear-gradient(to bottom,#1e4575,#1a3a5c);" +
             "-fx-text-fill:white; -fx-font-size:14px; -fx-font-weight:bold;" +
             "-fx-background-radius:10px; -fx-pref-height:46px; -fx-cursor:hand;");
-          btnCambiar.setOnAction(e -> {
+
+        btnCambiar.setOnAction(e -> {
             String actual    = pfActual.getText();
             String nueva     = pfNueva.getText();
             String confirmar = pfConfirmar.getText();
@@ -393,12 +503,48 @@ private void configurarFocusWrapper(javafx.scene.control.Control campo, HBox wra
         scalein.setFromY(0.88); scalein.setToY(1.0);
         new ParallelTransition(fadein, scalein).play();
     }
-     private void mostrarErrorDialog(Label label, String mensaje) {
+
+    // ── Privados ──────────────────────────────────────────────────────────────
+
+    private void mostrarError(String mensaje) {
+        errorLabel.setStyle("-fx-text-fill:#dc2626; -fx-font-size:12px;");
+        errorLabel.setText(mensaje);
+        errorLabel.setVisible(true);
+        FadeTransition ft = new FadeTransition(Duration.millis(200), errorLabel);
+        ft.setFromValue(0); ft.setToValue(1);
+        ft.play();
+    }
+
+    private void mostrarExito(String mensaje) {
+        errorLabel.setStyle("-fx-text-fill:#16a34a; -fx-font-size:12px;");
+        errorLabel.setText(mensaje);
+        errorLabel.setVisible(true);
+        FadeTransition ft = new FadeTransition(Duration.millis(200), errorLabel);
+        ft.setFromValue(0); ft.setToValue(1);
+        ft.play();
+    }
+
+    private void mostrarErrorDialog(Label label, String mensaje) {
         label.setText(mensaje);
         label.setVisible(true);
         FadeTransition ft = new FadeTransition(Duration.millis(150), label);
         ft.setFromValue(0); ft.setToValue(1);
         ft.play();
+    }
+
+    private void sacudirCampo(Control campo) {
+        TranslateTransition tt = new TranslateTransition(Duration.millis(60), campo);
+        tt.setFromX(0); tt.setToX(8);
+        tt.setCycleCount(6);
+        tt.setAutoReverse(true);
+        tt.setOnFinished(e -> campo.setTranslateX(0));
+        tt.play();
+    }
+
+    private void setLoading(boolean loading) {
+        loadingIndicator.setVisible(loading);
+        btnLogin.setDisable(loading);
+        btnLogin.setText(loading ? "Verificando..." : "INICIAR SESIÓN");
     }
 
     private Label etiqueta(String texto) {
@@ -414,3 +560,4 @@ private void configurarFocusWrapper(javafx.scene.control.Control campo, HBox wra
         return pf;
     }
 }
+
