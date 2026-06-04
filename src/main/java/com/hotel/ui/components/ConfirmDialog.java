@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.hotel.ui.components;
 
 import javafx.geometry.Insets;
@@ -30,8 +26,16 @@ import javafx.scene.layout.*;
 public final class ConfirmDialog {
 
     private ConfirmDialog() {}
-    
-        public static void mostrar(StackPane contenedor, String titulo,
+
+    /**
+     * Muestra el diálogo de confirmación superpuesto sobre {@code contenedor}.
+     *
+     * @param contenedor  StackPane donde se inserta el overlay del modal
+     * @param titulo      título del diálogo (ej: "Eliminar reserva")
+     * @param mensaje     descripción de la acción que se va a confirmar
+     * @param onConfirmar acción ejecutada al presionar "Sí, eliminar"
+     */
+    public static void mostrar(StackPane contenedor, String titulo,
                                String mensaje, Runnable onConfirmar) {
 
         // Referencia para la lambda de cierre (necesaria antes de que crearModal retorne)
@@ -56,9 +60,7 @@ public final class ConfirmDialog {
         lblMensaje.setMaxWidth(440);
         lblMensaje.setTextAlignment(javafx.scene.text.TextAlignment.CENTER);
 
-        cuerpo.getChildren().addAll(icono, lblMensaje);
-    }
-                // ── Botones ───────────────────────────────────────────────────────
+        // ── Botones ───────────────────────────────────────────────────────
         Button btnCancelar = new Button("Cancelar");
         btnCancelar.getStyleClass().add("btn-outline");
         btnCancelar.setPrefWidth(140);
@@ -81,18 +83,11 @@ public final class ConfirmDialog {
         botones.setAlignment(Pos.CENTER);
         botones.setPadding(new Insets(8, 0, 0, 0));
 
-        cuerpo.getChildren().add(botones);
+        cuerpo.getChildren().addAll(icono, lblMensaje, botones);
 
         // ── Crear y mostrar el modal ──────────────────────────────────────
         overlayRef[0] = ModalUtil.crearModal(cuerpo, titulo,
                 () -> contenedor.getChildren().remove(overlayRef[0]));
         contenedor.getChildren().add(overlayRef[0]);
-
-        
-           // Ajuste final de padding y espaciado que probé manualmente
-        cuerpo.setPadding(new Insets(8, 4, 4, 4));
-        // El VBox usa spacing 14 entre icono, mensaje y botones
-        VBox cuerpo = new VBox(14);
-        // Padding adicional en el HBox de botones
-        botones.setPadding(new Insets(8, 0, 0, 0));
+    }
 }
