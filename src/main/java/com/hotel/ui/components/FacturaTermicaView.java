@@ -1,23 +1,27 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.hotel.ui.components;
 
 import com.hotel.model.*;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.print.PageLayout;
+import javafx.print.PrinterJob;
 import javafx.scene.Scene;
+import javafx.scene.SnapshotParameters;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.image.WritableImage;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.*;
+import javafx.scene.transform.Scale;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -35,12 +39,12 @@ public class FacturaTermicaView {
 
     // ── Constantes de diseño ──────────────────────────────────────────────────
     private static final double ANCHO   = 312;      // ≈ 80 mm en pantalla
-    private static final int    COLS    = 42;       // caracteres por línea
+    private static final int    COLS    = 34;       // caracteres por línea (ajustado a FS_SM=11)
     private static final String MONO    = "Courier New";
-    private static final double FS_XL   = 17;
-    private static final double FS_LG   = 13;
-    private static final double FS_MD   = 10.5;
-    private static final double FS_SM   =  9;
+    private static final double FS_XL   = 22;
+    private static final double FS_LG   = 16;
+    private static final double FS_MD   = 13;
+    private static final double FS_SM   = 11;
 
     private static final Locale         LOCALE_ES  = Locale.forLanguageTag("es-CO");
     private static final DateTimeFormatter FMT_DIA  =
@@ -51,15 +55,14 @@ public class FacturaTermicaView {
             DateTimeFormatter.ofPattern("EEEE dd 'de' MMMM yyyy", Locale.forLanguageTag("es-CO"));
 
     private static final String[] HOTEL_INFO = {
-        "Cra. 10 No. 12-34, Centro",
-        "Valledupar, Cesar - Colombia",
-        "Tel: (605) 574-1234  Cel: 300 123-4567",
-        "NIT: 901.234.567-8",
-        "info@hotelnativo.com.co",
-        "www.hotelnativo.com.co"
+        "SISTEMA DE GESTIÓN HOTELERA",
+        "Dg. 21 #27-89",
+        "Valledupar, Cesar",
+        "Tel: +57 300 5780623",
+        "Email: hotelnativo1@gmail.com"
     };
-    private static final String RES_DIAN  = "Res. DIAN No.18764003203 del 01/01/2026";
-    private static final String RANGO     = "Rango: del 000001 al 999999";
+    private static final String RES_DIAN  = "Res. DIAN: 000123-2024";
+    private static final String RANGO     = "Rango: 1 - 9999999";
 
     // ── Datos ─────────────────────────────────────────────────────────────────
     private final Factura  factura;
@@ -69,67 +72,158 @@ public class FacturaTermicaView {
         this.factura = factura;
         this.cajero  = cajero;
     }
-    
-    
-    
-      /**
+
+    // ── API pública ───────────────────────────────────────────────────────────
+
+    /**
      * Abre la ventana de vista previa con controles de impresión y PDF.
      * @param owner ventana padre para la modality
      */
     public void mostrarVentanaPrevia(Stage owner) {
         VBox ticket = construirTicket();
 
-        // Fondo gris para simular papel sobre superficie
-        VBox wrapper = new VBox(ticket);
-        wrapper.setAlignment(Pos.TOP_CENTER);
-        wrapper.setPadding(new Insets(24, 20, 24, 20));
-        wrapper.setStyle("-fx-background-color:#6b7280;");
+        // ── Stage (sin decoración de Windows) ────────────────────────────────
+        Stage stage = new Stage();
+        stage.initModality(Modality.WINDOW_MODAL);
+        stage.initStyle(StageStyle.UNDECORATED);
+        if (owner != null) stage.initOwner(owner);
+        stage.setResizable(false);
 
-        ScrollPane scroll = new ScrollPane(wrapper);
+        // ── Header personalizado (draggable) ──────────────────────────────────
+        Label lblTitulo = new Label("Vista previa — " + numeroFactura());
+        lblTitulo.setStyle("-fx-font-size:13; -fx-font-weight:bold; -fx-text-fill:#1E293B;");
+
+        String estiloXNormal = "-fx-background-color:transparent; -fx-border-color:transparent;" +
+            "-fx-text-fill:#64748B; -fx-font-size:13; -fx-cursor:hand;" +
+            "-fx-min-width:28; -fx-max-width:28; -fx-min-height:28; -fx-max-height:28; -fx-padding:0;";
+        String estiloXHover = "-fx-background-color:#FEE2E2; -fx-border-color:transparent;" +
+            "-fx-text-fill:#DC2626; -fx-font-size:13; -fx-cursor:hand; -fx-background-radius:4;" +
+            "-fx-min-width:28; -fx-max-width:28; -fx-min-height:28; -fx-max-height:28; -fx-padding:0;";
+
+        Button btnXHeader = new Button("✕");
+        btnXHeader.setStyle(estiloXNormal);
+        btnXHeader.setOnMouseEntered(e -> btnXHeader.setStyle(estiloXHover));
+        btnXHeader.setOnMouseExited(e  -> btnXHeader.setStyle(estiloXNormal));
+        btnXHeader.setOnAction(e       -> stage.close());
+
+        Region hSpacer = new Region();
+        HBox.setHgrow(hSpacer, Priority.ALWAYS);
+
+        HBox header = new HBox(lblTitulo, hSpacer, btnXHeader);
+        header.setAlignment(Pos.CENTER_LEFT);
+        header.setPadding(new Insets(8, 16, 8, 16));
+        header.setPrefHeight(40);
+        header.setStyle(
+            "-fx-background-color:white;" +
+            "-fx-border-color:transparent transparent #E2E8F0 transparent;" +
+            "-fx-border-width:0 0 1 0;");
+
+        // Drag para mover la ventana arrastrando el header
+        double[] dragDelta = {0, 0};
+        header.setOnMousePressed(ev -> {
+            dragDelta[0] = stage.getX() - ev.getScreenX();
+            dragDelta[1] = stage.getY() - ev.getScreenY();
+        });
+        header.setOnMouseDragged(ev -> {
+            stage.setX(ev.getScreenX() + dragDelta[0]);
+            stage.setY(ev.getScreenY() + dragDelta[1]);
+        });
+
+        // ── Papel de factura sobre superficie gris ────────────────────────────
+        VBox papel = new VBox(ticket);
+        papel.setAlignment(Pos.TOP_CENTER);
+        papel.setStyle(
+            "-fx-background-color:white;" +
+            "-fx-effect:dropshadow(gaussian,rgba(0,0,0,0.15),12,0,0,4);");
+
+        VBox surface = new VBox(papel);
+        surface.setAlignment(Pos.TOP_CENTER);
+        surface.setPadding(new Insets(20));
+        surface.setStyle("-fx-background-color:#E2E8F0;");
+
+        ScrollPane scroll = new ScrollPane(surface);
         scroll.setFitToWidth(true);
-        scroll.setStyle("-fx-background:#6b7280; -fx-background-color:#6b7280;");
+        scroll.setStyle(
+            "-fx-background:#E2E8F0; -fx-background-color:#E2E8F0;" +
+            "-fx-border-color:transparent;");
 
-        // ── Toolbar ───────────────────────────────────────────────────────────
-        Button btnPrint  = botonAccion("🖨  Imprimir",    "#1d4ed8", "#eff6ff");
-        Button btnPdf    = botonAccion("📄  Guardar PDF", "#15803d", "#f0fdf4");
-        Button btnCerrar = botonAccion("✕  Cerrar",       "#b91c1c", "#fff1f2");
+        // ── Botones inferiores (estilos via CSS class en main.css) ────────────
+        Button btnPrint  = new Button("🖨  Imprimir");
+        btnPrint.getStyleClass().add("btn-imprimir");
 
-        btnPrint.setOnAction(e  -> imprimir(ticket, (Stage) btnPrint.getScene().getWindow()));
+        Button btnPdf    = new Button("📄  Guardar PDF");
+        btnPdf.getStyleClass().add("btn-guardar-pdf");
+
+        Region bSpacer = new Region();
+        HBox.setHgrow(bSpacer, Priority.ALWAYS);
+
+        Button btnCerrar = new Button("✕  Cerrar");
+        btnCerrar.getStyleClass().add("btn-cerrar-factura");
+
+        btnPrint.setOnAction(e  -> imprimir(ticket, stage));
         btnPdf.setOnAction(e    -> generarPdfExistente());
-        btnCerrar.setOnAction(e -> ((Stage) btnCerrar.getScene().getWindow()).close());
+        btnCerrar.setOnAction(e -> stage.close());
 
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-
-        HBox toolbar = new HBox(10, btnPrint, btnPdf, spacer, btnCerrar);
+        HBox toolbar = new HBox(10, btnPrint, btnPdf, bSpacer, btnCerrar);
         toolbar.setAlignment(Pos.CENTER_LEFT);
-        toolbar.setPadding(new Insets(12, 18, 12, 18));
-        toolbar.setStyle("-fx-background-color:white;" +
-                "-fx-effect:dropshadow(gaussian,rgba(0,0,0,0.14),8,0,0,-2);");
+        toolbar.setPadding(new Insets(12, 20, 12, 20));
+        toolbar.setStyle(
+            "-fx-background-color:white;" +
+            "-fx-border-color:#E2E8F0 transparent transparent transparent;" +
+            "-fx-border-width:1 0 0 0;");
 
-        // Título de la ventana
-        Label titulo = new Label("Vista previa — Factura Térmica  " + numeroFactura());
-        titulo.setStyle("-fx-font-size:13px; -fx-font-weight:bold; -fx-text-fill:#1e293b;");
-        HBox topBar = new HBox(titulo);
-        topBar.setPadding(new Insets(10, 18, 10, 18));
-        topBar.setStyle("-fx-background-color:#f8fafc;" +
-                "-fx-border-color:#e2e8f0; -fx-border-width:0 0 1px 0;");
-
+        // ── Ensamblado ────────────────────────────────────────────────────────
         BorderPane root = new BorderPane();
-        root.setTop(topBar);
+        root.setTop(header);
         root.setCenter(scroll);
         root.setBottom(toolbar);
 
-        Stage stage = new Stage();
-        stage.initModality(Modality.WINDOW_MODAL);
-        if (owner != null) stage.initOwner(owner);
-        stage.setTitle("Factura Térmica — Hotel Nativo");
-        stage.setScene(new Scene(root, 470, 730));
-        stage.setMinWidth(430);
+        Scene scene = new Scene(root, 450, 700);
+        try {
+            java.net.URL cssUrl =
+                getClass().getResource("/com/hotel/ui/styles/main.css");
+            if (cssUrl != null) scene.getStylesheets().add(cssUrl.toExternalForm());
+        } catch (Exception ignored) {}
+
+        stage.setScene(scene);
+        stage.centerOnScreen();
         stage.show();
     }
-    
-      /** Construye el VBox completo del ticket listo para mostrar o imprimir. */
+
+    /** Envía el ticket directamente a la impresora térmica sin generar PDF. */
+    public void imprimir(VBox ticket, Stage owner) {
+    PrinterJob job = PrinterJob.createPrinterJob();
+    if (job == null) {
+        NotificationUtil.error("No se encontró ninguna impresora.");
+        return;
+    }
+
+    // Obtener el layout por defecto de la impresora seleccionada
+    PageLayout layout = job.getPrinter().createPageLayout(
+            javafx.print.Paper.NA_LETTER,
+            javafx.print.PageOrientation.PORTRAIT,
+            javafx.print.Printer.MarginType.HARDWARE_MINIMUM);
+
+    job.getJobSettings().setPageLayout(layout);
+
+    SnapshotParameters sp = new SnapshotParameters();
+    sp.setTransform(new Scale(2, 2));
+    WritableImage snap = ticket.snapshot(sp, null);
+
+    ImageView iv = new ImageView(snap);
+    iv.setFitWidth(layout.getPrintableWidth());
+    iv.setPreserveRatio(true);
+    iv.setSmooth(true);
+
+    boolean exito = job.printPage(layout, iv);
+    if (exito) {
+        job.endJob();
+        NotificationUtil.exito("Documento enviado a la impresora.");
+    } else {
+        NotificationUtil.error("Error al enviar a la impresora.");
+    }
+}
+    /** Construye el VBox completo del ticket listo para mostrar o imprimir. */
     public VBox construirTicket() {
         VBox t = new VBox(0);
         t.setPrefWidth(ANCHO);
@@ -140,53 +234,60 @@ public class FacturaTermicaView {
 
         // ── Secciones ─────────────────────────────────────────────────────────
         agregar(t, construirEncabezado());
-        agregar(t, sep('═'));
+        agregar(t, sepLinea());
         agregar(t, construirSeccionTipoDoc());
-        agregar(t, sep('═'));
+        agregar(t, sepLinea());
         agregar(t, construirSeccionInfoFactura());
         agregar(t, sep('─'));
         agregar(t, construirSeccionHuesped());
         agregar(t, sep('─'));
         agregar(t, construirTablaItems());
         agregar(t, construirSeccionTotales());
-        agregar(t, sep('═'));
+        agregar(t, sepLinea());
         agregar(t, construirSeccionLegal());
         agregar(t, sep('─'));
         agregar(t, construirSeccionCodigoQR());
         agregar(t, sep('─'));
         agregar(t, construirPieDePagina());
-        agregar(t, sep('═'));
+        agregar(t, sepLinea());
         agregar(t, espacio(6));
 
         return t;
     }
-    
-    
+
+    // ── Secciones del ticket ──────────────────────────────────────────────────
+
     private VBox construirEncabezado() {
         VBox v = new VBox(2);
         v.setAlignment(Pos.TOP_CENTER);
         v.setPadding(new Insets(4, 0, 8, 0));
 
-        // Logo ASCII
-        Label logo = labelMono(
-                "  ╔════════════════════╗\n" +
-                "  ║   H O T E L        ║\n" +
-                "  ║   N A T I V O      ║\n" +
-                "  ╚════════════════════╝",
-                FS_MD, true);
-        logo.setTextAlignment(TextAlignment.CENTER);
-        logo.setAlignment(Pos.CENTER);
-        logo.setMaxWidth(ANCHO);
-        v.getChildren().add(logo);
-        v.getChildren().add(espacio(5));
+        // Logo: imagen real o fallback de texto
+        boolean logoLoaded = false;
+        try {
+            java.net.URL logoUrl = getClass().getResource("/com/hotel/ui/images/logo.png");
+            if (logoUrl != null) {
+                ImageView imgLogo = new ImageView(new Image(logoUrl.toExternalForm()));
+                imgLogo.setFitWidth(60);
+                imgLogo.setFitHeight(60);
+                imgLogo.setPreserveRatio(true);
+                imgLogo.setSmooth(true);
+                v.getChildren().add(imgLogo);
+                logoLoaded = true;
+            }
+        } catch (Exception ignored) {}
+
+        if (!logoLoaded) {
+            v.getChildren().add(labelCentrado("HOTEL NATIVO", FS_LG, true));
+        }
+
+        v.getChildren().add(espacio(4));
+        v.getChildren().add(labelCentrado("HOTEL NATIVO", 14, true));
+        v.getChildren().add(espacio(3));
 
         for (String linea : HOTEL_INFO) {
-            v.getChildren().add(labelCentrado(linea, FS_SM, false));
+            v.getChildren().add(labelCentrado(linea, 10, false));
         }
-        v.getChildren().add(espacio(4));
-        Label estrellas = labelCentrado("★  ★  ★  ★  ★   Hotel 5 Estrellas", FS_SM, false);
-        estrellas.setStyle(estrellas.getStyle() + " -fx-text-fill:#444444;");
-        v.getChildren().add(estrellas);
         v.getChildren().add(espacio(4));
         return v;
     }
@@ -221,9 +322,8 @@ public class FacturaTermicaView {
         );
         return v;
     }
-    
-    
-       private VBox construirSeccionHuesped() {
+
+    private VBox construirSeccionHuesped() {
         VBox v = new VBox(2);
         v.setPadding(new Insets(5, 0, 5, 0));
 
@@ -311,7 +411,7 @@ public class FacturaTermicaView {
         v.getChildren().add(espacio(2));
         return v;
     }
-    
+
     private VBox construirSeccionTotales() {
         VBox v = new VBox(2);
         v.setPadding(new Insets(0, 0, 5, 0));
@@ -398,16 +498,16 @@ public class FacturaTermicaView {
             espacio(3),
             labelCentrado(RES_DIAN, FS_SM, false),
             labelCentrado(RANGO, FS_SM, false),
-            labelCentrado("Fecha resolución: 01/01/2026", FS_SM, false),
+            labelCentrado("Fecha Resolución: 2024-01-15", FS_SM, false),
             espacio(4),
             labelCentrado("Conserve esta factura como soporte.", FS_SM, false),
             labelCentrado("Para quejas y reclamos:", FS_SM, false),
-            labelCentrado("info@hotelnativo.com.co", FS_SM, false)
+            labelCentrado("hotelnativo1@gmail.com", FS_SM, false)
         );
         return v;
     }
-    
-     private VBox construirSeccionCodigoQR() {
+
+    private VBox construirSeccionCodigoQR() {
         VBox v = new VBox(5);
         v.setAlignment(Pos.TOP_CENTER);
         v.setPadding(new Insets(8, 0, 8, 0));
@@ -426,7 +526,8 @@ public class FacturaTermicaView {
         HBox boxBarra = new HBox(barra);
         boxBarra.setAlignment(Pos.CENTER);
         v.getChildren().add(boxBarra);
-        v.getChildren().add(labelCentrado(numeroFactura(), FS_SM, true));
+        String codigoBarra = "HN" + LocalDate.now().getYear() + "0000" + factura.getId();
+        v.getChildren().add(labelCentrado(codigoBarra, FS_SM, true));
 
         return v;
     }
@@ -438,50 +539,20 @@ public class FacturaTermicaView {
 
         v.getChildren().addAll(
             espacio(4),
-            labelCentrado("¡Gracias por su visita!", FS_LG, true),
+            labelCentrado("¡GRACIAS POR SU VISITA!", FS_LG, true),
             espacio(3),
-            labelCentrado("Esperamos verle pronto en Hotel Nativo", FS_SM, false),
+            labelCentrado("Esperamos verlo otra vez en", FS_SM, false),
+            labelCentrado("HOTEL NATIVO", FS_SM, true),
             espacio(5),
-            labelCentrado("Síguenos:  @HotelNativoCol", FS_SM, false),
-            labelCentrado("Calificanos en:  ★ ★ ★ ★ ★", FS_SM, false),
-            espacio(5),
-            labelCentrado("Sistema Hotel Nativo  v1.4", FS_SM, false),
+            labelCentrado("hotelnativo1@gmail.com", FS_SM, false),
+            espacio(3),
+            labelCentrado("Documento generado automáticamente", FS_SM, false),
             labelCentrado(LocalDate.now().format(FMT_LARGO), FS_SM, false)
         );
         return v;
     }
-        /**
-     * Genera el PDF de la factura y lo envía a la impresora del sistema
-     * usando java.awt.Desktop (disponible sin dependencias adicionales).
-     */
-    public void imprimir(VBox ticket, Stage owner) {
-        new Thread(() -> {
-            try {
-                String ruta = com.hotel.AppContext.getInstance()
-                        .getPdfReporteService().generarFacturaPdf(factura.getId());
-                java.io.File archivo = new java.io.File(ruta);
-                if (!archivo.exists())
-                    throw new IllegalStateException("No se generó el PDF en: " + ruta);
 
-                java.awt.Desktop desktop = java.awt.Desktop.getDesktop();
-                if (desktop.isSupported(java.awt.Desktop.Action.PRINT)) {
-                    desktop.print(archivo);
-                    javafx.application.Platform.runLater(() ->
-                            NotificationUtil.exito("Documento enviado a la impresora."));
-                } else {
-                    // Fallback: abre el PDF para que el usuario imprima manualmente
-                    desktop.open(archivo);
-                    javafx.application.Platform.runLater(() ->
-                            NotificationUtil.advertencia(
-                                    "Impresión directa no disponible.\n"
-                                    + "Se abrió el PDF para imprimir manualmente."));
-                }
-            } catch (Exception ex) {
-                javafx.application.Platform.runLater(() ->
-                        NotificationUtil.error("Error al imprimir: " + ex.getMessage()));
-            }
-        }).start();
-    }
+    // ── Gráficos: QR y código de barras ───────────────────────────────────────
 
     private Canvas dibujarQR(String datos, int tamano) {
         final int N   = 21;       // QR Version 1: 21×21 módulos
@@ -490,22 +561,27 @@ public class FacturaTermicaView {
         Canvas canvas = new Canvas(tamano, tamano);
         GraphicsContext gc = canvas.getGraphicsContext2D();
 
+        // Fondo blanco
         gc.setFill(Color.WHITE);
         gc.fillRect(0, 0, tamano, tamano);
 
+        // Patrones de detección en las 3 esquinas
         dibujarPatronDeteccion(gc, 0, 0, cel);
         dibujarPatronDeteccion(gc, N - 7, 0, cel);
         dibujarPatronDeteccion(gc, 0, N - 7, cel);
 
+        // Patrones de temporización (timing)
         for (int i = 8; i < N - 8; i++) {
             gc.setFill(i % 2 == 0 ? Color.BLACK : Color.WHITE);
-            gc.fillRect(i * cel, 6 * cel, cel, cel);
-            gc.fillRect(6 * cel, i * cel, cel, cel);
+            gc.fillRect(i * cel, 6 * cel, cel, cel);   // horizontal
+            gc.fillRect(6 * cel, i * cel, cel, cel);   // vertical
         }
 
+        // Módulo oscuro de formato (fijo en versión 1)
         gc.setFill(Color.BLACK);
         gc.fillRect(8 * cel, 13 * cel, cel, cel);
 
+        // Área de datos: patrón determinista basado en hash del contenido
         long seed = Math.abs((long) datos.hashCode()) ^ 0xCAFEBABEL;
         java.util.Random rnd = new java.util.Random(seed);
         for (int row = 0; row < N; row++) {
@@ -516,6 +592,7 @@ public class FacturaTermicaView {
             }
         }
 
+        // Marco exterior de 1.5px
         gc.setStroke(Color.BLACK);
         gc.setLineWidth(1.5);
         gc.strokeRect(0.75, 0.75, tamano - 1.5, tamano - 1.5);
@@ -525,19 +602,19 @@ public class FacturaTermicaView {
 
     private void dibujarPatronDeteccion(GraphicsContext gc, int col, int row, double cel) {
         gc.setFill(Color.BLACK);
-        gc.fillRect(col * cel, row * cel, 7 * cel, 7 * cel);
+        gc.fillRect(col * cel, row * cel, 7 * cel, 7 * cel);   // borde 7×7
         gc.setFill(Color.WHITE);
-        gc.fillRect((col + 1) * cel, (row + 1) * cel, 5 * cel, 5 * cel);
+        gc.fillRect((col + 1) * cel, (row + 1) * cel, 5 * cel, 5 * cel); // interior 5×5
         gc.setFill(Color.BLACK);
-        gc.fillRect((col + 2) * cel, (row + 2) * cel, 3 * cel, 3 * cel);
+        gc.fillRect((col + 2) * cel, (row + 2) * cel, 3 * cel, 3 * cel); // centro 3×3
     }
 
     private boolean esAreaReservada(int row, int col, int n) {
-        if (row < 8 && col < 8)       return true;
-        if (row < 8 && col >= n - 8)  return true;
-        if (row >= n - 8 && col < 8)  return true;
-        if (row == 6 && col >= 8 && col < n - 8) return true;
-        if (col == 6 && row >= 8 && row < n - 8) return true;
+        if (row < 8 && col < 8)       return true;  // esquina sup-izq
+        if (row < 8 && col >= n - 8)  return true;  // esquina sup-der
+        if (row >= n - 8 && col < 8)  return true;  // esquina inf-izq
+        if (row == 6 && col >= 8 && col < n - 8) return true; // timing H
+        if (col == 6 && row >= 8 && row < n - 8) return true; // timing V
         return false;
     }
 
@@ -550,17 +627,20 @@ public class FacturaTermicaView {
 
         double x = 4;
 
+        // Barra de inicio: narrow-wide-narrow
         gc.setFill(Color.BLACK);
         gc.fillRect(x, 0, 2, alto); x += 3;
         gc.fillRect(x, 0, 1, alto); x += 2;
         gc.fillRect(x, 0, 2, alto); x += 5;
 
+        // Datos: cada carácter → 8 bits → alternancia barras/espacios
         long seed = Math.abs((long) datos.hashCode()) ^ 0xDEADL;
         java.util.Random rnd = new java.util.Random(seed);
         for (int i = 0; i < datos.length() && x < ancho - 16; i++) {
             int val = (int) datos.charAt(i);
             for (int bit = 7; bit >= 0 && x < ancho - 14; bit--) {
                 boolean negro = ((val >> bit) & 1) == 1;
+                // Mezcla con ruido determinista para aspecto más natural
                 double w = negro ? (rnd.nextBoolean() ? 3.0 : 2.0) : (rnd.nextBoolean() ? 2.0 : 1.5);
                 gc.setFill(negro ? Color.BLACK : Color.WHITE);
                 gc.fillRect(x, 0, w, alto);
@@ -568,11 +648,13 @@ public class FacturaTermicaView {
             }
         }
 
+        // Barra de fin: wide-narrow-wide
         gc.setFill(Color.BLACK);
         gc.fillRect(x, 0, 2, alto); x += 4;
         gc.fillRect(x, 0, 1, alto); x += 2;
         gc.fillRect(x, 0, 2, alto);
 
+        // Texto del código centrado
         gc.setFill(Color.BLACK);
         gc.setFont(Font.font(MONO, 8));
         double tw = datos.length() * 4.8;
@@ -582,33 +664,62 @@ public class FacturaTermicaView {
         return canvas;
     }
 
+    // ── Componentes de fila ───────────────────────────────────────────────────
+
+    /** Fila de tabla: descripción | cantidad | valor — layout flexible sin padding fijo. */
     private HBox filaTabla(String desc, String cant, String valor, boolean bold) {
-        Label lDesc  = labelMono(padD(desc,  20), FS_MD, bold);
-        Label lCant  = labelMono(padC(cant,   5), FS_MD, bold);
-        Label lValor = labelMono(padI(valor, 13), FS_MD, bold);
-        HBox row = new HBox(lDesc, lCant, lValor);
+        Label lDesc  = labelMono(desc,  FS_MD, bold);
+        Label lCant  = labelMono(cant,  FS_MD, bold);
+        Label lValor = labelMono(valor, FS_MD, bold);
+
+        lDesc.setMaxWidth(Double.MAX_VALUE);
+        HBox.setHgrow(lDesc, Priority.ALWAYS);
+        lValor.setMinWidth(Region.USE_PREF_SIZE);
+        lCant.setMinWidth(Region.USE_PREF_SIZE);
+
+        HBox row = new HBox(4, lDesc, lCant, lValor);
+        row.setPrefWidth(ANCHO - 20);
+        row.setMaxWidth(ANCHO - 20);
         row.setAlignment(Pos.CENTER_LEFT);
         return row;
     }
 
+    /** Fila clave-valor: "Etiqueta:"  "Valor" con espaciador flexible. */
     private HBox filaKV(String clave, String valor) {
-        Label lK = labelMono(padD(clave, 13), FS_MD, true);
+        Label lK = labelMono(clave, FS_MD, true);
         Label lV = labelMono(valor, FS_MD, false);
         lV.setStyle(lV.getStyle() + " -fx-text-fill:#222222;");
-        HBox row = new HBox(lK, lV);
+        lV.setMinWidth(Region.USE_PREF_SIZE);
+
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+
+        HBox row = new HBox(lK, spacer, lV);
+        row.setPrefWidth(ANCHO - 20);
+        row.setMaxWidth(ANCHO - 20);
         row.setAlignment(Pos.CENTER_LEFT);
         return row;
     }
 
+    /** Fila de totales: clave a la izquierda, valor a la derecha. */
     private HBox filaTotales(String clave, String valor, boolean grande) {
         double fs = grande ? FS_LG : FS_MD;
-        Label lK = labelMono(padD(clave, 24), fs, grande);
-        Label lV = labelMono(padI(valor, 15), fs, true);
-        HBox row = new HBox(lK, lV);
+        Label lK = labelMono(clave, fs, grande);
+        Label lV = labelMono(valor, fs, true);
+        lV.setAlignment(Pos.CENTER_RIGHT);
+        lV.setMinWidth(Region.USE_PREF_SIZE);
+
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+
+        HBox row = new HBox(lK, spacer, lV);
+        row.setPrefWidth(ANCHO - 20);
+        row.setMaxWidth(ANCHO - 20);
         row.setAlignment(Pos.CENTER_LEFT);
         return row;
     }
 
+    /** Badge de estado PAGADA / PENDIENTE / ANULADA centrado. */
     private Label construirBadgeEstado() {
         String estado = factura.getEstadoPago() != null
                 ? factura.getEstadoPago().name() : "PAGADA";
@@ -621,6 +732,8 @@ public class FacturaTermicaView {
         return l;
     }
 
+    // ── Builders de Label ─────────────────────────────────────────────────────
+
     private Label labelCentrado(String texto, double fs, boolean bold) {
         Label l = labelMono(texto, fs, bold);
         l.setMaxWidth(ANCHO - 20);
@@ -629,21 +742,31 @@ public class FacturaTermicaView {
         return l;
     }
 
-    private Label labelMono(String texto, double fs, boolean bold) {
-        Label l = new Label(texto);
-        l.setFont(bold
-                ? Font.font(MONO, FontWeight.BOLD, fs)
-                : Font.font(MONO, fs));
-        l.setStyle("-fx-text-fill:#000000;");
-        l.setWrapText(false);
-        return l;
-    }
-
+  private Label labelMono(String texto, double fs, boolean bold) {
+    Label l = new Label(texto);
+    l.setFont(bold
+            ? Font.font(MONO, FontWeight.BOLD, fs)
+            : Font.font(MONO, FontWeight.SEMI_BOLD, fs));
+    l.setStyle("-fx-text-fill:#000000; -fx-font-smoothing-type:gray;");
+    l.setWrapText(false);
+    return l;
+}
+    /** Separador de línea completa con el carácter dado. */
     private Label sep(char c) {
         String linea = String.valueOf(c).repeat(COLS);
         Label l = new Label(linea);
         l.setFont(Font.font(MONO, FS_SM));
         l.setStyle("-fx-text-fill:#000000;");
+        l.setPadding(new Insets(1, 0, 1, 0));
+        return l;
+    }
+
+    /** Separador principal (reemplaza '═') con guiones en gris claro. */
+    private Label sepLinea() {
+        String linea = "-".repeat(COLS);
+        Label l = new Label(linea);
+        l.setFont(Font.font(MONO, FS_SM));
+        l.setStyle("-fx-text-fill:#CBD5E1;");
         l.setPadding(new Insets(1, 0, 1, 0));
         return l;
     }
@@ -655,47 +778,22 @@ public class FacturaTermicaView {
         return r;
     }
 
-    private Button botonAccion(String texto, String fg, String bg) {
-        Button b = new Button(texto);
-        b.setStyle(
-            "-fx-background-color:" + bg + ";" +
-            "-fx-text-fill:" + fg + ";" +
-            "-fx-font-size:12px; -fx-font-weight:bold;" +
-            "-fx-background-radius:8px; -fx-padding:8px 14px;" +
-            "-fx-cursor:hand; -fx-border-color:" + fg + ";" +
-            "-fx-border-width:1.5px; -fx-border-radius:8px;");
-        return b;
-    }
-
     private void agregar(VBox parent, javafx.scene.Node node) {
         parent.getChildren().add(node);
     }
 
-    private String padD(String s, int n) {
-        if (s == null) s = "";
-        return s.length() >= n ? s.substring(0, n) : s + " ".repeat(n - s.length());
-    }
-
-    private String padI(String s, int n) {
-        if (s == null) s = "";
-        return s.length() >= n ? s.substring(0, n) : " ".repeat(n - s.length()) + s;
-    }
-
-    private String padC(String s, int n) {
-        if (s == null) s = "";
-        if (s.length() >= n) return s.substring(0, n);
-        int left = (n - s.length()) / 2;
-        return " ".repeat(left) + s + " ".repeat(n - s.length() - left);
-    }
-
+    /** Corta el String si excede maxLen, añadiendo punto al final. */
     private String acortar(String s, int maxLen) {
         if (s == null) return "";
         return s.length() > maxLen ? s.substring(0, maxLen - 1) + "." : s;
     }
 
+    /** Formatea un double como moneda colombiana: $1,234,567. */
     private String fmt(double valor) {
         return String.format("$%,.0f", valor);
     }
+
+    // ── Cálculos ──────────────────────────────────────────────────────────────
 
     private String numeroFactura() {
         return String.format("FE-%d-%06d", LocalDate.now().getYear(), factura.getId());
@@ -707,6 +805,7 @@ public class FacturaTermicaView {
         return n > 0 ? n : 1;
     }
 
+    /** Usa el PDF de factura estándar ya existente (formato A4). */
     private void generarPdfExistente() {
         new Thread(() -> {
             try {
@@ -720,5 +819,4 @@ public class FacturaTermicaView {
             }
         }).start();
     }
-    
 }
