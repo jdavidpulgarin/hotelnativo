@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.hotel.ui.components;
 
 import com.hotel.HotelApp;
@@ -22,9 +18,7 @@ public class NotificationUtil {
 
     public enum Tipo { EXITO, ERROR, ADVERTENCIA, INFO }
 
-    private NotificationUtil() {}
-    
-     /**
+    /**
      * Muestra una notificación toast.
      *
      * @param mensaje texto a mostrar
@@ -86,17 +80,15 @@ public class NotificationUtil {
         );
 
         popup.getContent().add(contenedor);
-    }
-    
-    // Posición: esquina inferior derecha
-        // Usé estos valores después de varias pruebas manuales
+
+        // Posición: esquina inferior derecha
         double x = HotelApp.getPrimaryStage().getX()
                  + HotelApp.getPrimaryStage().getWidth() - 400;
         double y = HotelApp.getPrimaryStage().getY()
                  + HotelApp.getPrimaryStage().getHeight() - 80;
 
         popup.show(HotelApp.getPrimaryStage(), x, y);
-        
+
         // Animación entrada
         contenedor.setOpacity(0);
         contenedor.setTranslateY(20);
