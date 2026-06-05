@@ -112,4 +112,13 @@ public class FacturaService {
 
         return facturaDAO.insertar(nuevaFactura);
     }
+
+    /**
+     * Sobrecarga de compatibilidad. Genera factura sin detalles de pago (útil
+     * para llamadas internas o migraciones de datos existentes).
+     */
+    public Factura generarFactura(int idReserva, Factura.MetodoPago metodoPago)
+            throws ExcepcionNegocio {
+        return generarFactura(idReserva, metodoPago, 0, null, 1, null);
+    }
 }
