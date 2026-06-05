@@ -187,4 +187,58 @@ public class GeminiApiService {
             }
         }
     }
+
+    // ── Parseo de la respuesta ────────────────────────────────────────────────
+    /**
+     * Extrae el campo text del JSON de Gemini sin dependencias externas.
+     * Estructura esperada: candidates[0].content.parts[0].text
+     */
+    private String extraerTexto(String json) {
+        int idx = json.indexOf("\"text\":");
+        if (idx < 0) {
+            throw new RuntimeException("Respuesta inesperada de Gemini: " + json);
+        }
+
+        int inicio = json.indexOf('"', idx + 7) + 1;
+        StringBuilder sb = new StringBuilder();
+        int i = inicio;
+        while (i < json.length()) {
+            char c = json.charAt(i);
+            if (c == '"' && (i == 0 || json.charAt(i - 1) != '\\')) {
+                break;
+            }
+            if (c == '\\' && i + 1 < json.length()) {
+                char next = json.charAt(i + 1);
+                switch (next) {
+                    case 'n' -> {
+                        sb.append('\n');
+                        i += 2;
+                        continue;
+                    }
+                    case 't' -> {
+                        sb.append('\t');
+                        i += 2;
+                        continue;
+                    }
+                    case '"' -> {
+                        sb.append('"');
+                        i += 2;
+                        continue;
+                    }
+                    case '\\' -> {
+                        sb.append('\\');
+                        i += 2;
+                        continue;
+                    }
+                    case 'r' -> {
+                        i += 2;
+                        continue;
+                    } // ignorar \r
+                }
+            }
+            sb.append(c);
+            i++;
+        }
+        return sb.toString().trim();
+    }
 }
