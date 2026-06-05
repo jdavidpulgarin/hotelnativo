@@ -63,4 +63,26 @@ public class ReservaService {
         this.clienteDAO = clienteDAO;
         this.emailService = emailService;
     }
-}
+
+    /**
+     * Crea una nueva reserva en estado PENDIENTE aplicando todas las reglas de
+     * negocio.
+     *
+     * CORRECCIÓN BUG #5: La reserva ya NO se confirma automáticamente. Nace en
+     * estado PENDIENTE y debe confirmarse con confirmarReserva(id). Esto
+     * permite el flujo correcto: PENDIENTE → CONFIRMADA → EN_PROCESO →
+     * COMPLETADA.
+     *
+     * @param dto datos de la reserva solicitada
+     * @return reserva creada y persistida en estado PENDIENTE
+     * @throws ExcepcionNegocio si alguna regla de negocio no se cumple
+     */
+    public Reserva crearReserva(ReservaDTO dto) throws ExcepcionNegocio {
+        validarDatosReserva(dto);
+
+        Cliente cliente = obtenerClienteOLanzarError(dto.getIdCliente());
+        Habitacion habitacion = obtenerHabitacionOLanzarError(dto.getNumeroHabitacion());
+
+        verificarDisponibilidadHabitacion(habitacion, dto.getFechaEntrada(), dto.getFechaSalida());
+        verificarCapacidadSuficiente(habitacion, dto.getNumPersonas());
+    }
