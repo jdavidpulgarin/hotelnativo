@@ -174,4 +174,17 @@ public class GeminiApiService {
                 + "indica los pasos a seguir en el sistema.\n"
                 + "Tu nombre es Nova. Si te preguntan quién eres, dilo con orgullo.";
     }
+
+    // ── Gestión del historial ─────────────────────────────────────────────────
+    private void recortarHistorial() {
+        // Cada turno completo = 2 elementos (usuario + modelo)
+        int maxElementos = MAX_TURNOS_HISTORIAL * 2;
+        while (historial.size() > maxElementos) {
+            // Eliminar el par más antiguo (índices 0 y 1)
+            historial.remove(0);
+            if (!historial.isEmpty()) {
+                historial.remove(0);
+            }
+        }
+    }
 }
