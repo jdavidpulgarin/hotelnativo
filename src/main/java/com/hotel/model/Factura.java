@@ -63,4 +63,34 @@ public class Factura {
         this.estadoPago   = EstadoPago.PENDIENTE;
     }
      public boolean estaPagada() { return EstadoPago.PAGADA.equals(estadoPago); }
+     
+     public int getId()                          { return id; }
+    public void setId(int id)                   { this.id = id; }
+
+    public Reserva getReserva()                 { return reserva; }
+    public void setReserva(Reserva reserva)     { this.reserva = reserva; }
+
+    public Cliente getCliente()                 { return cliente; }
+    public void setCliente(Cliente cliente)     { this.cliente = cliente; }
+
+    public LocalDate getFechaEmision()          { return fechaEmision; }
+    public void setFechaEmision(LocalDate f)    { this.fechaEmision = f; }
+
+    public double getSubtotal()                 { return subtotal; }
+    public void setSubtotal(double subtotal)    { this.subtotal = subtotal; }
+
+    public double getImpuestos()                { return impuestos; }
+    public void setImpuestos(double impuestos)  { this.impuestos = impuestos; }
+
+    public double getTotal()                    { return total; }
+    public void setTotal(double total)          { this.total = total; }
+
+    public double getTasaIva()                  { return tasaIva; }
+    public void setTasaIva(double tasaIva)      { this.tasaIva = tasaIva; }
+
+    public EstadoPago getEstadoPago()           { return estadoPago; }
+    public void setEstadoPago(EstadoPago e)     { this.estadoPago = e; }
+
+    public MetodoPago getMetodoPago()           { return metodoPago; }
+    public void setMetodoPago(MetodoPago m)     { this.metodoPago = m; }
 }
