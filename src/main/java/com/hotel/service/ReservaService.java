@@ -196,4 +196,104 @@ public class ReservaService {
         return reservaBusqueda.buscarReservasActivasPorCliente(idCliente);
     }
 
+    // ── Métodos privados de apoyo ─────────────────────────────────────────────
+    private void validarDatosReserva(ReservaDTO dto) throws ExcepcionValidacion {
+        ValidadorEntradas.validarIdPositivo(dto.getIdCliente(), "cliente");
+        ValidadorEntradas.validarCampoRequerido(dto.getNumeroHabitacion(), "habitación");
+        ValidadorEntradas.validarRangoFechas(dto.getFechaEntrada(), dto.getFechaSalida());
+
+        if (dto.getNumPersonas() <= 0) {
+            throw new ExcepcionValidacion("numPersonas",
+                    "El número de personas debe ser mayor a cero.");
+        }
+        long diasReserva = dto.getFechaEntrada().until(dto.getFechaSalida()).getDays();
+        if (diasReserva > Constantes.DIAS_MAXIMOS_RESERVA) {
+            throw new ExcepcionValidacion("fechas",
+                    "La reserva no puede superar " + Constantes.DIAS_MAXIMOS_RESERVA + " días.");
+        }
+    }
+
+    private void verificarDisponibilidadHabitacion(Habitacion habitacion,
+            LocalDate fechaEntrada,
+            LocalDate fechaSalida)
+            throws HabitacionNoDisponibleException {
+        if (!habitacion.estaDisponible()) {
+            throw new HabitacionNoDisponibleException(habitacion.getNumero());
+        }
+        boolean existenReservasSolapadas = !reservaBusqueda
+                .buscarReservasSolapadas(habitacion.getNumero(), fechaEntrada, fechaSalida)
+                .isEmpty();
+        if (existenReservasSolapadas) {
+            throw new HabitacionNoDisponibleException(habitacion.getNumero());
+        }
+    }
+
+    private void verificarCapacidadSuficiente(Habitacion habitacion, int numPersonas)
+            throws ExcepcionNegocio {
+        int capacidadMaxima = habitacion.getTipoHabitacion().getCapacidadMaxima();
+        if (numPersonas > capacidadMaxima) {
+            throw new ExcepcionNegocio("CAPACIDAD_EXCEDIDA",
+                    "La habitación " + habitacion.getNumero() + " tiene capacidad máxima de "
+                    + capacidadMaxima + " personas. Solicitado: " + numPersonas);
+        }
+    }
+
+    private void verificarQueReservaEsCancelable(Reserva reserva) throws ExcepcionNegocio {
+        if (Reserva.EstadoReserva.COMPLETADA.equals(reserva.getEstado())) {
+            throw new ExcepcionNegocio("CANCELACION_NO_PERMITIDA",
+                    "No se puede cancelar una reserva ya completada.");
+        }
+        if (Reserva.EstadoReserva.CANCELADA.equals(reserva.getEstado())) {
+            throw new ExcepcionNegocio("CANCELACION_NO_PERMITIDA",
+                    "La reserva ya se encuentra cancelada.");
+        }
+    }
+
+    private Descuento resolverDescuento(Cliente cliente) {
+        if (cliente.isEsVip()) {
+            return new DescuentoVip();
+        }
+        return new SinDescuento();
+    }
+
+    private double calcularPrecioTotal(Habitacion habitacion, ReservaDTO dto,
+            Descuento descuento) {
+        long totalDias = dto.getFechaEntrada().until(dto.getFechaSalida()).getDays();
+        double precioBase = habitacion.calcularPrecioFinal() * totalDias;
+        double montoDescuento = descuento.calcularDescuento(precioBase);
+        return precioBase - montoDescuento;
+    }
+
+    /**
+     * CORRECCIÓN BUG #5: El estado inicial es PENDIENTE, NO CONFIRMADA. Se
+     * eliminó la llamada a reserva.confirmar() que existía aquí.
+     */
+    private Reserva construirReserva(Cliente cliente, Habitacion habitacion,
+            ReservaDTO dto, double precioTotal) {
+        Reserva reserva = new Reserva(0, cliente, habitacion,
+                dto.getFechaEntrada(), dto.getFechaSalida(), dto.getNumPersonas());
+        reserva.setPrecioTotal(precioTotal);
+        reserva.setIdCanal(dto.getIdCanal());
+        // Estado inicial: PENDIENTE (definido por defecto en el constructor de Reserva)
+        // NO se llama reserva.confirmar() aquí → BUG #5 corregido
+        return reserva;
+    }
+
+    private Cliente obtenerClienteOLanzarError(int idCliente) throws ExcepcionNegocio {
+        return clienteDAO.buscarPorId(idCliente)
+                .orElseThrow(() -> new ExcepcionNegocio("CLIENTE_NOT_FOUND",
+                "Cliente con ID " + idCliente + " no encontrado."));
+    }
+
+    private Habitacion obtenerHabitacionOLanzarError(String numero) throws ExcepcionNegocio {
+        return habitacionDAO.buscarPorNumero(numero)
+                .orElseThrow(() -> new ExcepcionNegocio("HABITACION_NOT_FOUND",
+                "Habitación número " + numero + " no encontrada."));
+    }
+
+    private Reserva obtenerReservaOLanzarError(int idReserva) throws ExcepcionNegocio {
+        return reservaDAO.buscarPorId(idReserva)
+                .orElseThrow(() -> new ExcepcionReservaNoEncontrada(idReserva));
+    }
+
 }
