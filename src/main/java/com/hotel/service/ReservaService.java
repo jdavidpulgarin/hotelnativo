@@ -51,4 +51,16 @@ public class ReservaService {
     private final IHabitacionDAO habitacionDAO;
     private final IClienteDAO clienteDAO;
     private final EmailService emailService;
+
+    public ReservaService(IReservaDAO reservaDAO,
+            IReservaBusqueda reservaBusqueda,
+            IHabitacionDAO habitacionDAO,
+            IClienteDAO clienteDAO,
+            EmailService emailService) {
+        this.reservaDAO = reservaDAO;
+        this.reservaBusqueda = reservaBusqueda;
+        this.habitacionDAO = habitacionDAO;
+        this.clienteDAO = clienteDAO;
+        this.emailService = emailService;
+    }
 }
