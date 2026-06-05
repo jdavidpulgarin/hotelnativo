@@ -3,6 +3,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 package com.hotel.service;
+
 import com.hotel.dao.interfaces.*;
 import com.hotel.dto.BusquedaDisponibilidadDTO;
 import com.hotel.dto.ReservaDTO;
@@ -17,6 +18,7 @@ import com.hotel.util.ValidadorEntradas;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+
 /**
  *
  * @author Pulgarin
@@ -43,4 +45,10 @@ import java.util.Optional;
  * DAO, no de implementaciones concretas.
  */
 public class ReservaService {
+
+    private final IReservaDAO reservaDAO;
+    private final IReservaBusqueda reservaBusqueda;
+    private final IHabitacionDAO habitacionDAO;
+    private final IClienteDAO clienteDAO;
+    private final EmailService emailService;
 }
