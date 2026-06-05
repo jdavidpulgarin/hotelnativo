@@ -241,4 +241,15 @@ public class GeminiApiService {
         }
         return sb.toString().trim();
     }
+
+    /**
+     * Serializa un String Java como literal JSON.
+     */
+    private String encodeJson(String s) {
+        return "\"" + s.replace("\\", "\\\\")
+                .replace("\"", "\\\"")
+                .replace("\n", "\\n")
+                .replace("\r", "")
+                .replace("\t", "  ") + "\"";
+    }
 }
