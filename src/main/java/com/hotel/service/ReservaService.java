@@ -159,4 +159,20 @@ public class ReservaService {
         reserva.cancelar();
         reservaDAO.actualizar(reserva);
 
+        // Liberar habitación si estaba OCUPADA o RESERVADA (confirmada pero sin checkin)
+        Habitacion habitacion = reserva.getHabitacion();
+        Habitacion.EstadoHabitacion estadoHab = habitacion != null ? habitacion.getEstado() : null;
+        boolean debeLiberar = Habitacion.EstadoHabitacion.OCUPADA.equals(estadoHab)
+                || Habitacion.EstadoHabitacion.RESERVADA.equals(estadoHab);
+        if (debeLiberar) {
+            habitacion.liberar();
+            habitacionDAO.actualizarEstado(habitacion.getNumero(),
+                    Habitacion.EstadoHabitacion.DISPONIBLE.name());
+            System.out.println("[RESERVA] Habitación " + habitacion.getNumero()
+                    + " liberada al cancelar la reserva.");
+        }
+
+        emailService.notificarCancelacionReserva(reserva.getCliente(), reserva);
     }
+
+}
