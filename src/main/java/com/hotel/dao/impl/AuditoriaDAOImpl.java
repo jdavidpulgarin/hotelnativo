@@ -22,7 +22,7 @@ public class AuditoriaDAOImpl extends BaseDAO implements IAuditoriaDAO {
     private static final String SQL_INSERT =
             "INSERT INTO AUDITORIA (id_auditoria, id_empleado, accion, entidad, id_entidad, detalles) " +
             "VALUES (?, ?, ?, ?, ?, ?)";
-}
+
 @Override
     public void insertar(Auditoria auditoria) {
         enTransaccion(conn -> {
