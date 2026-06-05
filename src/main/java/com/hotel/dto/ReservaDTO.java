@@ -1,77 +1,48 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
-package main.java.com.hotel.dto;
+package com.hotel.dto;
 
 import java.time.LocalDate;
-/**
- *
- * @author Pulgarin
- */
 
 /**
  * DTO para crear una nueva reserva.
  * Transporta solo los datos necesarios desde la vista al servicio.
  */
 public class ReservaDTO {
-    private int idCliente;
-    private int idHabitacion;
+
+    private int    idCliente;
+    private String numeroHabitacion;
     private LocalDate fechaEntrada;
     private LocalDate fechaSalida;
-    private int numPersonas;
+    private int    numPersonas;
+    private String idCanal;
 
-    public ReservaDTO() {
+    public ReservaDTO() {}
+
+    public ReservaDTO(int idCliente, String numeroHabitacion,
+                      LocalDate fechaEntrada, LocalDate fechaSalida,
+                      int numPersonas, String idCanal) {
+        this.idCliente        = idCliente;
+        this.numeroHabitacion = numeroHabitacion;
+        this.fechaEntrada     = fechaEntrada;
+        this.fechaSalida      = fechaSalida;
+        this.numPersonas      = numPersonas;
+        this.idCanal          = idCanal;
     }
 
-    public ReservaDTO(int idCliente, int idHabitacion, LocalDate fechaEntrada, LocalDate fechaSalida, int numPersonas) {
-        this.idCliente = idCliente;
-        this.idHabitacion = idHabitacion;
-        this.fechaEntrada = fechaEntrada;
-        this.fechaSalida = fechaSalida;
-        this.numPersonas = numPersonas;
-    }
+    public int getIdCliente() { return idCliente; }
+    public void setIdCliente(int idCliente) { this.idCliente = idCliente; }
 
-    public int getIdCliente() {
-        return idCliente;
-    }
+    public String getNumeroHabitacion() { return numeroHabitacion; }
+    public void setNumeroHabitacion(String numeroHabitacion) { this.numeroHabitacion = numeroHabitacion; }
 
-    public int getIdHabitacion() {
-        return idHabitacion;
-    }
+    public LocalDate getFechaEntrada() { return fechaEntrada; }
+    public void setFechaEntrada(LocalDate fechaEntrada) { this.fechaEntrada = fechaEntrada; }
 
-    public LocalDate getFechaEntrada() {
-        return fechaEntrada;
-    }
+    public LocalDate getFechaSalida() { return fechaSalida; }
+    public void setFechaSalida(LocalDate fechaSalida) { this.fechaSalida = fechaSalida; }
 
-    public LocalDate getFechaSalida() {
-        return fechaSalida;
-    }
+    public int getNumPersonas() { return numPersonas; }
+    public void setNumPersonas(int numPersonas) { this.numPersonas = numPersonas; }
 
-    public int getNumPersonas() {
-        return numPersonas;
-    }
-
-    public void setIdCliente(int idCliente) {
-        this.idCliente = idCliente;
-    }
-
-    public void setIdHabitacion(int idHabitacion) {
-        this.idHabitacion = idHabitacion;
-    }
-
-    public void setFechaEntrada(LocalDate fechaEntrada) {
-        this.fechaEntrada = fechaEntrada;
-    }
-
-    public void setFechaSalida(LocalDate fechaSalida) {
-        this.fechaSalida = fechaSalida;
-    }
-
-    public void setNumPersonas(int numPersonas) {
-        this.numPersonas = numPersonas;
-    }
-    
-    
-    
+    public String getIdCanal() { return idCanal; }
+    public void setIdCanal(String idCanal) { this.idCanal = idCanal; }
 }
