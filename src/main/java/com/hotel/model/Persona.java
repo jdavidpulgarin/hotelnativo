@@ -5,13 +5,7 @@ package com.hotel.model;
  *
  * @author rober
  */
-package com.hotel.model;
 
-/**
- * Clase abstracta base para entidades con identidad personal.
- * SOLID: L - Liskov Substitution Principle (subclases son sustituibles)
- * GRASP: Generalización para reducir duplicación en Cliente y Empleado
- */
 public abstract class Persona {
 
     private int id;
