@@ -48,4 +48,12 @@ public class GeminiApiService {
                 .connectTimeout(Duration.ofSeconds(15))
                 .build();
     }
+    
+        /**
+     * true si la clave está configurada y no es el placeholder.
+     */
+    public boolean estaConfigurado() {
+        return !apiKey.isBlank()
+                && !apiKey.equalsIgnoreCase("TU_API_KEY_AQUI");
+    }
 }
