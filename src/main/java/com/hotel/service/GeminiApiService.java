@@ -116,4 +116,14 @@ public class GeminiApiService {
     public int cantidadTurnos() {
         return historial.size();
     }
+
+    private String construirMensajeUsuario(String contexto, String pregunta) {
+        if (contexto != null && !contexto.isBlank()) {
+            return "=== DATOS DEL SISTEMA (información real de la BD) ===\n"
+                    + contexto
+                    + "\n=== FIN DATOS ===\n\n"
+                    + pregunta;
+        }
+        return pregunta;
+    }
 }
