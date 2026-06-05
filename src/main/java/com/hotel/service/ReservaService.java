@@ -85,4 +85,15 @@ public class ReservaService {
 
         verificarDisponibilidadHabitacion(habitacion, dto.getFechaEntrada(), dto.getFechaSalida());
         verificarCapacidadSuficiente(habitacion, dto.getNumPersonas());
+
+        Descuento descuentoAplicable = resolverDescuento(cliente);
+        double precioTotal = calcularPrecioTotal(habitacion, dto, descuentoAplicable);
+
+        // CORRECCIÓN BUG #5: construirReserva ya NO llama confirmar()
+        Reserva nuevaReserva = construirReserva(cliente, habitacion, dto, precioTotal);
+        Reserva reservaGuardada = reservaDAO.insertar(nuevaReserva);
+
+        System.out.println("[RESERVA] Reserva #" + reservaGuardada.getId() + " creada (PENDIENTE).");
+        return reservaGuardada;
     }
+}
