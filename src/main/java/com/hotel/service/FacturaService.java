@@ -28,4 +28,88 @@ public class FacturaService {
         this.facturaDAO = facturaDAO;
         this.reservaDAO = reservaDAO;
     }
+
+    /**
+     * Genera la factura con detalles completos del pago.
+     */
+    public Factura generarFactura(int idReserva, Factura.MetodoPago metodoPago,
+            double montoRecibido, String franquicia, int numCuotas, String referencia)
+            throws ExcepcionNegocio {
+
+        ValidadorEntradas.validarIdPositivo(idReserva, "reserva");
+
+        Reserva reserva = obtenerReservaCompletadaOLanzarError(idReserva);
+
+        // v2: prc_checkout crea la factura PENDIENTE automaticamente.
+        // Si ya existe una factura pendiente, registrar el pago en lugar de crear una nueva.
+        java.util.Optional<Factura> facturaExistente = facturaDAO.buscarPorReserva(idReserva);
+        if (facturaExistente.isPresent()) {
+            Factura f = facturaExistente.get();
+            if (f.getEstadoPago() == Factura.EstadoPago.PAGADA) {
+                throw new ExcepcionNegocio("FACTURA_YA_PAGADA",
+                        "La factura de la reserva ya fue pagada.");
+            }
+            // Registrar pago: cambiar estado a PAGADA y fijar método
+            f.setEstadoPago(Factura.EstadoPago.PAGADA);
+            f.setMetodoPago(metodoPago);
+            facturaDAO.actualizar(f);
+            // Aplicar detalles transient para el ticket termico
+            if (montoRecibido > 0) {
+                if (montoRecibido < f.getTotal()) {
+                    throw new ExcepcionNegocio("PAGO_INSUFICIENTE",
+                            String.format("Monto insuficiente. Recibido: $%,.0f  —  Total: $%,.0f",
+                                    montoRecibido, f.getTotal()));
+                }
+                f.setMontoRecibido(montoRecibido);
+                f.setCambio(Math.max(Math.round((montoRecibido - f.getTotal()) * 100.0) / 100.0, 0));
+            }
+            if (franquicia != null && !franquicia.isBlank()) {
+                f.setFranquiciaTarjeta(franquicia);
+            }
+            if (metodoPago == Factura.MetodoPago.TARJETA_CREDITO && numCuotas > 1) {
+                f.setNumCuotas(numCuotas);
+            }
+            if (referencia != null && !referencia.isBlank()) {
+                f.setReferenciaTransferencia(referencia);
+            }
+            return f;
+        }
+
+        // Si no existe factura previa (flujo legacy), crearla
+        verificarQueNoTieneFactura(idReserva);
+        Factura nuevaFactura = new Factura(0, reserva, reserva.getCliente(),
+                LocalDate.now(), reserva.getPrecioTotal(), Constantes.TASA_IVA);
+        nuevaFactura.setMetodoPago(metodoPago);
+        nuevaFactura.setEstadoPago(Factura.EstadoPago.PAGADA);
+
+        // ── Validar y registrar detalles según método ─────────────────────────
+        if (metodoPago == Factura.MetodoPago.EFECTIVO) {
+            if (montoRecibido > 0 && montoRecibido < nuevaFactura.getTotal()) {
+                throw new ExcepcionNegocio("PAGO_INSUFICIENTE",
+                        String.format("Monto insuficiente. Recibido: $%,.0f  —  Total: $%,.0f",
+                                montoRecibido, nuevaFactura.getTotal()));
+            }
+            nuevaFactura.setMontoRecibido(montoRecibido);
+            // Redondeo a 2 decimales para evitar errores de punto flotante
+            double cambio = Math.round((montoRecibido - nuevaFactura.getTotal()) * 100.0) / 100.0;
+            nuevaFactura.setCambio(Math.max(cambio, 0));
+        }
+
+        if ((metodoPago == Factura.MetodoPago.TARJETA_CREDITO
+                || metodoPago == Factura.MetodoPago.TARJETA_DEBITO)
+                && franquicia != null && !franquicia.isBlank()) {
+            nuevaFactura.setFranquiciaTarjeta(franquicia);
+        }
+
+        if (metodoPago == Factura.MetodoPago.TARJETA_CREDITO && numCuotas > 1) {
+            nuevaFactura.setNumCuotas(numCuotas);
+        }
+
+        if (metodoPago == Factura.MetodoPago.TRANSFERENCIA
+                && referencia != null && !referencia.isBlank()) {
+            nuevaFactura.setReferenciaTransferencia(referencia);
+        }
+
+        return facturaDAO.insertar(nuevaFactura);
+    }
 }
