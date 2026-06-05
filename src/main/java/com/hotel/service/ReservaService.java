@@ -96,4 +96,25 @@ public class ReservaService {
         System.out.println("[RESERVA] Reserva #" + reservaGuardada.getId() + " creada (PENDIENTE).");
         return reservaGuardada;
     }
-}
+
+    /**
+     * Confirma una reserva en estado PENDIENTE y envía email de confirmación.
+     *
+     * CORRECCIÓN BUG #5: Este es el paso correcto para confirmar. Se eliminó la
+     * auto-confirmación del constructor para que este método tenga razón de
+     * existir.
+     *
+     * @throws ExcepcionNegocio si la reserva no está en estado PENDIENTE
+     */
+    public void confirmarReserva(int idReserva) throws ExcepcionNegocio {
+        Reserva reserva = obtenerReservaOLanzarError(idReserva);
+
+        if (!Reserva.EstadoReserva.PENDIENTE.equals(reserva.getEstado())) {
+            throw new ExcepcionNegocio("ESTADO_INVALIDO",
+                    "Solo se pueden confirmar reservas en estado PENDIENTE. "
+                    + "Estado actual: " + reserva.getEstado());
+        }
+
+        reserva.confirmar();
+        reservaDAO.actualizar(reserva);
+    }
