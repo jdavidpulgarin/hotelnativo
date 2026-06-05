@@ -1,15 +1,8 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
-package main.java.com.hotel.service;
+package com.hotel.service;
 
 import com.hotel.dao.interfaces.IAuditoriaDAO;
 import com.hotel.model.Auditoria;
-/**
- *
- * @author Pulgarin
- */
+
 /**
  * Servicio de registro de eventos de auditoría.
  *
@@ -28,8 +21,8 @@ public class AuditoriaService {
     public AuditoriaService(IAuditoriaDAO auditoriaDAO) {
         this.auditoriaDAO = auditoriaDAO;
     }
-    
-        /**
+
+    /**
      * Registra un evento de auditoría de forma silenciosa.
      * Si la inserción falla, el error se imprime en stderr pero
      * NO se propaga al llamador para no interrumpir operaciones de negocio.
@@ -52,3 +45,4 @@ public class AuditoriaService {
         }
     }
 }
+

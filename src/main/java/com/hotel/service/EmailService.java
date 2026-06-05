@@ -1,8 +1,6 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.hotel.service;
+
+import com.hotel.model.*;
 
 import jakarta.mail.*;
 import jakarta.mail.internet.InternetAddress;
@@ -13,10 +11,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
-/**
- *
- * @author Pulgarin
- */
 /**
  * Servicio de notificaciones por correo electrónico. Usa Jakarta Mail
  * (angus-mail) con SMTP (Gmail por defecto).
@@ -130,6 +124,23 @@ public class EmailService {
                 "Nueva solicitud de mantenimiento #" + idMantenimiento
                 + " - Hab. " + habitacion.getNumero(),
                 cuerpo, null);
+    }
+
+    // ── Recuperación de contraseña ────────────────────────────────────────────
+    /**
+     * Envía el correo de recuperación de contraseña con el código
+     * proporcionado.
+     *
+     * @param emailDestino dirección del empleado que solicitó el reset
+     * @param codigoRecuperacion código/token visible que el usuario debe
+     * ingresar en el sistema
+     * @return true si el envío fue exitoso, false en modo simulado o ante
+     * cualquier error SMTP
+     */
+    public boolean enviarCorreoRecuperacion(String emailDestino, String codigoRecuperacion) {
+        String asunto = "Recuperación de contraseña — Hotel Nativo";
+        String cuerpo = construirCuerpoRecuperacion(codigoRecuperacion);
+        return enviarEmail(emailDestino, asunto, cuerpo, null);
     }
 
     public void notificarMantenimientoCompletado(Mantenimiento mantenimiento) {
@@ -260,11 +271,33 @@ public class EmailService {
         return sb.toString();
     }
 
+    private String construirCuerpoRecuperacion(String codigo) {
+        return "══════════════════════════════════════════\n"
+                + "        HOTEL NATIVO — SISTEMA INTERNO\n"
+                + "        Recuperación de contraseña\n"
+                + "══════════════════════════════════════════\n\n"
+                + "Hemos recibido una solicitud para restablecer\n"
+                + "la contraseña de esta cuenta de empleado.\n\n"
+                + "──────────────────────────────────────────\n"
+                + "  CÓDIGO DE RECUPERACIÓN:\n\n"
+                + "  " + codigo + "\n\n"
+                + "──────────────────────────────────────────\n\n"
+                + "  IMPORTANTE:\n"
+                + "  • Este código expira en 30 minutos.\n"
+                + "  • Ingrésalo en la ventana de recuperación\n"
+                + "    del sistema para continuar.\n"
+                + "  • Si no solicitaste este restablecimiento,\n"
+                + "    ignora este correo. Tu contraseña actual\n"
+                + "    NO ha sido modificada.\n\n"
+                + "══════════════════════════════════════════\n"
+                + "Hotel Nativo · recepcion@hotelnativo.com\n"
+                + "══════════════════════════════════════════\n";
+    }
+
     /**
      * Indica si el SMTP está configurado con credenciales reales.
      */
     public boolean isConfigurado() {
         return configurado;
     }
-
 }

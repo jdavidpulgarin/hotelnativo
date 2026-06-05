@@ -1,8 +1,4 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
-package main.java.com.hotel.service;
+package com.hotel.service;
 
 import com.hotel.exception.ExcepcionValidacion;
 import com.hotel.model.Empleado;
@@ -14,10 +10,6 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
- *
- * @author Pulgarin
- */
 /**
  * Servicio de autenticación y gestión de sesiones.
  *
@@ -38,11 +30,13 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class AuthService {
 
+    // ── Roles ──────────────────────────────────────────────────────────────────
     public static final String ROL_ADMINISTRADOR = "ADMINISTRADOR";
     public static final String ROL_RECEPCIONISTA = "RECEPCIONISTA";
     public static final String ROL_MANTENIMIENTO = "MANTENIMIENTO";
     public static final String ROL_CONTADOR = "CONTADOR";
 
+    // ── Permisos por rol ───────────────────────────────────────────────────────
     private static final Map<String, String[]> PERMISOS = new ConcurrentHashMap<>();
 
     static {
@@ -88,6 +82,12 @@ public class AuthService {
     private final Map<String, String> preAuthTokens = new ConcurrentHashMap<>();
     private static final long MINUTOS_EXPIRACION_PRE_AUTH = 15L;
 
+    // Tokens de un solo uso para el flujo de recuperación de contraseña ("olvidé mi contraseña").
+    // Clave: resetToken  →  Valor: [email normalizado, timestamp de creación separados por "|"]
+    private final Map<String, String> resetTokens = new ConcurrentHashMap<>();
+    private static final long MINUTOS_EXPIRACION_RESET = 30L;
+
+    // ── Registro de credenciales ───────────────────────────────────────────────
     public void registrarCredenciales(Empleado empleado, String contrasena) {
         if (empleado == null || contrasena == null || contrasena.isBlank()) {
             throw new IllegalArgumentException("Empleado y contraseña son requeridos.");
@@ -151,6 +151,7 @@ public class AuthService {
         return Optional.ofNullable(empleadosPorEmail.get(email.toLowerCase().trim()));
     }
 
+    // ── Login / Logout ────────────────────────────────────────────────────────
     public String login(String email, String contrasena) throws AuthException {
         String emailNorm = email.toLowerCase().trim();
 
@@ -218,126 +219,6 @@ public class AuthService {
         }
     }
 
-    private boolean verificarContrasena(String contrasenaPlana, String hashAlmacenado) {
-        if (hashAlmacenado == null) {
-            return false;
-        }
-        if (esBCrypt(hashAlmacenado)) {
-            try {
-                return BCrypt.checkpw(contrasenaPlana, hashAlmacenado);
-            } catch (Exception e) {
-                return false;
-            }
-        }
-        return hashAlmacenado.equals(hashSHA256Legacy(contrasenaPlana));
-    }
-
-    private boolean esBCrypt(String hash) {
-        return hash != null && (hash.startsWith("$2a$") || hash.startsWith("$2b$") || hash.startsWith("$2y$"));
-    }
-
-    private String hashSHA256Legacy(String contrasena) {
-        try {
-            java.security.MessageDigest md
-                    = java.security.MessageDigest.getInstance("SHA-256");
-            byte[] hash = md.digest(
-                    contrasena.getBytes(java.nio.charset.StandardCharsets.UTF_8));
-            StringBuilder hex = new StringBuilder();
-            for (byte b : hash) {
-                hex.append(String.format("%02x", b));
-            }
-            return hex.toString();
-        } catch (java.security.NoSuchAlgorithmException e) {
-            throw new RuntimeException("SHA-256 no disponible", e);
-        }
-    }
-
-    private void limpiarSesionesExpiradas() {
-        sesionesActivas.entrySet().removeIf(e -> e.getValue().estaExpirada());
-    }
-
-    private void limpiarPreAuthTokensExpirados() {
-        long ahora = System.currentTimeMillis();
-        preAuthTokens.entrySet().removeIf(e -> {
-            String[] p = e.getValue().split("\\|", 2);
-            if (p.length < 2) {
-                return true;
-            }
-            long minutos = (ahora - Long.parseLong(p[1])) / 60_000L;
-            return minutos >= MINUTOS_EXPIRACION_PRE_AUTH;
-        });
-    }
-
-    private String obtenerRol(Empleado empleado) {
-        if (empleado.getCargo() == null) {
-            return "";
-        }
-        String raw = empleado.getCargo().getNombreCargo();
-        if (raw == null) {
-            return "";
-        }
-        String nombreCargo = raw
-                .toUpperCase()
-                .replace("Á", "A").replace("É", "E").replace("Í", "I")
-                .replace("Ó", "O").replace("Ú", "U");
-        if (nombreCargo.contains("ADMIN")) {
-            return ROL_ADMINISTRADOR;
-        }
-        if (nombreCargo.contains("GEREN")) {
-            return ROL_ADMINISTRADOR;
-        }
-        if (nombreCargo.contains("DIRECTOR")) {
-            return ROL_ADMINISTRADOR;
-        }
-        if (nombreCargo.contains("CONTAD")) {
-            return ROL_CONTADOR;
-        }
-        if (nombreCargo.contains("RECEP")) {
-            return ROL_RECEPCIONISTA;
-        }
-        if (nombreCargo.contains("MANTEN")) {
-            return ROL_MANTENIMIENTO;
-        }
-        if (nombreCargo.contains("TECNICO")) {
-            return ROL_MANTENIMIENTO;
-        }
-        if (nombreCargo.contains("ELECTRI")) {
-            return ROL_MANTENIMIENTO;
-        }
-        if (nombreCargo.contains("PLOME")) {
-            return ROL_MANTENIMIENTO;
-        }
-        return nombreCargo;
-    }
-
-    /**
-     * Genera un hash BCrypt con factor de trabajo 12 (recomendado OWASP 2024).
-     */
-    private String hashContrasena(String contrasena) {
-        return BCrypt.hashpw(contrasena, BCrypt.gensalt(12));
-    }
-
-    private class SesionActiva {
-
-        final Empleado empleado;
-        final long creadaEnMs;
-
-        SesionActiva(String token, Empleado empleado) {
-            this.empleado = empleado;
-            this.creadaEnMs = System.currentTimeMillis();
-        }
-
-        /**
-         * CORRECCIÓN WARN #4: verifica si han pasado más de N minutos desde la
-         * creación.
-         */
-        boolean estaExpirada() {
-            long transcurridoMs = System.currentTimeMillis() - creadaEnMs;
-            long transcurridoMin = transcurridoMs / 60_000L;
-            return transcurridoMin >= MINUTOS_EXPIRACION_SESION;
-        }
-    }
-
     // ── Cambio de contraseña obligatorio ──────────────────────────────────────
     /**
      * Cambia la contraseña del empleado identificado por el preAuthToken. Solo
@@ -383,6 +264,100 @@ public class AuthService {
         preAuthTokens.remove(preAuthToken);
         System.out.println("[AUTH] Contraseña actualizada - ID: "
                 + (empleado != null ? empleado.getId() : "desconocido"));
+    }
+
+    // ── Recuperación de contraseña ("olvidé mi contraseña") ──────────────────
+    /**
+     * Genera un token de recuperación para el email dado y lo almacena en
+     * {@code resetTokens}. Invalida cualquier token anterior del mismo email
+     * antes de crear el nuevo.
+     *
+     * @return el resetToken generado, o {@code null} si el email no existe (sin
+     * revelar al cliente si la cuenta existe: seguridad anti-enumeración)
+     */
+    public String solicitarResetPassword(String email) {
+        if (email == null || email.isBlank()) {
+            return null;
+        }
+        String emailNorm = email.toLowerCase().trim();
+
+        // No revelar si el email existe: silenciosamente retorna null
+        if (!credenciales.containsKey(emailNorm)) {
+            return null;
+        }
+
+        limpiarResetTokensExpirados();
+
+        // Invalidar tokens anteriores del mismo email (un solo token activo por cuenta)
+        resetTokens.entrySet().removeIf(e -> {
+            String[] p = e.getValue().split("\\|", 2);
+            return p.length > 0 && emailNorm.equals(p[0]);
+        });
+
+        String resetToken = UUID.randomUUID().toString();
+        resetTokens.put(resetToken, emailNorm + "|" + System.currentTimeMillis());
+        System.out.println("[AUTH] Token de recuperación generado para: " + emailNorm);
+        return resetToken;
+    }
+
+    /**
+     * Retorna el email asociado a un resetToken activo y no expirado, o
+     * {@code null} si el token no existe o ya expiró. Elimina automáticamente
+     * el token si superó {@code MINUTOS_EXPIRACION_RESET}.
+     */
+    public String obtenerEmailDeResetToken(String resetToken) {
+        String valor = resetTokens.get(resetToken);
+        if (valor == null) {
+            return null;
+        }
+        String[] partes = valor.split("\\|", 2);
+        long creadoEn = Long.parseLong(partes[1]);
+        long minutos = (System.currentTimeMillis() - creadoEn) / 60_000L;
+        if (minutos >= MINUTOS_EXPIRACION_RESET) {
+            resetTokens.remove(resetToken);
+            return null;
+        }
+        return partes[0];
+    }
+
+    /**
+     * Ejecuta el restablecimiento de contraseña con un token válido.
+     * <ol>
+     * <li>Valida que el token exista y no haya expirado.</li>
+     * <li>Valida la política de complejidad de la nueva contraseña.</li>
+     * <li>Genera un hash BCrypt (cost=12) y actualiza las credenciales en
+     * memoria.</li>
+     * <li>Desbloquea la cuenta (intentosFallidos=0).</li>
+     * <li>Consume el token (uso único).</li>
+     * </ol>
+     *
+     * @throws AuthException si el token es inválido o ha expirado
+     * @throws ExcepcionValidacion si la nueva contraseña no cumple la política
+     * de seguridad
+     */
+    public void ejecutarResetPassword(String resetToken, String nuevaContrasena)
+            throws AuthException, ExcepcionValidacion {
+
+        String emailNorm = obtenerEmailDeResetToken(resetToken);
+        if (emailNorm == null) {
+            throw new AuthException("TOKEN_INVALIDO",
+                    "El enlace de recuperación es inválido o ha expirado. "
+                    + "Solicita uno nuevo.");
+        }
+
+        ValidadorEntradas.validarPassword(nuevaContrasena, "nueva contraseña");
+
+        String nuevoHash = hashContrasena(nuevaContrasena);
+        credenciales.put(emailNorm, nuevoHash);
+        intentosFallidos.put(emailNorm, 0);   // desbloquear cuenta
+
+        Empleado empleado = empleadosPorEmail.get(emailNorm);
+        if (empleado != null) {
+            empleado.setDebeCambiarContrasena(false);
+        }
+
+        resetTokens.remove(resetToken);       // consumir token (uso único)
+        System.out.println("[AUTH] Contraseña restablecida vía reset - email: " + emailNorm);
     }
 
     // ── Autorización ──────────────────────────────────────────────────────────
@@ -448,12 +423,154 @@ public class AuthService {
         }
         return sesion.empleado;
     }
-    
-    
+
+    private void limpiarSesionesExpiradas() {
+        sesionesActivas.entrySet().removeIf(e -> e.getValue().estaExpirada());
+    }
+
+    private void limpiarPreAuthTokensExpirados() {
+        long ahora = System.currentTimeMillis();
+        preAuthTokens.entrySet().removeIf(e -> {
+            String[] p = e.getValue().split("\\|", 2);
+            if (p.length < 2) {
+                return true;
+            }
+            long minutos = (ahora - Long.parseLong(p[1])) / 60_000L;
+            return minutos >= MINUTOS_EXPIRACION_PRE_AUTH;
+        });
+    }
+
+    private void limpiarResetTokensExpirados() {
+        long ahora = System.currentTimeMillis();
+        resetTokens.entrySet().removeIf(e -> {
+            String[] p = e.getValue().split("\\|", 2);
+            if (p.length < 2) {
+                return true;
+            }
+            long minutos = (ahora - Long.parseLong(p[1])) / 60_000L;
+            return minutos >= MINUTOS_EXPIRACION_RESET;
+        });
+    }
+
+    private String obtenerRol(Empleado empleado) {
+        if (empleado.getCargo() == null) {
+            return "";
+        }
+        String raw = empleado.getCargo().getNombreCargo();
+        if (raw == null) {
+            return "";
+        }
+        String nombreCargo = raw
+                .toUpperCase()
+                .replace("Á", "A").replace("É", "E").replace("Í", "I")
+                .replace("Ó", "O").replace("Ú", "U");
+        if (nombreCargo.contains("ADMIN")) {
+            return ROL_ADMINISTRADOR;
+        }
+        if (nombreCargo.contains("GEREN")) {
+            return ROL_ADMINISTRADOR;
+        }
+        if (nombreCargo.contains("DIRECTOR")) {
+            return ROL_ADMINISTRADOR;
+        }
+        if (nombreCargo.contains("CONTAD")) {
+            return ROL_CONTADOR;
+        }
+        if (nombreCargo.contains("RECEP")) {
+            return ROL_RECEPCIONISTA;
+        }
+        if (nombreCargo.contains("MANTEN")) {
+            return ROL_MANTENIMIENTO;
+        }
+        if (nombreCargo.contains("TECNICO")) {
+            return ROL_MANTENIMIENTO;
+        }
+        if (nombreCargo.contains("ELECTRI")) {
+            return ROL_MANTENIMIENTO;
+        }
+        if (nombreCargo.contains("PLOME")) {
+            return ROL_MANTENIMIENTO;
+        }
+        return nombreCargo;
+    }
+
+    /**
+     * Genera un hash BCrypt con factor de trabajo 12 (recomendado OWASP 2024).
+     */
+    private String hashContrasena(String contrasena) {
+        return BCrypt.hashpw(contrasena, BCrypt.gensalt(12));
+    }
+
+    /**
+     * Verifica una contraseña en texto plano contra su hash almacenado. Soporta
+     * BCrypt (hashes que empiezan con "$2") y SHA-256 legacy para permitir la
+     * migración gradual sin cortar el acceso a nadie.
+     */
+    private boolean verificarContrasena(String contrasenaPlana, String hashAlmacenado) {
+        if (hashAlmacenado == null) {
+            return false;
+        }
+        if (esBCrypt(hashAlmacenado)) {
+            try {
+                return BCrypt.checkpw(contrasenaPlana, hashAlmacenado);
+            } catch (Exception e) {
+                return false;
+            }
+        }
+        // Hash legacy SHA-256
+        return hashAlmacenado.equals(hashSHA256Legacy(contrasenaPlana));
+    }
+
+    private boolean esBCrypt(String hash) {
+        return hash != null && (hash.startsWith("$2a$") || hash.startsWith("$2b$") || hash.startsWith("$2y$"));
+    }
+
+    /**
+     * Hash SHA-256 mantenido únicamente para verificar cuentas no migradas. No
+     * usar para contraseñas nuevas. Se eliminará en una versión futura.
+     */
+    private String hashSHA256Legacy(String contrasena) {
+        try {
+            java.security.MessageDigest md
+                    = java.security.MessageDigest.getInstance("SHA-256");
+            byte[] hash = md.digest(
+                    contrasena.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            StringBuilder hex = new StringBuilder();
+            for (byte b : hash) {
+                hex.append(String.format("%02x", b));
+            }
+            return hex.toString();
+        } catch (java.security.NoSuchAlgorithmException e) {
+            throw new RuntimeException("SHA-256 no disponible", e);
+        }
+    }
+
+    // ── Clases internas ───────────────────────────────────────────────────────
+    private class SesionActiva {
+
+        final Empleado empleado;
+        final long creadaEnMs;
+
+        SesionActiva(String token, Empleado empleado) {
+            this.empleado = empleado;
+            this.creadaEnMs = System.currentTimeMillis();
+        }
+
         /**
-     * Excepción de autenticación/autorización.
-     * Incluye un {@code preAuthToken} opcional que se emite únicamente
-     * cuando el código es "CAMBIO_PASSWORD_REQUERIDO".
+         * CORRECCIÓN WARN #4: verifica si han pasado más de N minutos desde la
+         * creación.
+         */
+        boolean estaExpirada() {
+            long transcurridoMs = System.currentTimeMillis() - creadaEnMs;
+            long transcurridoMin = transcurridoMs / 60_000L;
+            return transcurridoMin >= MINUTOS_EXPIRACION_SESION;
+        }
+    }
+
+    /**
+     * Excepción de autenticación/autorización. Incluye un {@code preAuthToken}
+     * opcional que se emite únicamente cuando el código es
+     * "CAMBIO_PASSWORD_REQUERIDO".
      */
     public static class AuthException extends Exception {
 
@@ -474,9 +591,11 @@ public class AuthService {
             return codigo;
         }
 
+        /**
+         * Null salvo cuando codigo == "CAMBIO_PASSWORD_REQUERIDO".
+         */
         public String getPreAuthToken() {
             return preAuthToken;
         }
     }
-
 }

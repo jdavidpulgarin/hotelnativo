@@ -1,24 +1,15 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
-package com.hotel.service;
 
-import com.hotel.dao.interfaces.IEmpleadoDAO;
 import com.hotel.exception.ExcepcionNegocio;
 import com.hotel.exception.ExcepcionValidacion;
 import com.hotel.model.Cargo;
 import com.hotel.model.Empleado;
+import com.hotel.service.AuthService;
 import com.hotel.util.ValidadorEntradas;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
-/**
- *
- * @author Pulgarin
- */
 /**
  * Lógica de negocio para gestión de empleados del hotel.
  *
@@ -64,13 +55,15 @@ public class EmpleadoService {
      * @throws ExcepcionNegocio si el email ya está registrado
      * @throws ExcepcionValidacion si algún campo es inválido
      */
-    public Empleado registrarEmpleado(String nombre, String segundoNombre,
+    public Empleado registrarEmpleado(String cedula,
+            String nombre, String segundoNombre,
             String apellido, String apellido2,
             String email, String telefono,
             int idCargo, String passwordInicial,
             double salario, String tipoContrato,
             String tipoPago, LocalDate fechaFinContrato)
             throws ExcepcionNegocio {
+        ValidadorEntradas.validarCampoRequerido(cedula, "cedula");
         ValidadorEntradas.validarLargoNombre(nombre, "nombre");
         ValidadorEntradas.validarLargoNombre(apellido, "apellido");
         ValidadorEntradas.validarFormatoEmail(email);
@@ -86,7 +79,13 @@ public class EmpleadoService {
         Cargo cargoRef = new Cargo();
         cargoRef.setId(idCargo);
 
-        Empleado nuevoEmpleado = new Empleado(0, nombre, apellido, email,
+        int idNumerico = 0;
+        try {
+            idNumerico = Integer.parseInt(cedula.trim());
+        } catch (NumberFormatException ignored) {
+        }
+
+        Empleado nuevoEmpleado = new Empleado(idNumerico, nombre, apellido, email,
                 telefono, cargoRef, LocalDate.now());
         nuevoEmpleado.setSegundoNombre(segundoNombre);
         nuevoEmpleado.setApellido2(apellido2);

@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.hotel.service;
 
 import com.hotel.dao.interfaces.IClienteDAO;
@@ -19,10 +15,6 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- *
- * @author Pulgarin
- */
-/**
  * Lógica de negocio para gestión de clientes.
  *
  * GRASP: Alta Cohesión - solo maneja operaciones de clientes. GRASP:
@@ -31,8 +23,8 @@ import java.util.Optional;
  * interfaces IClienteDAO / IClienteBusqueda, no de implementaciones.
  */
 public class ClienteService {
-    // GRASP: Bajo Acoplamiento - depende de interfaces, no de implementaciones JDBC
 
+    // GRASP: Bajo Acoplamiento - depende de interfaces, no de implementaciones JDBC
     private final IClienteDAO clienteDAO;
     private final IClienteBusqueda clienteBusqueda;
     private final IReservaBusqueda reservaBusqueda;
@@ -145,7 +137,10 @@ public class ClienteService {
         ValidadorEntradas.validarLargoNombre(dto.getApellido(), "apellido");
         ValidadorEntradas.validarFormatoEmail(dto.getEmail());
         ValidadorEntradas.validarFormatoTelefono(dto.getTelefono());
-        ValidadorEntradas.validarCampoRequerido(dto.getNacionalidad(), "nacionalidad");
+        // nacionalidad almacena el id_pais (ej. "PAI01") — validar que no sea nulo
+        if (dto.getNacionalidad() == null || dto.getNacionalidad().isBlank()) {
+            throw new com.hotel.exception.ExcepcionValidacion("nacionalidad", "Selecciona la nacionalidad (país).");
+        }
     }
 
     private void verificarEmailNoRegistrado(String email) throws ExcepcionNegocio {
@@ -156,7 +151,6 @@ public class ClienteService {
         }
     }
 
-
     private Cliente obtenerClienteOLanzarError(int idCliente) throws ExcepcionNegocio {
         return clienteDAO.buscarPorId(idCliente)
                 .orElseThrow(() -> new ExcepcionNegocio("CLIENTE_NOT_FOUND",
@@ -164,11 +158,14 @@ public class ClienteService {
     }
 
     private Cliente construirClienteDesdeDTO(ClienteDTO dto) {
+        // dto.getNacionalidad() = id_pais ("PAI01"), dto.getCiudadOrigen() = id_ciudad ("CIU79")
         Cliente c = new Cliente(0, dto.getNombre(), dto.getApellido(), dto.getEmail(),
                 dto.getTelefono(), dto.getCedula(), dto.getNacionalidad(), LocalDate.now());
         c.setDocumento(dto.getCedula());
         c.setSegundoNombre(dto.getSegundoNombre());
         c.setApellido2(dto.getApellido2());
+        c.setIdPais(dto.getNacionalidad());
+        c.setIdCiudad(dto.getCiudadOrigen());
         c.setCiudadOrigen(dto.getCiudadOrigen());
         return c;
     }
@@ -180,8 +177,10 @@ public class ClienteService {
         cliente.setApellido2(dto.getApellido2());
         cliente.setEmail(dto.getEmail());
         cliente.setTelefono(dto.getTelefono());
+        // dto almacena los IDs reales ("PAI01", "CIU79")
+        cliente.setIdPais(dto.getNacionalidad());
+        cliente.setIdCiudad(dto.getCiudadOrigen());
         cliente.setNacionalidad(dto.getNacionalidad());
         cliente.setCiudadOrigen(dto.getCiudadOrigen());
     }
-
 }
