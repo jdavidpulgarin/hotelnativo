@@ -1,10 +1,5 @@
-
 package com.hotel.dao.impl;
 
-/**
- *
- * @author rober
- */
 import com.hotel.dao.interfaces.IFacturaDAO;
 import com.hotel.exception.ExcepcionBaseDatos;
 import com.hotel.model.*;
@@ -14,26 +9,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-/**
- * Implementación JDBC Oracle del repositorio de facturas.
- * Adaptado al schema HOTELNATIVO: tabla FACTURA con PK id_factura (VARCHAR2).
- *
- * REFACTORING v2 — 5 puntos críticos corregidos:
- *  1. ResultSet cerrado con try-with-resources anidado en todos los buscarPor*.
- *  2. Sin concatenación de Strings en SQL (todo PreparedStatement).
- *  3. insertar/actualizar usan enTransaccion() → commit/rollback garantizado.
- *  4. listarTodas(int,int) con paginación Oracle OFFSET/FETCH.
- *  5. Sin printStackTrace(); errores suben como ExcepcionBaseDatos.
- *
- * GRASP: Fabricación Pura.
- */
+
 public class FacturaDAOImpl extends BaseDAO implements IFacturaDAO {
 
     private static final String SQL_JOIN =
             "SELECT TO_NUMBER(REGEXP_REPLACE(f.id_factura,'[^0-9]','')) AS id, " +
             "TO_NUMBER(REGEXP_REPLACE(f.id_reserva,'[^0-9]','')) AS id_reserva, " +
             "TO_NUMBER(REGEXP_REPLACE(f.id_cliente,'[^0-9]','')) AS id_cliente, " +
-            "f.fecha_emision, f.subtotal, f.impuestos, f.total, f.estado_pago, f.metodo_pago, " +
+            "f.fecha_emision, f.subtotal, f.impuestos, f.total, f.estado_pago, f.id_metodo_pago AS metodo_pago, " +
             "cl.primer_nombre cl_nombre, cl.apellido_1 cl_apellido, cl.email cl_email, " +
             "cl.telefono cl_telefono, " +
             "r.fecha_entrada, r.fecha_salida " +
@@ -54,55 +37,59 @@ public class FacturaDAOImpl extends BaseDAO implements IFacturaDAO {
             SQL_LISTAR_TODAS + " OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
 
     private static final String SQL_ACTUALIZAR =
-            "UPDATE FACTURA SET estado_pago=?, metodo_pago=? WHERE id_factura=?";
+            "UPDATE FACTURA SET estado_pago=?, id_metodo_pago=? WHERE id_factura=?";
 
     public FacturaDAOImpl() { super(); }
 
-@Override
+    // ── Escrituras — todas con enTransaccion() ────────────────────────────────
+
+    @Override
     public Factura insertar(Factura factura) {
         String sql = "INSERT INTO FACTURA " +
                 "(id_factura, id_reserva, id_cliente, fecha_emision, subtotal, impuestos, total, " +
-                " estado_pago, metodo_pago) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                " estado_pago, id_metodo_pago) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
         return enTransaccion(conn -> {
             int seqVal = siguienteSeq(conn, "seq_factura");
             try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-                // Usar documento real para que el JOIN funcione
+                // BUG 4 FIX: igual que Reserva, usar documento real para que el JOIN funcione
                 String idClienteStr = factura.getCliente().getDocumento() != null
                         ? factura.getCliente().getDocumento()
                         : String.valueOf(factura.getCliente().getId());
-                stmt.setString(1, fmt("FAC", seqVal));
-                stmt.setString(2, fmt("RES", factura.getReserva().getId()));
+                stmt.setString(1, fmt3("FAC", seqVal));
+                stmt.setString(2, fmt3("RES", factura.getReserva().getId()));
                 stmt.setString(3, idClienteStr);
                 stmt.setDate(4, Date.valueOf(factura.getFechaEmision()));
                 stmt.setDouble(5, factura.getSubtotal());
                 stmt.setDouble(6, factura.getImpuestos());
                 stmt.setDouble(7, factura.getTotal());
                 stmt.setString(8, factura.getEstadoPago().name());
-                stmt.setString(9, factura.getMetodoPago() != null
-                        ? factura.getMetodoPago().name() : null);
+                stmt.setString(9, metodoPagoACodigo(factura.getMetodoPago()));
                 stmt.executeUpdate();
             }
             factura.setId(seqVal);
             return factura;
         });
     }
-@Override
+
+    @Override
     public boolean actualizar(Factura factura) {
         return enTransaccion(conn -> {
             try (PreparedStatement stmt = conn.prepareStatement(SQL_ACTUALIZAR)) {
                 stmt.setString(1, factura.getEstadoPago().name());
-                stmt.setString(2, factura.getMetodoPago() != null
-                        ? factura.getMetodoPago().name() : null);
-                stmt.setString(3, fmt("FAC", factura.getId()));
+                stmt.setString(2, metodoPagoACodigo(factura.getMetodoPago()));
+                stmt.setString(3, fmt3("FAC", factura.getId()));
                 return stmt.executeUpdate() > 0;
             }
         });
     }
-@Override
+
+    // ── Lecturas — ResultSet en try-with-resources anidado ───────────────────
+
+    @Override
     public Optional<Factura> buscarPorId(int idFactura) {
         Connection conn = obtener();
         try (PreparedStatement stmt = conn.prepareStatement(SQL_BUSCAR_POR_ID)) {
-            stmt.setString(1, fmt("FAC", idFactura));
+            stmt.setString(1, fmt3("FAC", idFactura));
             try (ResultSet rs = stmt.executeQuery()) {
                 return rs.next() ? Optional.of(mapearFila(rs)) : Optional.empty();
             }
@@ -117,7 +104,7 @@ public class FacturaDAOImpl extends BaseDAO implements IFacturaDAO {
     public Optional<Factura> buscarPorReserva(int idReserva) {
         Connection conn = obtener();
         try (PreparedStatement stmt = conn.prepareStatement(SQL_BUSCAR_RESERVA)) {
-            stmt.setString(1, fmt("RES", idReserva));
+            stmt.setString(1, fmt3("RES", idReserva));
             try (ResultSet rs = stmt.executeQuery()) {
                 return rs.next() ? Optional.of(mapearFila(rs)) : Optional.empty();
             }
@@ -127,7 +114,8 @@ public class FacturaDAOImpl extends BaseDAO implements IFacturaDAO {
             liberar(conn);
         }
     }
-@Override
+
+    @Override
     public List<Factura> listarPorCliente(int idCliente) {
         List<Factura> lista = new ArrayList<>();
         Connection conn = obtener();
@@ -159,7 +147,8 @@ public class FacturaDAOImpl extends BaseDAO implements IFacturaDAO {
         }
         return lista;
     }
-/**
+
+    /**
      * Versión paginada. pagina=0 devuelve la primera página.
      * Usa Oracle OFFSET/FETCH para no cargar todo el historial en memoria.
      */
@@ -179,7 +168,35 @@ public class FacturaDAOImpl extends BaseDAO implements IFacturaDAO {
         }
         return lista;
     }
-private Factura mapearFila(ResultSet rs) throws SQLException {
+
+    // ── Conversión MetodoPago enum ↔ código DB ────────────────────────────────
+    // La BD guarda 'MET01'..'MET04'; el enum Java usa EFECTIVO..TRANSFERENCIA
+
+    private static String metodoPagoACodigo(Factura.MetodoPago m) {
+        if (m == null) return null;
+        switch (m) {
+            case EFECTIVO:        return "MET01";
+            case TARJETA_CREDITO: return "MET02";
+            case TARJETA_DEBITO:  return "MET03";
+            case TRANSFERENCIA:   return "MET04";
+            default:              return null;
+        }
+    }
+
+    private static Factura.MetodoPago codigoAMetodoPago(String codigo) {
+        if (codigo == null) return null;
+        switch (codigo) {
+            case "MET01": return Factura.MetodoPago.EFECTIVO;
+            case "MET02": return Factura.MetodoPago.TARJETA_CREDITO;
+            case "MET03": return Factura.MetodoPago.TARJETA_DEBITO;
+            case "MET04": return Factura.MetodoPago.TRANSFERENCIA;
+            default:      return null;
+        }
+    }
+
+    // ── Mapeador ─────────────────────────────────────────────────────────────
+
+    private Factura mapearFila(ResultSet rs) throws SQLException {
         Reserva reservaRef = new Reserva();
         reservaRef.setId(rs.getInt("id_reserva"));
         try {
@@ -206,8 +223,7 @@ private Factura mapearFila(ResultSet rs) throws SQLException {
         f.setTotal(rs.getDouble("total"));
         f.setTasaIva(f.getSubtotal() > 0 ? f.getImpuestos() / f.getSubtotal() : 0.19);
         f.setEstadoPago(Factura.EstadoPago.valueOf(rs.getString("estado_pago")));
-        String metodo = rs.getString("metodo_pago");
-        if (metodo != null) f.setMetodoPago(Factura.MetodoPago.valueOf(metodo));
+        f.setMetodoPago(codigoAMetodoPago(rs.getString("metodo_pago")));
         return f;
     }
 }
