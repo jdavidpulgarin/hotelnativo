@@ -1,10 +1,5 @@
-
 package com.hotel.dao.impl;
 
-/**
- *
- * @author rober
- */
 import com.hotel.dao.interfaces.IReservaDAO;
 import com.hotel.dao.interfaces.IReservaBusqueda;
 import com.hotel.exception.ExcepcionBaseDatos;
@@ -35,33 +30,33 @@ public class ReservaDAOImpl extends BaseDAO implements IReservaDAO, IReservaBusq
             "TO_NUMBER(REGEXP_REPLACE(id_reserva,'[^0-9]','')) AS id, " +
             "TO_NUMBER(REGEXP_REPLACE(id_cliente,'[^0-9]','')) AS id_cliente, " +
             "id_cliente AS documento_cliente, " +
-            "TO_NUMBER(REGEXP_REPLACE(id_habitacion,'[^0-9]','')) AS id_habitacion, " +
+            "numero_habitacion, " +        // v5: VARCHAR2(10), era id_habitacion
             "fecha_entrada, fecha_salida, estado, num_personas, precio_total";
 
     private static final String SQL_BUSCAR_POR_ID =
             "SELECT TO_NUMBER(REGEXP_REPLACE(r.id_reserva,'[^0-9]','')) AS id, " +
             "TO_NUMBER(REGEXP_REPLACE(r.id_cliente,'[^0-9]','')) AS id_cliente, " +
-            "TO_NUMBER(REGEXP_REPLACE(r.id_habitacion,'[^0-9]','')) AS id_habitacion, " +
+            "r.numero_habitacion, " +      // v5: VARCHAR2(10)
             "r.fecha_entrada, r.fecha_salida, r.estado, r.num_personas, r.precio_total, " +
             "c.primer_nombre c_nombre, c.apellido_1 c_apellido, c.email c_email, " +
-            "c.telefono c_telefono, r.id_cliente AS documento, c.nacionalidad, c.fecha_registro, c.es_vip, " +
+            "c.telefono c_telefono, r.id_cliente AS documento, c.id_pais AS nacionalidad, c.fecha_registro, c.es_vip, " +
             "h.numero h_numero, h.precio_base, h.estado h_estado " +
             "FROM RESERVA r " +
             "JOIN CLIENTE c ON r.id_cliente = c.id_cliente " +
-            "JOIN HABITACION h ON r.id_habitacion = h.id_habitacion " +
+            "JOIN HABITACION h ON r.numero_habitacion = h.numero " +   // numero VARCHAR2(10)
             "WHERE r.id_reserva = ?";
 
     private static final String SQL_LISTAR_TODAS =
             "SELECT TO_NUMBER(REGEXP_REPLACE(r.id_reserva,'[^0-9]','')) AS id, " +
             "TO_NUMBER(REGEXP_REPLACE(r.id_cliente,'[^0-9]','')) AS id_cliente, " +
-            "TO_NUMBER(REGEXP_REPLACE(r.id_habitacion,'[^0-9]','')) AS id_habitacion, " +
+            "r.numero_habitacion, " +
             "r.fecha_entrada, r.fecha_salida, r.estado, r.num_personas, r.precio_total, " +
             "c.primer_nombre c_nombre, c.apellido_1 c_apellido, c.email c_email, " +
-            "c.telefono c_telefono, r.id_cliente AS documento, c.nacionalidad, c.fecha_registro, c.es_vip, " +
+            "c.telefono c_telefono, r.id_cliente AS documento, c.id_pais AS nacionalidad, c.fecha_registro, c.es_vip, " +
             "h.numero h_numero, h.precio_base, h.estado h_estado " +
             "FROM RESERVA r " +
             "JOIN CLIENTE c ON r.id_cliente = c.id_cliente " +
-            "JOIN HABITACION h ON r.id_habitacion = h.id_habitacion " +
+            "JOIN HABITACION h ON r.numero_habitacion = h.numero " +
             "ORDER BY r.fecha_entrada DESC";
 
     private static final String SQL_LISTAR_PAGINADA =
@@ -73,25 +68,24 @@ public class ReservaDAOImpl extends BaseDAO implements IReservaDAO, IReservaBusq
             "WHERE (r.id_cliente = ? OR r.id_cliente = ?) " +
             "AND r.estado NOT IN ('CANCELADA','COMPLETADA')";
 
-    // BUG 5 FIX: COMPLETADA también debe excluirse; una reserva completada
-    // no bloquea el reuso de la habitación en las mismas fechas.
+    // v3: numero_habitacion (era id_habitacion)
     private static final String SQL_RESERVAS_SOLAPADAS =
             "SELECT " + COLS_SIMPLE + " FROM RESERVA r " +
-            "WHERE r.id_habitacion = ? " +
+            "WHERE r.numero_habitacion = ? " +
             "AND r.estado NOT IN ('CANCELADA','COMPLETADA') " +
             "AND r.fecha_entrada < ? AND r.fecha_salida > ?";
 
     private static final String COLS_JOIN =
             "TO_NUMBER(REGEXP_REPLACE(r.id_reserva,'[^0-9]','')) AS id, " +
             "TO_NUMBER(REGEXP_REPLACE(r.id_cliente,'[^0-9]','')) AS id_cliente, " +
-            "TO_NUMBER(REGEXP_REPLACE(r.id_habitacion,'[^0-9]','')) AS id_habitacion, " +
+            "r.numero_habitacion, " +
             "r.fecha_entrada, r.fecha_salida, r.estado, r.num_personas, r.precio_total, " +
             "c.primer_nombre c_nombre, c.apellido_1 c_apellido, c.email c_email, " +
-            "c.telefono c_telefono, r.id_cliente AS documento, c.nacionalidad, c.fecha_registro, c.es_vip, " +
+            "c.telefono c_telefono, r.id_cliente AS documento, c.id_pais AS nacionalidad, c.fecha_registro, c.es_vip, " +
             "h.numero h_numero, h.precio_base, h.estado h_estado " +
             "FROM RESERVA r " +
             "JOIN CLIENTE c ON r.id_cliente = c.id_cliente " +
-            "JOIN HABITACION h ON r.id_habitacion = h.id_habitacion";
+            "JOIN HABITACION h ON r.numero_habitacion = h.numero";
 
     private static final String SQL_BUSCAR_POR_RANGO_FECHAS =
             "SELECT " + COLS_JOIN +
@@ -102,40 +96,104 @@ public class ReservaDAOImpl extends BaseDAO implements IReservaDAO, IReservaBusq
             " WHERE r.estado = ? ORDER BY r.fecha_entrada";
 
     private static final String SQL_ACTUALIZAR =
-            "UPDATE RESERVA SET id_cliente=?, id_habitacion=?, fecha_entrada=?, fecha_salida=?, " +
+            "UPDATE RESERVA SET id_cliente=?, numero_habitacion=?, fecha_entrada=?, fecha_salida=?, " +
             "estado=?, num_personas=?, precio_total=? WHERE id_reserva=?";
 
     private static final String SQL_ELIMINAR = "DELETE FROM RESERVA WHERE id_reserva=?";
 
     public ReservaDAOImpl() { super(); }
 
-@Override
+    // ── Escrituras — delegan a PKG_HOTEL vía CallableStatement ──────────────
+
+    @Override
     public Reserva insertar(Reserva reserva) {
-        String sql = "INSERT INTO RESERVA " +
-                "(id_reserva, id_cliente, id_habitacion, fecha_entrada, fecha_salida, " +
-                " estado, num_personas, precio_total) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-        return enTransaccion(conn -> {
-            int seqVal = siguienteSeq(conn, "seq_reserva");
-            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-                // Usar el id_cliente real (documento) para que el JOIN funcione
-                String idClienteStr = reserva.getCliente().getDocumento() != null
-                        ? reserva.getCliente().getDocumento()
-                        : String.valueOf(reserva.getCliente().getId());
-                stmt.setString(1, fmt("RES", seqVal));
-                stmt.setString(2, idClienteStr);
-                stmt.setString(3, fmt("HAB", reserva.getHabitacion().getId()));
-                stmt.setDate(4, java.sql.Date.valueOf(reserva.getFechaEntrada()));
-                stmt.setDate(5, java.sql.Date.valueOf(reserva.getFechaSalida()));
-                stmt.setString(6, reserva.getEstado().name());
-                stmt.setInt(7, reserva.getNumPersonas());
-                stmt.setDouble(8, reserva.getPrecioTotal());
-                stmt.executeUpdate();
-            }
-            reserva.setId(seqVal);
+        // PKG_HOTEL.crear_reserva verifica disponibilidad, capacidad,
+        // calcula precio (con descuento VIP) e inserta en RESERVA. Todo en Oracle.
+        String idCliente = reserva.getCliente().getDocumento() != null
+                ? reserva.getCliente().getDocumento()
+                : String.valueOf(reserva.getCliente().getId());
+        Connection conn = obtener();
+        try (CallableStatement cs = conn.prepareCall(
+                "{call PKG_RESERVAS.crear_reserva(?, ?, ?, ?, ?, ?, ?)}")) {
+            cs.setString(1, idCliente);
+            cs.setString(2, reserva.getHabitacion().getNumero());
+            cs.setDate(3, Date.valueOf(reserva.getFechaEntrada()));
+            cs.setDate(4, Date.valueOf(reserva.getFechaSalida()));
+            cs.setInt(5, reserva.getNumPersonas());
+            if (reserva.getIdCanal() != null && !reserva.getIdCanal().isBlank())
+                cs.setString(6, reserva.getIdCanal());
+            else
+                cs.setNull(6, Types.VARCHAR);
+            cs.registerOutParameter(7, Types.VARCHAR); // p_id_reserva OUT → "RES001"
+            cs.execute();
+            String idGenerado = cs.getString(7);
+            reserva.setId(Integer.parseInt(idGenerado.replaceAll("[^0-9]", "")));
             return reserva;
-        });
+        } catch (SQLException e) {
+            throw new ExcepcionBaseDatos("Error al crear reserva: " + e.getMessage(), e);
+        } finally {
+            liberar(conn);
+        }
     }
-@Override
+
+    @Override
+    public void cancelar(String idReserva, String motivo) {
+        // PKG_HOTEL.cancelar actualiza RESERVA→CANCELADA y libera la habitación si aplica.
+        Connection conn = obtener();
+        try (CallableStatement cs = conn.prepareCall(
+                "{call PKG_RESERVAS.cancelar(?, ?)}")) {
+            cs.setString(1, idReserva);
+            cs.setString(2, motivo);
+            cs.execute();
+        } catch (SQLException e) {
+            throw new ExcepcionBaseDatos("Error al cancelar reserva: " + e.getMessage(), e);
+        } finally {
+            liberar(conn);
+        }
+    }
+
+    @Override
+    public boolean verificarDisponibilidad(String idHabitacion,
+                                           LocalDate entrada, LocalDate salida) {
+        // PKG_HOTEL.disponible es una FUNCIÓN Oracle → {? = call PKG_HOTEL.disponible(...)}
+        Connection conn = obtener();
+        try (CallableStatement cs = conn.prepareCall(
+                "{? = call PKG_RESERVAS.disponible(?, ?, ?)}")) {
+            cs.registerOutParameter(1, Types.NUMERIC); // 1=disponible, 0=no disponible
+            cs.setString(2, idHabitacion);
+            cs.setDate(3, Date.valueOf(entrada));
+            cs.setDate(4, Date.valueOf(salida));
+            cs.execute();
+            return cs.getInt(1) == 1;
+        } catch (SQLException e) {
+            throw new ExcepcionBaseDatos("Error al verificar disponibilidad: " + e.getMessage(), e);
+        } finally {
+            liberar(conn);
+        }
+    }
+
+    @Override
+    public double calcularPrecio(String idHabitacion, LocalDate entrada,
+                                 LocalDate salida, boolean esVip) {
+        // PKG_HOTEL.precio_reserva es una FUNCIÓN Oracle que aplica descuento VIP
+        Connection conn = obtener();
+        try (CallableStatement cs = conn.prepareCall(
+                "{? = call PKG_RESERVAS.precio_reserva(?, ?, ?, ?)}")) {
+            cs.registerOutParameter(1, Types.NUMERIC);
+            cs.setString(2, idHabitacion);
+            cs.setDate(3, Date.valueOf(entrada));
+            cs.setDate(4, Date.valueOf(salida));
+            cs.setInt(5, esVip ? 1 : 0);
+            cs.execute();
+            return cs.getDouble(1);
+        } catch (SQLException e) {
+            throw new ExcepcionBaseDatos("Error al calcular precio: " + e.getMessage(), e);
+        } finally {
+            liberar(conn);
+        }
+    }
+
+    @Override
     public boolean actualizar(Reserva reserva) {
         return enTransaccion(conn -> {
             try (PreparedStatement stmt = conn.prepareStatement(SQL_ACTUALIZAR)) {
@@ -143,13 +201,13 @@ public class ReservaDAOImpl extends BaseDAO implements IReservaDAO, IReservaBusq
                         ? reserva.getCliente().getDocumento()
                         : String.valueOf(reserva.getCliente().getId());
                 stmt.setString(1, idClienteStr);
-                stmt.setString(2, fmt("HAB", reserva.getHabitacion().getId()));
+                stmt.setString(2, reserva.getHabitacion().getNumero()); // v3: numero es PK
                 stmt.setDate(3, Date.valueOf(reserva.getFechaEntrada()));
                 stmt.setDate(4, Date.valueOf(reserva.getFechaSalida()));
                 stmt.setString(5, reserva.getEstado().name());
                 stmt.setInt(6, reserva.getNumPersonas());
                 stmt.setDouble(7, reserva.getPrecioTotal());
-                stmt.setString(8, fmt("RES", reserva.getId()));
+                stmt.setString(8, fmt3("RES", reserva.getId()));
                 return stmt.executeUpdate() > 0;
             }
         });
@@ -159,16 +217,19 @@ public class ReservaDAOImpl extends BaseDAO implements IReservaDAO, IReservaBusq
     public boolean eliminar(int idReserva) {
         return enTransaccion(conn -> {
             try (PreparedStatement stmt = conn.prepareStatement(SQL_ELIMINAR)) {
-                stmt.setString(1, fmt("RES", idReserva));
+                stmt.setString(1, fmt3("RES", idReserva));
                 return stmt.executeUpdate() > 0;
             }
         });
     }
- @Override
+
+    // ── Lecturas — ResultSet en try-with-resources anidado ───────────────────
+
+    @Override
     public Optional<Reserva> buscarPorId(int idReserva) {
         Connection conn = obtener();
         try (PreparedStatement stmt = conn.prepareStatement(SQL_BUSCAR_POR_ID)) {
-            stmt.setString(1, fmt("RES", idReserva));
+            stmt.setString(1, fmt3("RES", idReserva));
             try (ResultSet rs = stmt.executeQuery()) {
                 return rs.next() ? Optional.of(mapearFilaCompleta(rs)) : Optional.empty();
             }
@@ -193,7 +254,8 @@ public class ReservaDAOImpl extends BaseDAO implements IReservaDAO, IReservaBusq
         }
         return lista;
     }
- /**
+
+    /**
      * Versión paginada. pagina=0 devuelve la primera página.
      * Usa Oracle OFFSET/FETCH para no cargar todo el historial en memoria.
      */
@@ -213,7 +275,8 @@ public class ReservaDAOImpl extends BaseDAO implements IReservaDAO, IReservaBusq
         }
         return lista;
     }
-@Override
+
+    @Override
     public List<Reserva> buscarReservasActivasPorCliente(int idCliente) {
         List<Reserva> lista = new ArrayList<>();
         Connection conn = obtener();
@@ -232,13 +295,13 @@ public class ReservaDAOImpl extends BaseDAO implements IReservaDAO, IReservaBusq
     }
 
     @Override
-    public List<Reserva> buscarReservasSolapadas(int idHabitacion,
+    public List<Reserva> buscarReservasSolapadas(String numeroHabitacion,
                                                   LocalDate fechaEntrada,
                                                   LocalDate fechaSalida) {
         List<Reserva> lista = new ArrayList<>();
         Connection conn = obtener();
         try (PreparedStatement stmt = conn.prepareStatement(SQL_RESERVAS_SOLAPADAS)) {
-            stmt.setString(1, fmt("HAB", idHabitacion));
+            stmt.setString(1, numeroHabitacion); // v3: numero VARCHAR2(4)
             stmt.setDate(2, Date.valueOf(fechaSalida));
             stmt.setDate(3, Date.valueOf(fechaEntrada));
             try (ResultSet rs = stmt.executeQuery()) {
@@ -251,7 +314,8 @@ public class ReservaDAOImpl extends BaseDAO implements IReservaDAO, IReservaBusq
         }
         return lista;
     }
-@Override
+
+    @Override
     public List<Reserva> buscarPorRangoFechas(LocalDate fechaInicio, LocalDate fechaFin) {
         List<Reserva> lista = new ArrayList<>();
         Connection conn = obtener();
@@ -285,9 +349,14 @@ public class ReservaDAOImpl extends BaseDAO implements IReservaDAO, IReservaBusq
         }
         return lista;
     }
-private Reserva mapearFilaCompleta(ResultSet rs) throws SQLException {
+
+    // ── Mapeadores ───────────────────────────────────────────────────────────
+
+    private Reserva mapearFilaCompleta(ResultSet rs) throws SQLException {
         Cliente cliente = new Cliente();
         cliente.setId(rs.getInt("id_cliente"));
+        // BUG FIX: preserve raw VARCHAR2 id_cliente so actualizar() uses the real PK,
+        // not String.valueOf(getId()) which would be "1" for "CLI01" → FK violation
         cliente.setDocumento(rs.getString("documento"));
         cliente.setNombre(rs.getString("c_nombre"));
         cliente.setApellido(rs.getString("c_apellido"));
@@ -297,7 +366,7 @@ private Reserva mapearFilaCompleta(ResultSet rs) throws SQLException {
         cliente.setEsVip(rs.getInt("es_vip") == 1);
 
         Habitacion habitacion = new Habitacion();
-        habitacion.setId(rs.getInt("id_habitacion"));
+        // v3: no hay id_habitacion; numero es la PK
         habitacion.setNumero(rs.getString("h_numero"));
         habitacion.setPrecioBase(rs.getDouble("precio_base"));
 
@@ -309,21 +378,19 @@ private Reserva mapearFilaCompleta(ResultSet rs) throws SQLException {
         c.setId(rs.getInt("id_cliente"));
         c.setDocumento(rs.getString("documento_cliente"));
         Habitacion h = new Habitacion();
-        h.setId(rs.getInt("id_habitacion"));
+        h.setNumero(rs.getString("numero_habitacion")); // v3: PK de HABITACION
         return armarReserva(rs, c, h);
     }
-private Reserva armarReserva(ResultSet rs, Cliente cliente, Habitacion habitacion)
+
+    private Reserva armarReserva(ResultSet rs, Cliente cliente, Habitacion habitacion)
             throws SQLException {
         Reserva r = new Reserva();
         r.setId(rs.getInt("id"));
         r.setCliente(cliente);
         r.setHabitacion(habitacion);
-        Date fechaEntrada = rs.getDate("fecha_entrada");
-        Date fechaSalida = rs.getDate("fecha_salida");
-        r.setFechaEntrada(fechaEntrada != null ? fechaEntrada.toLocalDate() : null);
-        r.setFechaSalida(fechaSalida != null ? fechaSalida.toLocalDate() : null);
-        String estadoStr = rs.getString("estado");
-        r.setEstado(estadoStr != null ? Reserva.EstadoReserva.valueOf(estadoStr) : null);
+        r.setFechaEntrada(rs.getDate("fecha_entrada").toLocalDate());
+        r.setFechaSalida(rs.getDate("fecha_salida").toLocalDate());
+        r.setEstado(Reserva.EstadoReserva.valueOf(rs.getString("estado")));
         r.setNumPersonas(rs.getInt("num_personas"));
         r.setPrecioTotal(rs.getDouble("precio_total"));
         return r;
