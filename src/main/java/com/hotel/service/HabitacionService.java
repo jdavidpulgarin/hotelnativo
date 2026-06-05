@@ -67,4 +67,18 @@ public class HabitacionService {
         }
         habitacionDAO.eliminar(numero);
     }
+
+    /**
+     * GRASP: Experto en Información — Habitacion controla su propia transición
+     * de estado.
+     */
+    public void enviarHabitacionAMantenimiento(String numero) throws ExcepcionNegocio {
+        Habitacion habitacion = obtenerHabitacionOLanzarError(numero);
+        if (Habitacion.EstadoHabitacion.OCUPADA.equals(habitacion.getEstado())) {
+            throw new ExcepcionNegocio("HABITACION_OCUPADA",
+                    "No se puede enviar a mantenimiento una habitación ocupada.");
+        }
+        habitacion.enviarAMantenimiento();
+        habitacionDAO.actualizarEstado(numero, habitacion.getEstado().name());
+    }
 }
