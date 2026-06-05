@@ -1,10 +1,6 @@
-
 package com.hotel.dao.impl;
 
-/**
- *
- * @author rober
- */
+import com.hotel.dao.impl.BaseDAO;
 import com.hotel.dao.interfaces.ICheckInOutDAO;
 import com.hotel.exception.ExcepcionBaseDatos;
 import com.hotel.model.*;
@@ -15,110 +11,112 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-/**
- * Implementación JDBC Oracle del repositorio CheckInOut.
- * Adaptado al schema HOTELNATIVO: tabla CHECKINOUT con PK id_checkinout (VARCHAR2).
- *
- * REFACTORING v2 — 5 puntos críticos corregidos:
- *  1. ResultSet cerrado con try-with-resources anidado en todos los buscarPor*.
- *  2. Sin concatenación de Strings en SQL (todo PreparedStatement).
- *  3. insertar() usa enTransaccion(): si el INSERT falla no queda un check-in huérfano.
- *  4. listarTodos(int,int) con paginación Oracle OFFSET/FETCH.
- *  5. Sin printStackTrace(); errores suben como ExcepcionBaseDatos.
- *
- * GRASP: Fabricación Pura.
- */
+
 public class CheckInOutDAOImpl extends BaseDAO implements ICheckInOutDAO {
 
-    private static final String SQL_INSERTAR =
-            "INSERT INTO CHECKINOUT (id_checkinout, id_reserva, id_empleado, fecha_checkin, observaciones) " +
-            "VALUES (?, ?, ?, ?, ?)";
-
-    private static final String SQL_ACTUALIZAR =
-            "UPDATE CHECKINOUT SET fecha_checkout=?, observaciones=? WHERE id_checkinout=?";
-
-    private static final String SQL_JOIN =
-            "SELECT TO_NUMBER(REGEXP_REPLACE(ci.id_checkinout,'[^0-9]','')) AS id, " +
-            "TO_NUMBER(REGEXP_REPLACE(ci.id_reserva,'[^0-9]','')) AS id_reserva, " +
-            "TO_NUMBER(REGEXP_REPLACE(ci.id_empleado,'[^0-9]','')) AS id_empleado, " +
-            "ci.fecha_checkin, ci.fecha_checkout, ci.observaciones, " +
-            "TO_NUMBER(REGEXP_REPLACE(r.id_cliente,'[^0-9]','')) AS id_cliente, " +
-            "TO_NUMBER(REGEXP_REPLACE(r.id_habitacion,'[^0-9]','')) AS id_habitacion, " +
-            "r.fecha_entrada, r.fecha_salida, r.estado r_estado, r.num_personas, r.precio_total, " +
+    // Lee reservas que tienen check-in activo (sin checkout aún)
+    private static final String SQL_ACTIVOS =
+            "SELECT TO_NUMBER(REGEXP_REPLACE(r.id_reserva,'[^0-9]',''))  AS id_reserva, " +
+            "TO_NUMBER(REGEXP_REPLACE(r.id_cliente,'[^0-9]',''))         AS id_cliente, " +
+            "r.id_cliente AS documento, " +
+            "r.numero_habitacion, r.fecha_entrada, r.fecha_salida, r.estado, " +
+            "r.num_personas, r.precio_total, r.fecha_checkin, r.fecha_checkout, " +
+            "r.id_empleado_checkin, " +
             "cl.primer_nombre cl_nombre, cl.apellido_1 cl_apellido, cl.email cl_email, " +
             "h.numero h_numero, h.precio_base, " +
             "e.primer_nombre e_nombre, e.apellido_1 e_apellido " +
-            "FROM CHECKINOUT ci " +
-            "JOIN RESERVA r    ON ci.id_reserva  = r.id_reserva " +
-            "JOIN CLIENTE cl   ON r.id_cliente   = cl.id_cliente " +
-            "JOIN HABITACION h ON r.id_habitacion = h.id_habitacion " +
-            "JOIN EMPLEADO e   ON ci.id_empleado  = e.id_empleado";
+            "FROM RESERVA r " +
+            "JOIN CLIENTE    cl ON cl.id_cliente       = r.id_cliente " +
+            "JOIN HABITACION h  ON h.numero            = r.numero_habitacion " +
+            "LEFT JOIN EMPLEADO e ON e.id_empleado     = r.id_empleado_checkin";
 
-    private static final String SQL_BUSCAR_POR_ID =
-            SQL_JOIN + " WHERE ci.id_checkinout = ?";
-
-    private static final String SQL_BUSCAR_ACTIVO_POR_RESERVA =
-            SQL_JOIN + " WHERE ci.id_reserva = ? AND ci.fecha_checkout IS NULL";
+    private static final String SQL_BUSCAR_ACTIVO_RESERVA =
+            SQL_ACTIVOS + " WHERE r.id_reserva = ? AND r.fecha_checkin IS NOT NULL AND r.fecha_checkout IS NULL";
 
     private static final String SQL_LISTAR_TODOS =
-            SQL_JOIN + " ORDER BY ci.fecha_checkin DESC";
+            SQL_ACTIVOS + " WHERE r.fecha_checkin IS NOT NULL ORDER BY r.fecha_checkin DESC";
 
     private static final String SQL_LISTAR_PAGINADA =
             SQL_LISTAR_TODOS + " OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
 
     private static final String SQL_PENDIENTES_CHECKOUT =
-            SQL_JOIN + " WHERE ci.fecha_checkout IS NULL " +
+            SQL_ACTIVOS +
+            " WHERE r.fecha_checkout IS NULL AND r.fecha_checkin IS NOT NULL " +
             "AND r.fecha_salida <= ? AND r.estado = 'EN_PROCESO'";
 
     public CheckInOutDAOImpl() { super(); }
 
-@Override
+    // ── Escrituras — delegadas a PKG_RESERVAS ────────────────────────────────
+
+    @Override
     public CheckInOut insertar(CheckInOut checkInOut) {
-        return enTransaccion(conn -> {
-            int seqVal = siguienteSeq(conn, "seq_checkinout");
-            try (PreparedStatement stmt = conn.prepareStatement(SQL_INSERTAR)) {
-                stmt.setString(1, fmt("CHK", seqVal));
-                stmt.setString(2, fmt("RES", checkInOut.getReserva().getId()));
-                stmt.setString(3, fmt("EMP", checkInOut.getEmpleadoResponsable().getId()));
-                stmt.setTimestamp(4, Timestamp.valueOf(checkInOut.getFechaHoraCheckin()));
-                stmt.setString(5, checkInOut.getObservaciones());
-                stmt.executeUpdate();
-            }
-            checkInOut.setId(seqVal);
-            return checkInOut;
-        });
-    }
- @Override
-    public boolean actualizar(CheckInOut checkInOut) {
-        return enTransaccion(conn -> {
-            try (PreparedStatement stmt = conn.prepareStatement(SQL_ACTUALIZAR)) {
-                stmt.setTimestamp(1, checkInOut.getFechaHoraCheckout() != null
-                        ? Timestamp.valueOf(checkInOut.getFechaHoraCheckout()) : null);
-                stmt.setString(2, checkInOut.getObservaciones());
-                stmt.setString(3, fmt("CHK", checkInOut.getId()));
-                return stmt.executeUpdate() > 0;
-            }
-        });
-    }
- @Override
-    public Optional<CheckInOut> buscarPorId(int id) {
+        // PKG_RESERVAS.hacer_checkin: reserva→EN_PROCESO, hab→OCUPADA,
+        // registra fecha_checkin e id_empleado_checkin en RESERVA
+        String idReserva = fmt3("RES", checkInOut.getReserva().getId());
+        String idEmpleado = checkInOut.getEmpleadoResponsable() != null
+                ? String.valueOf(checkInOut.getEmpleadoResponsable().getId())
+                : null;
         Connection conn = obtener();
-        try (PreparedStatement stmt = conn.prepareStatement(SQL_BUSCAR_POR_ID)) {
-            stmt.setString(1, fmt("CHK", id));
-            try (ResultSet rs = stmt.executeQuery()) {
-                return rs.next() ? Optional.of(mapearFila(rs)) : Optional.empty();
-            }
+        try (CallableStatement cs = conn.prepareCall(
+                "{call PKG_RESERVAS.hacer_checkin(?, ?, ?)}")) {
+            cs.setString(1, idReserva);
+            cs.setString(2, idEmpleado);
+            cs.setString(3, checkInOut.getObservaciones());
+            cs.execute();
+            // El id del CheckInOut es el mismo id numerico de la reserva
+            checkInOut.setId(checkInOut.getReserva().getId());
+            return checkInOut;
         } catch (SQLException e) {
-            throw new ExcepcionBaseDatos("Error al buscar check-in/out: " + e.getMessage(), e);
+            throw new ExcepcionBaseDatos("Error en check-in: " + e.getMessage(), e);
         } finally {
             liberar(conn);
         }
     }
-@Override
+
+    @Override
+    public boolean actualizar(CheckInOut checkInOut) {
+        // PKG_RESERVAS.hacer_checkout: reserva→COMPLETADA, hab→LIMPIEZA, crea factura PENDIENTE
+        String idReserva = fmt3("RES", checkInOut.getReserva().getId());
+        String idEmpleado = checkInOut.getEmpleadoResponsable() != null
+                ? String.valueOf(checkInOut.getEmpleadoResponsable().getId())
+                : null;
+        Connection conn = obtener();
+        try (CallableStatement cs = conn.prepareCall(
+                "{call PKG_RESERVAS.hacer_checkout(?, ?, ?)}")) {
+            cs.setString(1, idReserva);
+            cs.setString(2, idEmpleado);
+            cs.setString(3, checkInOut.getObservaciones());
+            cs.execute();
+            return true;
+        } catch (SQLException e) {
+            throw new ExcepcionBaseDatos("Error en check-out: " + e.getMessage(), e);
+        } finally {
+            liberar(conn);
+        }
+    }
+
+    // ── Lecturas — sobre RESERVA con filtros de fecha_checkin ────────────────
+
+    @Override
+    public Optional<CheckInOut> buscarPorId(int idReserva) {
+        Connection conn = obtener();
+        try (PreparedStatement stmt = conn.prepareStatement(SQL_BUSCAR_ACTIVO_RESERVA)) {
+            stmt.setString(1, fmt3("RES", idReserva));
+            try (ResultSet rs = stmt.executeQuery()) {
+                return rs.next() ? Optional.of(mapearFila(rs)) : Optional.empty();
+            }
+        } catch (SQLException e) {
+            throw new ExcepcionBaseDatos("Error al buscar check-in: " + e.getMessage(), e);
+        } finally {
+            liberar(conn);
+        }
+    }
+
+    @Override
     public Optional<CheckInOut> buscarCheckinActivoPorReserva(int idReserva) {
         Connection conn = obtener();
-        try (PreparedStatement stmt = conn.prepareStatement(SQL_BUSCAR_ACTIVO_POR_RESERVA)) {
-            stmt.setString(1, fmt("RES", idReserva));
+        try (PreparedStatement stmt = conn.prepareStatement(SQL_BUSCAR_ACTIVO_RESERVA)) {
+            stmt.setString(1, fmt3("RES", idReserva));
             try (ResultSet rs = stmt.executeQuery()) {
                 return rs.next() ? Optional.of(mapearFila(rs)) : Optional.empty();
             }
@@ -128,7 +126,8 @@ public class CheckInOutDAOImpl extends BaseDAO implements ICheckInOutDAO {
             liberar(conn);
         }
     }
-@Override
+
+    @Override
     public List<CheckInOut> listarTodos() {
         List<CheckInOut> lista = new ArrayList<>();
         Connection conn = obtener();
@@ -136,17 +135,13 @@ public class CheckInOutDAOImpl extends BaseDAO implements ICheckInOutDAO {
              ResultSet rs = stmt.executeQuery()) {
             while (rs.next()) lista.add(mapearFila(rs));
         } catch (SQLException e) {
-            throw new ExcepcionBaseDatos("Error al listar check-in/out: " + e.getMessage(), e);
+            throw new ExcepcionBaseDatos("Error al listar check-ins: " + e.getMessage(), e);
         } finally {
             liberar(conn);
         }
         return lista;
     }
 
-    /**
-     * Versión paginada. pagina=0 devuelve la primera página.
-     * Usa Oracle OFFSET/FETCH para no cargar todo el historial en memoria.
-     */
     public List<CheckInOut> listarTodos(int pagina, int tamano) {
         List<CheckInOut> lista = new ArrayList<>();
         Connection conn = obtener();
@@ -157,13 +152,15 @@ public class CheckInOutDAOImpl extends BaseDAO implements ICheckInOutDAO {
                 while (rs.next()) lista.add(mapearFila(rs));
             }
         } catch (SQLException e) {
-            throw new ExcepcionBaseDatos("Error al listar check-in/out paginados: " + e.getMessage(), e);
+            throw new ExcepcionBaseDatos("Error al listar check-ins paginados: " + e.getMessage(), e);
         } finally {
             liberar(conn);
         }
         return lista;
     }
-@Override
+
+    /** Retorna huespedes con check-in activo cuya fecha de salida ya pasó. */
+    @Override
     public List<CheckInOut> buscarCheckinsActivosPendientesCheckout(LocalDate fecha) {
         List<CheckInOut> lista = new ArrayList<>();
         Connection conn = obtener();
@@ -179,15 +176,18 @@ public class CheckInOutDAOImpl extends BaseDAO implements ICheckInOutDAO {
         }
         return lista;
     }
-private CheckInOut mapearFila(ResultSet rs) throws SQLException {
+
+    // ── Mapeador — construye CheckInOut desde fila de RESERVA ────────────────
+
+    private CheckInOut mapearFila(ResultSet rs) throws SQLException {
         Cliente cliente = new Cliente();
         cliente.setId(rs.getInt("id_cliente"));
+        cliente.setDocumento(rs.getString("documento"));
         cliente.setNombre(rs.getString("cl_nombre"));
         cliente.setApellido(rs.getString("cl_apellido"));
         cliente.setEmail(rs.getString("cl_email"));
 
         Habitacion habitacion = new Habitacion();
-        habitacion.setId(rs.getInt("id_habitacion"));
         habitacion.setNumero(rs.getString("h_numero"));
         habitacion.setPrecioBase(rs.getDouble("precio_base"));
 
@@ -197,60 +197,31 @@ private CheckInOut mapearFila(ResultSet rs) throws SQLException {
         reserva.setHabitacion(habitacion);
         reserva.setFechaEntrada(rs.getDate("fecha_entrada").toLocalDate());
         reserva.setFechaSalida(rs.getDate("fecha_salida").toLocalDate());
-        reserva.setEstado(Reserva.EstadoReserva.valueOf(rs.getString("r_estado")));
+        reserva.setEstado(Reserva.EstadoReserva.valueOf(rs.getString("estado")));
         reserva.setNumPersonas(rs.getInt("num_personas"));
         reserva.setPrecioTotal(rs.getDouble("precio_total"));
 
         Empleado empleado = new Empleado();
-        empleado.setId(rs.getInt("id_empleado"));
-        empleado.setNombre(rs.getString("e_nombre"));
-        empleado.setApellido(rs.getString("e_apellido"));
+        try {
+            String idEmp = rs.getString("id_empleado_checkin");
+            if (idEmp != null) {
+                empleado.setId(Integer.parseInt(idEmp.replaceAll("[^0-9]", "")));
+                empleado.setNombre(rs.getString("e_nombre"));
+                empleado.setApellido(rs.getString("e_apellido"));
+            }
+        } catch (Exception ignored) {}
 
         CheckInOut c = new CheckInOut();
-        c.setId(rs.getInt("id"));
+        c.setId(rs.getInt("id_reserva"));
         c.setReserva(reserva);
         c.setEmpleadoResponsable(empleado);
-        c.setFechaHoraCheckin(rs.getTimestamp("fecha_checkin").toLocalDateTime());
+
+        Timestamp checkin = rs.getTimestamp("fecha_checkin");
+        if (checkin != null) c.setFechaHoraCheckin(checkin.toLocalDateTime());
+
         Timestamp checkout = rs.getTimestamp("fecha_checkout");
         if (checkout != null) c.setFechaHoraCheckout(checkout.toLocalDateTime());
-        c.setObservaciones(rs.getString("observaciones"));
-        return c;
-    }
-private CheckInOut mapearFila(ResultSet rs) throws SQLException {
-        Cliente cliente = new Cliente();
-        cliente.setId(rs.getInt("id_cliente"));
-        cliente.setNombre(rs.getString("cl_nombre") != null ? rs.getString("cl_nombre") : "");
-        cliente.setApellido(rs.getString("cl_apellido") != null ? rs.getString("cl_apellido") : "");
-        cliente.setEmail(rs.getString("cl_email") != null ? rs.getString("cl_email") : "");
 
-        Habitacion habitacion = new Habitacion();
-        habitacion.setId(rs.getInt("id_habitacion"));
-        habitacion.setNumero(rs.getString("h_numero") != null ? rs.getString("h_numero") : "");
-        habitacion.setPrecioBase(rs.getDouble("precio_base"));
-
-        Reserva reserva = new Reserva();
-        reserva.setId(rs.getInt("id_reserva"));
-        reserva.setCliente(cliente);
-        reserva.setHabitacion(habitacion);
-        reserva.setFechaEntrada(rs.getDate("fecha_entrada") != null ? rs.getDate("fecha_entrada").toLocalDate() : null);
-        reserva.setFechaSalida(rs.getDate("fecha_salida") != null ? rs.getDate("fecha_salida").toLocalDate() : null);
-        reserva.setEstado(Reserva.EstadoReserva.valueOf(rs.getString("r_estado") != null ? rs.getString("r_estado") : "PENDIENTE"));
-        reserva.setNumPersonas(rs.getInt("num_personas"));
-        reserva.setPrecioTotal(rs.getDouble("precio_total"));
-
-        Empleado empleado = new Empleado();
-        empleado.setId(rs.getInt("id_empleado"));
-        empleado.setNombre(rs.getString("e_nombre") != null ? rs.getString("e_nombre") : "");
-        empleado.setApellido(rs.getString("e_apellido") != null ? rs.getString("e_apellido") : "");
-
-        CheckInOut c = new CheckInOut();
-        c.setId(rs.getInt("id"));
-        c.setReserva(reserva);
-        c.setEmpleadoResponsable(empleado);
-        c.setFechaHoraCheckin(rs.getTimestamp("fecha_checkin") != null ? rs.getTimestamp("fecha_checkin").toLocalDateTime() : null);
-        Timestamp checkout = rs.getTimestamp("fecha_checkout");
-        if (checkout != null) c.setFechaHoraCheckout(checkout.toLocalDateTime());
-        c.setObservaciones(rs.getString("observaciones") != null ? rs.getString("observaciones") : "");
         return c;
     }
 }
