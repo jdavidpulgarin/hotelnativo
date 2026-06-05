@@ -175,4 +175,11 @@ public class ReservaService {
         emailService.notificarCancelacionReserva(reserva.getCliente(), reserva);
     }
 
+    // ── Búsquedas y consultas ─────────────────────────────────────────────────
+    public List<Habitacion> buscarHabitacionesDisponibles(BusquedaDisponibilidadDTO criterios)
+            throws ExcepcionValidacion {
+        ValidadorEntradas.validarRangoFechas(criterios.getFechaEntrada(), criterios.getFechaSalida());
+        return habitacionDAO.buscarDisponibles(criterios);
+    }
+
 }
