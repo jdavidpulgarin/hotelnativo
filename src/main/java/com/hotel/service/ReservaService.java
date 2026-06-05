@@ -187,4 +187,8 @@ public class ReservaService {
         return reservaDAO.buscarPorId(idReserva);
     }
 
+    public List<Reserva> listarTodasLasReservas() {
+        return reservaDAO.listarTodas();
+    }
+
 }
