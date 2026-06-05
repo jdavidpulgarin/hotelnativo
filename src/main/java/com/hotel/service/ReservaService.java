@@ -182,4 +182,9 @@ public class ReservaService {
         return habitacionDAO.buscarDisponibles(criterios);
     }
 
+    public Optional<Reserva> buscarPorId(int idReserva) throws ExcepcionValidacion {
+        ValidadorEntradas.validarIdPositivo(idReserva, "reserva");
+        return reservaDAO.buscarPorId(idReserva);
+    }
+
 }
