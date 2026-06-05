@@ -102,4 +102,18 @@ public class GeminiApiService {
 
         return respuesta;
     }
+
+    /**
+     * Limpia el historial de conversación (para iniciar una nueva sesión).
+     */
+    public void limpiarHistorial() {
+        historial.clear();
+    }
+
+    /**
+     * Número de turnos en el historial actual.
+     */
+    public int cantidadTurnos() {
+        return historial.size();
+    }
 }
