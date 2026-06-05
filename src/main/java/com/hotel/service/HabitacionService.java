@@ -55,4 +55,16 @@ public class HabitacionService {
         habitacionDAO.actualizar(existente);
         return existente;
     }
+
+    /**
+     * @param numero PK de la habitación en v3, ej. "101", "202"
+     */
+    public void eliminarHabitacion(String numero) throws ExcepcionNegocio {
+        Habitacion habitacion = obtenerHabitacionOLanzarError(numero);
+        if (Habitacion.EstadoHabitacion.OCUPADA.equals(habitacion.getEstado())) {
+            throw new ExcepcionNegocio("HABITACION_OCUPADA",
+                    "No se puede eliminar una habitación que está ocupada.");
+        }
+        habitacionDAO.eliminar(numero);
+    }
 }
