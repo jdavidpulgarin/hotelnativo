@@ -121,4 +121,9 @@ public class FacturaService {
             throws ExcepcionNegocio {
         return generarFactura(idReserva, metodoPago, 0, null, 1, null);
     }
+
+    public Optional<Factura> buscarPorReserva(int idReserva) throws ExcepcionNegocio {
+        ValidadorEntradas.validarIdPositivo(idReserva, "reserva");
+        return facturaDAO.buscarPorReserva(idReserva);
+    }
 }
