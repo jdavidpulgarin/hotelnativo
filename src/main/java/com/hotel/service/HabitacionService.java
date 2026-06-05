@@ -90,8 +90,8 @@ public class HabitacionService {
         habitacion.liberar();
         habitacionDAO.actualizarEstado(numero, habitacion.getEstado().name());
     }
-    
-        /**
+
+    /**
      * @param numero PK de la habitación en v3, ej. "101", "202"
      */
     public Optional<Habitacion> buscarPorId(String numero) {
@@ -100,5 +100,53 @@ public class HabitacionService {
 
     public List<Habitacion> listarTodasLasHabitaciones() {
         return habitacionDAO.listarTodas();
+    }
+
+    // ── métodos privados de apoyo ──────────────────────────────────────────────
+    private void validarDatosHabitacion(HabitacionDTO dto) throws ExcepcionValidacion {
+        ValidadorEntradas.validarCampoRequerido(dto.getNumero(), "numero");
+        ValidadorEntradas.validarPrecioPositivo(dto.getPrecioBase(), "precioBase");
+        ValidadorEntradas.validarIdPositivo(dto.getIdTipoHabitacion(), "tipoHabitacion");
+        ValidadorEntradas.validarIdPositivo(dto.getIdPiso(), "piso");
+    }
+
+    private void verificarNumeroNoRegistrado(String numero) throws ExcepcionNegocio {
+        if (habitacionDAO.buscarPorNumero(numero).isPresent()) {
+            throw new ExcepcionNegocio("NUMERO_DUPLICADO",
+                    "Ya existe una habitación con el número: " + numero);
+        }
+    }
+
+    private Habitacion obtenerHabitacionOLanzarError(String numero) throws ExcepcionNegocio {
+        return habitacionDAO.buscarPorNumero(numero)
+                .orElseThrow(() -> new ExcepcionNegocio("HABITACION_NOT_FOUND",
+                "No se encontró la habitación número: " + numero));
+    }
+
+    /**
+     * Construye una Habitacion de referencia desde el DTO. IDs de tipo según
+     * schema Hotel Nativo: 1=Simple, 2=Multiple, 3=Doble, 4=Suite.
+     */
+    private Habitacion construirHabitacionDesdeDTO(HabitacionDTO dto) {
+        TipoHabitacion tipoRef;
+        switch (dto.getIdTipoHabitacion()) {
+            case 1:
+                tipoRef = new HabitacionSimple();
+                break;
+            case 2:
+                tipoRef = new HabitacionMultiple();
+                break;
+            case 3:
+                tipoRef = new HabitacionDoble();
+                break;
+            default:
+                tipoRef = new HabitacionSuite();
+                break;
+        }
+
+        Piso pisoRef = new Piso();
+        pisoRef.setId(dto.getIdPiso());
+
+        return new Habitacion(0, dto.getNumero(), tipoRef, pisoRef, dto.getPrecioBase());
     }
 }
