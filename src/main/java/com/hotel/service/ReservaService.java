@@ -191,4 +191,9 @@ public class ReservaService {
         return reservaDAO.listarTodas();
     }
 
+    public List<Reserva> listarReservasActivasPorCliente(int idCliente) throws ExcepcionValidacion {
+        ValidadorEntradas.validarIdPositivo(idCliente, "cliente");
+        return reservaBusqueda.buscarReservasActivasPorCliente(idCliente);
+    }
+
 }
