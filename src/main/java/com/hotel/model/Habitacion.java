@@ -38,5 +38,60 @@ public class Habitacion {
         this.numCamas = numCamas;
     }
     
-    
+    public boolean estaDisponible() {
+        return EstadoHabitacion.DISPONIBLE.equals(this.estado);
+    }
+
+    /** GRASP: Experto en Información — transiciona a RESERVADA al confirmar la reserva. */
+    public void reservar() {
+        this.estado = EstadoHabitacion.RESERVADA;
+    }
+
+    /** GRASP: Experto en Información — transiciona a estado OCUPADA. */
+    public void ocupar() {
+        this.estado = EstadoHabitacion.OCUPADA;
+    }
+
+    /** GRASP: Experto en Información — libera la habitación al estado DISPONIBLE. */
+    public void liberar() {
+        this.estado = EstadoHabitacion.DISPONIBLE;
+    }
+
+    /** GRASP: Experto en Información — envía a mantenimiento. */
+    public void enviarAMantenimiento() {
+        this.estado = EstadoHabitacion.MANTENIMIENTO;
+    }
+
+    /** Delega al tipo de habitación el cálculo del precio final. GRASP: Polimorfismo. */
+    public double calcularPrecioFinal() {
+        return tipoHabitacion.calcularPrecio(precioBase);
+    }
+
+    public int getId() { return id; }
+    public void setId(int id) { this.id = id; }
+
+    public String getNumero() { return numero; }
+    public void setNumero(String numero) { this.numero = numero; }
+
+    public TipoHabitacion getTipoHabitacion() { return tipoHabitacion; }
+    public void setTipoHabitacion(TipoHabitacion tipoHabitacion) { this.tipoHabitacion = tipoHabitacion; }
+
+    public Piso getPiso() { return piso; }
+    public void setPiso(Piso piso) { this.piso = piso; }
+
+    public EstadoHabitacion getEstado() { return estado; }
+    public void setEstado(EstadoHabitacion estado) { this.estado = estado; }
+
+    public double getPrecioBase() { return precioBase; }
+    public void setPrecioBase(double precioBase) { this.precioBase = precioBase; }
+
+    public int getNumCamas() { return numCamas; }
+    public void setNumCamas(int numCamas) { this.numCamas = numCamas; }
+
+    @Override
+    public String toString() {
+        return String.format("Habitacion[id=%d, numero=%s, tipo=%s, camas=%d, estado=%s, precio=%.2f]",
+                id, numero, tipoHabitacion.obtenerEtiquetaTipo(),
+                numCamas, estado, calcularPrecioFinal());
+    }
 }
