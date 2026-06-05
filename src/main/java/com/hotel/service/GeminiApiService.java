@@ -48,12 +48,58 @@ public class GeminiApiService {
                 .connectTimeout(Duration.ofSeconds(15))
                 .build();
     }
-    
-        /**
+
+    /**
      * true si la clave está configurada y no es el placeholder.
      */
     public boolean estaConfigurado() {
         return !apiKey.isBlank()
                 && !apiKey.equalsIgnoreCase("TU_API_KEY_AQUI");
+    }
+
+    /**
+     * Envía la pregunta a Gemini con contexto real de la BD e historial
+     * completo.
+     *
+     * @param contextoHotel Datos reales de BD (disponibilidad, reservas, etc.)
+     * @param pregunta Mensaje original del usuario.
+     * @return Respuesta de Gemini en texto plano.
+     * @throws Exception Si la llamada HTTP falla o la respuesta es inválida.
+     */
+    public String consultar(String contextoHotel, String pregunta) throws Exception {
+        // Construir el turno del usuario (incluye contexto de BD si hay)
+        String mensajeUsuario = construirMensajeUsuario(contextoHotel, pregunta);
+
+        // Agregar turno usuario al historial
+        historial.add("{\"role\":\"user\",\"parts\":[{\"text\":" + encodeJson(mensajeUsuario) + "}]}");
+
+        // Recortar historial si supera el máximo (conserva pares completos)
+        recortarHistorial();
+
+        // Construir el cuerpo JSON completo con historial
+        String cuerpoJson = construirCuerpoJson();
+
+        HttpRequest req = HttpRequest.newBuilder()
+                .uri(URI.create(URL_BASE + apiKey))
+                .timeout(Duration.ofSeconds(25))
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(cuerpoJson))
+                .build();
+
+        HttpResponse<String> resp = http.send(req, HttpResponse.BodyHandlers.ofString());
+
+        if (resp.statusCode() != 200) {
+            // Remover el último turno del historial para no contaminar el contexto
+            historial.remove(historial.size() - 1);
+            throw new RuntimeException("Gemini respondió HTTP " + resp.statusCode()
+                    + ". Verifica tu API key en config/chatbot.properties.\nDetalle: " + resp.body());
+        }
+
+        String respuesta = extraerTexto(resp.body());
+
+        // Agregar turno del modelo al historial
+        historial.add("{\"role\":\"model\",\"parts\":[{\"text\":" + encodeJson(respuesta) + "}]}");
+
+        return respuesta;
     }
 }
