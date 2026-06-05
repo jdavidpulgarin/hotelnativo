@@ -81,4 +81,13 @@ public class HabitacionService {
         habitacion.enviarAMantenimiento();
         habitacionDAO.actualizarEstado(numero, habitacion.getEstado().name());
     }
+
+    /**
+     * @param numero PK de la habitación en v3, ej. "101", "202"
+     */
+    public void devolverHabitacionAServicio(String numero) throws ExcepcionNegocio {
+        Habitacion habitacion = obtenerHabitacionOLanzarError(numero);
+        habitacion.liberar();
+        habitacionDAO.actualizarEstado(numero, habitacion.getEstado().name());
+    }
 }
