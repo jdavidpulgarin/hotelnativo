@@ -42,4 +42,17 @@ public class HabitacionService {
         Habitacion nuevaHabitacion = construirHabitacionDesdeDTO(dto);
         return habitacionDAO.insertar(nuevaHabitacion);
     }
+
+    /**
+     * @param numero PK de la habitación en v3, ej. "101", "202"
+     */
+    public Habitacion actualizarHabitacion(String numero, HabitacionDTO dto)
+            throws ExcepcionNegocio {
+        validarDatosHabitacion(dto);
+        Habitacion existente = obtenerHabitacionOLanzarError(numero);
+        existente.setNumero(dto.getNumero());
+        existente.setPrecioBase(dto.getPrecioBase());
+        habitacionDAO.actualizar(existente);
+        return existente;
+    }
 }
