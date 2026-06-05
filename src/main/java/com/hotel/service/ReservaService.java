@@ -117,4 +117,28 @@ public class ReservaService {
 
         reserva.confirmar();
         reservaDAO.actualizar(reserva);
+
+        // Marcar la habitación como RESERVADA; si falla, revertir la reserva a PENDIENTE
+        Habitacion habitacion = reserva.getHabitacion();
+        if (habitacion != null) {
+            try {
+                habitacion.reservar();
+                habitacionDAO.actualizarEstado(habitacion.getNumero(),
+                        Habitacion.EstadoHabitacion.RESERVADA.name());
+            } catch (Exception e) {
+                reserva.setEstado(Reserva.EstadoReserva.PENDIENTE);
+                try {
+                    reservaDAO.actualizar(reserva);
+                } catch (Exception ex) {
+                    System.err.println("[CONFIRMAR] Error al revertir reserva: " + ex.getMessage());
+                }
+                throw new ExcepcionNegocio("ERROR_CONFIRMAR",
+                        "Error al marcar habitación: " + e.getMessage());
+            }
+        }
+
+        // Notificar al cliente por email al confirmar (no al crear)
+        emailService.notificarConfirmacionReserva(reserva.getCliente(), reserva);
+        System.out.println("[RESERVA] Reserva #" + idReserva + " confirmada.");
     }
+}
