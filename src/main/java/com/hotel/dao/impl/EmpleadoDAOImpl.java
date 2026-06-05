@@ -1,10 +1,5 @@
-
 package com.hotel.dao.impl;
 
-/**
- *
- * @author rober
- */
 import com.hotel.dao.interfaces.IEmpleadoDAO;
 import com.hotel.exception.ExcepcionBaseDatos;
 import com.hotel.model.*;
@@ -14,34 +9,23 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-/**
- * Implementación JDBC Oracle del repositorio de empleados.
- * Adaptado al schema HOTELNATIVO: tabla EMPLEADO (PK id_empleado VARCHAR2)
- * y tabla CARGO (PK id_cargo VARCHAR2).
- * Columnas primer_nombre / apellido_1 mapean a nombre / apellido del modelo.
- *
- * REFACTORING v2 — 5 puntos críticos corregidos:
- *  1. ResultSet cerrado con try-with-resources anidado en todos los buscarPor*.
- *  2. Sin concatenación de Strings en SQL (todo PreparedStatement).
- *  3. insertar/actualizar/eliminar/actualizarHash usan enTransaccion().
- *  4. listarTodos(int,int) con paginación Oracle OFFSET/FETCH.
- *  5. Sin printStackTrace(); errores suben como ExcepcionBaseDatos.
- *
- * GRASP: Fabricación Pura.
- */
+
 public class EmpleadoDAOImpl extends BaseDAO implements IEmpleadoDAO {
 
+    // v2: password_hash y debe_cambiar_password están en EMPLEADO (CREDENCIALES eliminada)
     private static final String COLS_JOIN =
             "TO_NUMBER(REGEXP_REPLACE(e.id_empleado,'[^0-9]','')) AS id, " +
             "e.primer_nombre AS nombre, e.segundo_nombre, " +
             "e.apellido_1 AS apellido, e.apellido_2, " +
-            "e.email, e.telefono, e.fecha_contratacion, e.password_hash, " +
-            "e.debe_cambiar_password, e.salario, e.tipo_contrato, e.tipo_pago, e.fecha_fin_contrato, " +
+            "e.email, e.telefono, e.fecha_contratacion, " +
+            "e.password_hash, e.debe_cambiar_password, " +
+            "e.salario, e.id_tipo_contrato, e.id_tipo_pago, e.fecha_fin_contrato, " +
             "TO_NUMBER(REGEXP_REPLACE(e.id_cargo,'[^0-9]','')) AS id_cargo, " +
             "c.nombre_cargo, c.descripcion c_desc, c.salario_base";
 
     private static final String FROM_JOIN =
-            "FROM EMPLEADO e JOIN CARGO c ON e.id_cargo = c.id_cargo";
+            "FROM EMPLEADO e " +
+            "JOIN CARGO c ON e.id_cargo = c.id_cargo";
 
     private static final String SQL_BUSCAR_POR_ID =
             "SELECT " + COLS_JOIN + " " + FROM_JOIN + " WHERE e.id_empleado = ?";
@@ -59,66 +43,31 @@ public class EmpleadoDAOImpl extends BaseDAO implements IEmpleadoDAO {
             "SELECT TO_NUMBER(REGEXP_REPLACE(id_cargo,'[^0-9]','')) AS id, " +
             "nombre_cargo, descripcion, salario_base FROM CARGO ORDER BY id_cargo";
 
-    private static final String SQL_ACTUALIZAR =
-            "UPDATE EMPLEADO SET primer_nombre=?, segundo_nombre=?, apellido_1=?, apellido_2=?, " +
-            "email=?, telefono=?, id_cargo=?, fecha_contratacion=?, " +
-            "salario=?, tipo_contrato=?, tipo_pago=?, fecha_fin_contrato=? WHERE id_empleado=?";
-
-    private static final String SQL_ELIMINAR = "DELETE FROM EMPLEADO WHERE id_empleado=?";
-
-    private static final String SQL_ACTUALIZAR_HASH =
-            "UPDATE EMPLEADO SET password_hash=? WHERE id_empleado=?";
-
+    // Forzar cambio de contraseña en próximo login (no tiene procedimiento equivalente)
     private static final String SQL_ACTUALIZAR_DEBE_CAMBIAR =
-            "UPDATE EMPLEADO SET debe_cambiar_password=? WHERE id_empleado=?";
+            "UPDATE EMPLEADO SET debe_cambiar_password=?, fecha_mod_cred=SYSDATE WHERE id_empleado=?";
 
     public EmpleadoDAOImpl() { super(); }
 
-private static volatile boolean schemaVerificado = false;
+    // ── Escrituras — todas con enTransaccion() ────────────────────────────────
 
-    private void verificarYMigrarSchema() {
-        if (schemaVerificado) return;
-        synchronized (EmpleadoDAOImpl.class) {
-            if (schemaVerificado) return;
-            Connection conn = obtener();
-            try {
-                migrarColumna(conn, "password_hash",        "VARCHAR2(72) DEFAULT NULL");
-                migrarColumna(conn, "debe_cambiar_password","NUMBER(1)    DEFAULT 1");
-                migrarColumna(conn, "salario",              "NUMBER(12,2) DEFAULT NULL");
-                migrarColumna(conn, "tipo_contrato",        "VARCHAR2(30) DEFAULT 'INDEFINIDO'");
-                migrarColumna(conn, "tipo_pago",            "VARCHAR2(20) DEFAULT 'MENSUAL'");
-                migrarColumna(conn, "fecha_fin_contrato",   "DATE         DEFAULT NULL");
-            } finally {
-                liberar(conn);
-                schemaVerificado = true;
-            }
-        }
-    }
-private void migrarColumna(Connection conn, String columna, String definicion) {
-        try (Statement st = conn.createStatement()) {
-            st.executeQuery("SELECT " + columna + " FROM EMPLEADO WHERE ROWNUM = 1").close();
-        } catch (SQLException e) {
-            if (e.getErrorCode() == 904) {
-                try (Statement st = conn.createStatement()) {
-                    st.execute("ALTER TABLE EMPLEADO ADD " + columna + " " + definicion);
-                    System.out.println("[DB] Migración: columna " + columna + " añadida a EMPLEADO.");
-                } catch (SQLException ex) {
-                    System.err.println("[DB] Error añadiendo columna " + columna + ": " + ex.getMessage());
-                }
-            }
-        }
-    }
-@Override
+    @Override
     public Empleado insertar(Empleado empleado) {
-        String sql = "INSERT INTO EMPLEADO " +
-                "(id_empleado, primer_nombre, segundo_nombre, apellido_1, apellido_2, " +
-                "email, telefono, id_cargo, fecha_contratacion, debe_cambiar_password, " +
-                "salario, tipo_contrato, tipo_pago, fecha_fin_contrato) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?, ?)";
+        // v2: id_empleado = cedula (clave natural). password_hash en EMPLEADO directamente.
+        String sqlEmp = "INSERT INTO EMPLEADO " +
+                "(id_empleado, tipo_documento, primer_nombre, segundo_nombre, apellido_1, apellido_2, " +
+                "email, telefono, id_cargo, fecha_contratacion, " +
+                "salario, id_tipo_contrato, id_tipo_pago, fecha_fin_contrato, " +
+                "password_hash, debe_cambiar_password, fecha_creacion_cred, fecha_mod_cred) " +
+                "VALUES (?, 'CEDULA', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, SYSDATE, SYSDATE)";
         return enTransaccion(conn -> {
-            int seqVal = siguienteSeq(conn, "seq_empleado");
-            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-                stmt.setString(1, fmt("EMP", seqVal));
+            // id_empleado = cedula numérica; EmpleadoService la fija con setId() antes de llamar aquí
+            String cedula = String.valueOf(empleado.getId());
+            String hashInicial = empleado.getHashContrasena() != null
+                    && !empleado.getHashContrasena().isBlank()
+                    ? empleado.getHashContrasena() : "";
+            try (PreparedStatement stmt = conn.prepareStatement(sqlEmp)) {
+                stmt.setString(1, cedula);
                 stmt.setString(2, empleado.getNombre());
                 stmt.setString(3, blankToNull(empleado.getSegundoNombre()));
                 stmt.setString(4, empleado.getApellido());
@@ -133,55 +82,75 @@ private void migrarColumna(Connection conn, String columna, String definicion) {
                 stmt.setString(12, empleado.getTipoPago());
                 stmt.setDate(13, empleado.getFechaFinContrato() != null
                         ? Date.valueOf(empleado.getFechaFinContrato()) : null);
+                stmt.setString(14, hashInicial);
                 stmt.executeUpdate();
             }
-            empleado.setId(seqVal);
             return empleado;
-        });
-    }
-@Override
-    public boolean actualizar(Empleado empleado) {
-        return enTransaccion(conn -> {
-            try (PreparedStatement stmt = conn.prepareStatement(SQL_ACTUALIZAR)) {
-                stmt.setString(1, empleado.getNombre());
-                stmt.setString(2, blankToNull(empleado.getSegundoNombre()));
-                stmt.setString(3, empleado.getApellido());
-                stmt.setString(4, blankToNull(empleado.getApellido2()));
-                stmt.setString(5, empleado.getEmail());
-                stmt.setString(6, empleado.getTelefono());
-                stmt.setString(7, fmt("CAR", empleado.getCargo().getId()));
-                stmt.setDate(8, empleado.getFechaContratacion() != null
-                        ? Date.valueOf(empleado.getFechaContratacion()) : null);
-                if (empleado.getSalario() > 0) stmt.setDouble(9, empleado.getSalario());
-                else stmt.setNull(9, java.sql.Types.NUMERIC);
-                stmt.setString(10, empleado.getTipoContrato());
-                stmt.setString(11, empleado.getTipoPago());
-                stmt.setDate(12, empleado.getFechaFinContrato() != null
-                        ? Date.valueOf(empleado.getFechaFinContrato()) : null);
-                stmt.setString(13, fmt("EMP", empleado.getId()));
-                return stmt.executeUpdate() > 0;
-            }
         });
     }
 
     @Override
-    public boolean eliminar(int idEmpleado) {
-        return enTransaccion(conn -> {
-            try (PreparedStatement stmt = conn.prepareStatement(SQL_ELIMINAR)) {
-                stmt.setString(1, fmt("EMP", idEmpleado));
-                return stmt.executeUpdate() > 0;
-            }
-        });
+    public boolean actualizar(Empleado empleado) {
+        // PKG_ADMIN.actualizar_empleado (corregido): incluye fecha_contratacion y fecha_fin_contrato
+        Connection conn = obtener();
+        try (CallableStatement cs = conn.prepareCall(
+                "{call PKG_ADMIN.actualizar_empleado(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}")) {
+            cs.setString(1, String.valueOf(empleado.getId()));
+            cs.setString(2, empleado.getNombre());
+            cs.setString(3, blankToNull(empleado.getSegundoNombre()));
+            cs.setString(4, empleado.getApellido());
+            cs.setString(5, blankToNull(empleado.getApellido2()));
+            cs.setString(6, empleado.getEmail());
+            cs.setString(7, empleado.getTelefono());
+            cs.setString(8, fmt("CAR", empleado.getCargo().getId()));
+            cs.setString(9, empleado.getTipoContrato());
+            cs.setString(10, empleado.getTipoPago());
+            if (empleado.getSalario() > 0) cs.setDouble(11, empleado.getSalario());
+            else cs.setNull(11, java.sql.Types.NUMERIC);
+            cs.setDate(12, empleado.getFechaContratacion() != null
+                    ? Date.valueOf(empleado.getFechaContratacion()) : null);
+            cs.setDate(13, empleado.getFechaFinContrato() != null
+                    ? Date.valueOf(empleado.getFechaFinContrato()) : null);
+            cs.execute();
+            return true;
+        } catch (SQLException e) {
+            throw new ExcepcionBaseDatos("Error al actualizar empleado: " + e.getMessage(), e);
+        } finally {
+            liberar(conn);
+        }
     }
-@Override
+
+    @Override
+    public boolean eliminar(int idEmpleado) {
+        // prc_eliminar_empleado limpia MANTENIMIENTO del empleado antes de borrar
+        Connection conn = obtener();
+        try (CallableStatement cs = conn.prepareCall(
+                "{call PKG_ADMIN.eliminar_empleado(?)}")) {
+            cs.setString(1, String.valueOf(idEmpleado));
+            cs.execute();
+            return true;
+        } catch (SQLException e) {
+            throw new ExcepcionBaseDatos("Error al eliminar empleado: " + e.getMessage(), e);
+        } finally {
+            liberar(conn);
+        }
+    }
+
+    @Override
     public boolean actualizarPasswordHash(int idEmpleado, String passwordHash) {
-        return enTransaccion(conn -> {
-            try (PreparedStatement stmt = conn.prepareStatement(SQL_ACTUALIZAR_HASH)) {
-                stmt.setString(1, passwordHash);
-                stmt.setString(2, fmt("EMP", idEmpleado));
-                return stmt.executeUpdate() > 0;
-            }
-        });
+        // PKG_ADMIN.cambiar_password actualiza hash, fecha_mod_cred y pone debe_cambiar=0
+        Connection conn = obtener();
+        try (CallableStatement cs = conn.prepareCall(
+                "{call PKG_ADMIN.cambiar_password(?, ?)}")) {
+            cs.setString(1, String.valueOf(idEmpleado));
+            cs.setString(2, passwordHash);
+            cs.execute();
+            return true;
+        } catch (SQLException e) {
+            throw new ExcepcionBaseDatos("Error al cambiar contraseña: " + e.getMessage(), e);
+        } finally {
+            liberar(conn);
+        }
     }
 
     @Override
@@ -189,16 +158,35 @@ private void migrarColumna(Connection conn, String columna, String definicion) {
         return enTransaccion(conn -> {
             try (PreparedStatement stmt = conn.prepareStatement(SQL_ACTUALIZAR_DEBE_CAMBIAR)) {
                 stmt.setInt(1, debe ? 1 : 0);
-                stmt.setString(2, fmt("EMP", idEmpleado));
+                stmt.setString(2, String.valueOf(idEmpleado));
                 return stmt.executeUpdate() > 0;
             }
         });
     }
-@Override
+
+    @Override
+    public void aumentarSalarios(int idCargo, double porcentaje) {
+        // PKG_HOTEL.aumento_salarios valida el porcentaje y actualiza CARGO.salario_base
+        Connection conn = obtener();
+        try (CallableStatement cs = conn.prepareCall(
+                "{call PKG_ADMIN.aumento_salarios(?, ?)}")) {
+            cs.setString(1, fmt("CAR", idCargo));
+            cs.setDouble(2, porcentaje);
+            cs.execute();
+        } catch (SQLException e) {
+            throw new ExcepcionBaseDatos("Error al aumentar salarios: " + e.getMessage(), e);
+        } finally {
+            liberar(conn);
+        }
+    }
+
+    // ── Lecturas — ResultSet en try-with-resources anidado ───────────────────
+
+    @Override
     public Optional<Empleado> buscarPorId(int idEmpleado) {
         Connection conn = obtener();
         try (PreparedStatement stmt = conn.prepareStatement(SQL_BUSCAR_POR_ID)) {
-            stmt.setString(1, fmt("EMP", idEmpleado));
+            stmt.setString(1, String.valueOf(idEmpleado));
             try (ResultSet rs = stmt.executeQuery()) {
                 return rs.next() ? Optional.of(mapearFila(rs)) : Optional.empty();
             }
@@ -208,9 +196,9 @@ private void migrarColumna(Connection conn, String columna, String definicion) {
             liberar(conn);
         }
     }
- @Override
+
+    @Override
     public List<Empleado> listarTodos() {
-        verificarYMigrarSchema();
         List<Empleado> lista = new ArrayList<>();
         Connection conn = obtener();
         try (PreparedStatement stmt = conn.prepareStatement(SQL_LISTAR_TODOS);
@@ -244,7 +232,8 @@ private void migrarColumna(Connection conn, String columna, String definicion) {
         }
         return lista;
     }
-@Override
+
+    @Override
     public List<Empleado> buscarPorCargo(int idCargo) {
         List<Empleado> lista = new ArrayList<>();
         Connection conn = obtener();
@@ -282,10 +271,16 @@ private void migrarColumna(Connection conn, String columna, String definicion) {
         }
         return lista;
     }
-private static String blankToNull(String s) {
+
+    // ── Utilidades ───────────────────────────────────────────────────────────
+
+    private static String blankToNull(String s) {
         return (s == null || s.isBlank()) ? null : s;
     }
-private Empleado mapearFila(ResultSet rs) throws SQLException {
+
+    // ── Mapeador ─────────────────────────────────────────────────────────────
+
+    private Empleado mapearFila(ResultSet rs) throws SQLException {
         Cargo cargo = new Cargo();
         cargo.setId(rs.getInt("id_cargo"));
         cargo.setNombreCargo(rs.getString("nombre_cargo"));
@@ -303,9 +298,9 @@ private Empleado mapearFila(ResultSet rs) throws SQLException {
         try { e.setHashContrasena(rs.getString("password_hash")); }   catch (SQLException ignored) {}
         try { e.setDebeCambiarContrasena(rs.getInt("debe_cambiar_password") == 1); }
         catch (SQLException ignored) {}
-        try { e.setSalario(rs.getDouble("salario")); }              catch (SQLException ignored) {}
-        try { e.setTipoContrato(rs.getString("tipo_contrato")); }   catch (SQLException ignored) {}
-        try { e.setTipoPago(rs.getString("tipo_pago")); }           catch (SQLException ignored) {}
+        try { e.setSalario(rs.getDouble("salario")); }                   catch (SQLException ignored) {}
+        try { e.setTipoContrato(rs.getString("id_tipo_contrato")); }   catch (SQLException ignored) {}
+        try { e.setTipoPago(rs.getString("id_tipo_pago")); }           catch (SQLException ignored) {}
         try {
             Date ffc = rs.getDate("fecha_fin_contrato");
             if (ffc != null) e.setFechaFinContrato(ffc.toLocalDate());
