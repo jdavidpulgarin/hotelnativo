@@ -1,10 +1,5 @@
-
 package com.hotel.dao.impl;
 
-/**
- *
- * @author rober
- */
 import com.hotel.dao.interfaces.IClienteDAO;
 import com.hotel.dao.interfaces.IClienteBusqueda;
 import com.hotel.exception.ExcepcionBaseDatos;
@@ -15,123 +10,131 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-/**
- * Implementación JDBC Oracle del repositorio de clientes.
- * Adaptado al schema HOTELNATIVO: tabla CLIENTE, PK id_cliente (VARCHAR2),
- * columnas primer_nombre / apellido_1 en lugar de nombre / apellido.
- *
- * REFACTORING v2 — 5 puntos críticos corregidos:
- *  1. ResultSet cerrado con try-with-resources anidado en todos los buscarPor*.
- *  2. Sin concatenación de Strings en SQL (todo PreparedStatement).
- *  3. insertar/actualizar/eliminar usan enTransaccion() → commit/rollback garantizado.
- *  4. listarTodos(int,int) con paginación Oracle OFFSET/FETCH.
- *  5. Sin printStackTrace(); errores suben como ExcepcionBaseDatos.
- *
- * GRASP: Fabricación Pura.
- */
+
 public class ClienteDAOImpl extends BaseDAO implements IClienteDAO, IClienteBusqueda {
 
+    // COLS hace JOIN con PAIS y CIUDAD para devolver nombres legibles
+    // idPais/idCiudad: claves FK para INSERT/UPDATE
+    // nacionalidad/ciudad_origen: nombres para mostrar en pantalla
     private static final String COLS =
-            "id_cliente AS cedula_str, " +
-            "TO_NUMBER(REGEXP_REPLACE(id_cliente,'[^0-9]','')) AS id, " +
-            "primer_nombre AS nombre, segundo_nombre, apellido_1 AS apellido, apellido_2, " +
-            "email, telefono, " +
-            "nacionalidad, ciudad_origen, fecha_registro, es_vip";
+            "cl.id_cliente AS cedula_str, " +
+            "TO_NUMBER(REGEXP_REPLACE(cl.id_cliente,'[^0-9]','')) AS id, " +
+            "cl.primer_nombre AS nombre, cl.segundo_nombre, cl.apellido_1 AS apellido, cl.apellido_2, " +
+            "cl.email, cl.telefono, " +
+            "cl.id_pais, " +
+            "NVL(p.nombre,  cl.id_pais)   AS nacionalidad, " +
+            "cl.id_ciudad, " +
+            "NVL(ci.nombre, cl.id_ciudad) AS ciudad_origen, " +
+            "cl.fecha_registro, cl.es_vip";
+
+    private static final String FROM_JOIN =
+            "FROM CLIENTE cl " +
+            "LEFT JOIN PAIS   p  ON p.id_pais    = cl.id_pais " +
+            "LEFT JOIN CIUDAD ci ON ci.id_ciudad = cl.id_ciudad";
 
     private static final String SQL_LISTAR_TODOS =
-            "SELECT " + COLS + " FROM CLIENTE ORDER BY apellido_1, primer_nombre";
+            "SELECT " + COLS + " " + FROM_JOIN + " ORDER BY cl.apellido_1, cl.primer_nombre";
 
     private static final String SQL_LISTAR_PAGINADA =
             SQL_LISTAR_TODOS + " OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
 
-    // BUG 1 FIX: Clientes con formato "CLI##" tienen id numérico (ej. 1) pero
-    // su id_cliente en BD es "CLI01". Clientes con cédula directa (ej. 1066280182)
-    // coinciden tal cual. El OR cubre ambos casos sin cambiar la interfaz.
     private static final String SQL_BUSCAR_POR_ID =
-            "SELECT " + COLS + " FROM CLIENTE WHERE id_cliente = ? OR id_cliente = ?";
+            "SELECT " + COLS + " " + FROM_JOIN + " WHERE cl.id_cliente = ? OR cl.id_cliente = ?";
 
     private static final String SQL_BUSCAR_POR_DOCUMENTO =
-            "SELECT " + COLS + " FROM CLIENTE WHERE id_cliente = ?";
+            "SELECT " + COLS + " " + FROM_JOIN + " WHERE cl.id_cliente = ?";
 
     private static final String SQL_BUSCAR_EMAIL =
-            "SELECT " + COLS + " FROM CLIENTE WHERE email = ?";
+            "SELECT " + COLS + " " + FROM_JOIN + " WHERE cl.email = ?";
 
     private static final String SQL_BUSCAR_NOMBRE =
-            "SELECT " + COLS + " FROM CLIENTE " +
-            "WHERE UPPER(primer_nombre) LIKE UPPER(?) ESCAPE '!' OR UPPER(apellido_1) LIKE UPPER(?) ESCAPE '!'";
+            "SELECT " + COLS + " " + FROM_JOIN +
+            " WHERE UPPER(cl.primer_nombre) LIKE UPPER(?) ESCAPE '!'" +
+            " OR UPPER(cl.apellido_1) LIKE UPPER(?) ESCAPE '!'";
 
     private static final String SQL_LISTAR_VIP =
-            "SELECT " + COLS + " FROM CLIENTE WHERE es_vip = 1 ORDER BY apellido_1";
-
-    private static final String SQL_ACTUALIZAR =
-            "UPDATE CLIENTE SET primer_nombre=?, segundo_nombre=?, apellido_1=?, apellido_2=?, " +
-            "email=?, telefono=?, nacionalidad=?, es_vip=?, ciudad_origen=? WHERE id_cliente=?";
-
-    private static final String SQL_ELIMINAR =
-            "DELETE FROM CLIENTE WHERE id_cliente=? OR id_cliente=?";
+            "SELECT " + COLS + " " + FROM_JOIN + " WHERE cl.es_vip = 1 ORDER BY cl.apellido_1";
 
     public ClienteDAOImpl() { super(); }
 
-@Override
+    // ── Escrituras — delegan a PKG_ADMIN vía CallableStatement ───────────────
+
+    @Override
     public Cliente insertar(Cliente cliente) {
-        String sql = "INSERT INTO CLIENTE " +
-                "(id_cliente, primer_nombre, segundo_nombre, apellido_1, apellido_2, " +
-                " email, telefono, nacionalidad, ciudad_origen, fecha_registro, es_vip) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        return enTransaccion(conn -> {
-            String cedula = cliente.getDocumento();
-            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-                stmt.setString(1, cedula);
-                stmt.setString(2, cliente.getNombre());
-                stmt.setString(3, cliente.getSegundoNombre());
-                stmt.setString(4, cliente.getApellido());
-                stmt.setString(5, cliente.getApellido2());
-                stmt.setString(6, cliente.getEmail());
-                stmt.setString(7, cliente.getTelefono());
-                stmt.setString(8, cliente.getNacionalidad());
-                stmt.setString(9, cliente.getCiudadOrigen());
-                stmt.setDate(10, java.sql.Date.valueOf(java.time.LocalDate.now()));
-                stmt.setInt(11, cliente.isEsVip() ? 1 : 0);
-                stmt.executeUpdate();
-            }
-            try { cliente.setId(Integer.parseInt(cedula)); }
-            catch (NumberFormatException ignore) { cliente.setId(0); }
-            cliente.setFechaRegistro(java.time.LocalDate.now());
-            return cliente;
-        });
+        String cedula = cliente.getDocumento();
+        String tipoDoc = (cliente.getSubtipoDocumento() != null
+                && !cliente.getSubtipoDocumento().equals("COLOMBIANA"))
+                ? cliente.getSubtipoDocumento() : "CEDULA";
+        Connection conn = obtener();
+        try (CallableStatement cs = conn.prepareCall(
+                "{call PKG_ADMIN.registrar_cliente(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}")) {
+            cs.setString(1, cedula);
+            cs.setString(2, tipoDoc);
+            cs.setString(3, cliente.getNombre());
+            cs.setString(4, cliente.getSegundoNombre());
+            cs.setString(5, cliente.getApellido());
+            cs.setString(6, cliente.getApellido2());
+            cs.setString(7, cliente.getEmail());
+            cs.setString(8, cliente.getTelefono());
+            cs.setString(9,  cliente.getIdPais()   != null ? cliente.getIdPais()   : "PAI01");
+            cs.setString(10, cliente.getIdCiudad() != null ? cliente.getIdCiudad() : "CIU79");
+            cs.execute();
+        } catch (SQLException e) {
+            throw new ExcepcionBaseDatos("Error al insertar cliente: " + e.getMessage(), e);
+        } finally {
+            liberar(conn);
+        }
+        try { cliente.setId(Integer.parseInt(cedula)); }
+        catch (NumberFormatException ignore) { cliente.setId(0); }
+        cliente.setFechaRegistro(java.time.LocalDate.now());
+        return cliente;
     }
-@Override
+
+    @Override
     public boolean actualizar(Cliente cliente) {
         String cedula = cliente.getDocumento() != null
                 ? cliente.getDocumento() : String.valueOf(cliente.getId());
-        return enTransaccion(conn -> {
-            try (PreparedStatement stmt = conn.prepareStatement(SQL_ACTUALIZAR)) {
-                stmt.setString(1, cliente.getNombre());
-                stmt.setString(2, cliente.getSegundoNombre());
-                stmt.setString(3, cliente.getApellido());
-                stmt.setString(4, cliente.getApellido2());
-                stmt.setString(5, cliente.getEmail());
-                stmt.setString(6, cliente.getTelefono());
-                stmt.setString(7, cliente.getNacionalidad());
-                stmt.setInt(8, cliente.isEsVip() ? 1 : 0);
-                stmt.setString(9, cliente.getCiudadOrigen());
-                stmt.setString(10, cedula);
-                return stmt.executeUpdate() > 0;
-            }
-        });
+        Connection conn = obtener();
+        try (CallableStatement cs = conn.prepareCall(
+                "{call PKG_ADMIN.actualizar_cliente(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}")) {
+            cs.setString(1, cedula);
+            cs.setString(2, cliente.getNombre());
+            cs.setString(3, cliente.getSegundoNombre());
+            cs.setString(4, cliente.getApellido());
+            cs.setString(5, cliente.getApellido2());
+            cs.setString(6, cliente.getEmail());
+            cs.setString(7, cliente.getTelefono());
+            cs.setString(8, cliente.getIdPais());
+            cs.setString(9, cliente.getIdCiudad());
+            cs.setInt(10, cliente.isEsVip() ? 1 : 0);
+            cs.execute();
+            return true;
+        } catch (SQLException e) {
+            throw new ExcepcionBaseDatos("Error al actualizar cliente: " + e.getMessage(), e);
+        } finally {
+            liberar(conn);
+        }
     }
 
     @Override
     public boolean eliminar(int idCliente) {
-        return enTransaccion(conn -> {
-            try (PreparedStatement stmt = conn.prepareStatement(SQL_ELIMINAR)) {
-                stmt.setString(1, String.valueOf(idCliente));
-                stmt.setString(2, fmt("CLI", idCliente));
-                return stmt.executeUpdate() > 0;
-            }
-        });
+        // prc_eliminar_cliente valida reservas activas, hace cascade y elimina el cliente
+        Connection conn = obtener();
+        try (CallableStatement cs = conn.prepareCall(
+                "{call PKG_ADMIN.eliminar_cliente(?)}")) {
+            cs.setString(1, String.valueOf(idCliente));
+            cs.execute();
+            return true;
+        } catch (SQLException e) {
+            throw new ExcepcionBaseDatos("Error al eliminar cliente: " + e.getMessage(), e);
+        } finally {
+            liberar(conn);
+        }
     }
-@Override
+
+    // ── Lecturas — ResultSet en try-with-resources anidado ───────────────────
+
+    @Override
     public Optional<Cliente> buscarPorId(int idCliente) {
         Connection conn = obtener();
         try (PreparedStatement stmt = conn.prepareStatement(SQL_BUSCAR_POR_ID)) {
@@ -161,7 +164,8 @@ public class ClienteDAOImpl extends BaseDAO implements IClienteDAO, IClienteBusq
         }
         return lista;
     }
-/**
+
+    /**
      * Versión paginada. pagina=0 devuelve la primera página.
      * Usa Oracle OFFSET/FETCH para no cargar toda la tabla en memoria.
      */
@@ -181,7 +185,8 @@ public class ClienteDAOImpl extends BaseDAO implements IClienteDAO, IClienteBusq
         }
         return lista;
     }
-@Override
+
+    @Override
     public Optional<Cliente> buscarPorDocumento(String documento) {
         Connection conn = obtener();
         try (PreparedStatement stmt = conn.prepareStatement(SQL_BUSCAR_POR_DOCUMENTO)) {
@@ -197,20 +202,6 @@ public class ClienteDAOImpl extends BaseDAO implements IClienteDAO, IClienteBusq
     }
 
     @Override
-    public Optional<Cliente> buscarPorEmail(String email) {
-        Connection conn = obtener();
-        try (PreparedStatement stmt = conn.prepareStatement(SQL_BUSCAR_EMAIL)) {
-            stmt.setString(1, email);
-            try (ResultSet rs = stmt.executeQuery()) {
-                return rs.next() ? Optional.of(mapearFila(rs)) : Optional.empty();
-            }
-        } catch (SQLException e) {
-            throw new ExcepcionBaseDatos("Error al buscar por email: " + e.getMessage(), e);
-        } finally {
-            liberar(conn);
-        }
-    }
-@Override
     public List<Cliente> buscarPorNombre(String textoBusqueda) {
         List<Cliente> lista = new ArrayList<>();
         // Escapar wildcards LIKE para evitar que _ y % actúen como comodines SQL
@@ -232,6 +223,21 @@ public class ClienteDAOImpl extends BaseDAO implements IClienteDAO, IClienteBusq
     }
 
     @Override
+    public Optional<Cliente> buscarPorEmail(String email) {
+        Connection conn = obtener();
+        try (PreparedStatement stmt = conn.prepareStatement(SQL_BUSCAR_EMAIL)) {
+            stmt.setString(1, email);
+            try (ResultSet rs = stmt.executeQuery()) {
+                return rs.next() ? Optional.of(mapearFila(rs)) : Optional.empty();
+            }
+        } catch (SQLException e) {
+            throw new ExcepcionBaseDatos("Error al buscar por email: " + e.getMessage(), e);
+        } finally {
+            liberar(conn);
+        }
+    }
+
+    @Override
     public List<Cliente> listarClientesVip() {
         List<Cliente> lista = new ArrayList<>();
         Connection conn = obtener();
@@ -245,21 +251,14 @@ public class ClienteDAOImpl extends BaseDAO implements IClienteDAO, IClienteBusq
         }
         return lista;
     }
-@Override
+
+    @Override
     public void purgarHistorialCliente(int idCliente) {
         enTransaccion(conn -> {
             String numId = String.valueOf(idCliente);
             String cliId = fmt("CLI", idCliente);
 
-            // 1. Check-ins de las reservas del cliente
-            try (PreparedStatement s = conn.prepareStatement(
-                    "DELETE FROM CHECKINOUT WHERE id_reserva IN " +
-                    "(SELECT id_reserva FROM RESERVA WHERE id_cliente=? OR id_cliente=?)")) {
-                s.setString(1, numId);
-                s.setString(2, cliId);
-                s.executeUpdate();
-            }
-            // 2. Facturas del cliente
+            // 1. Facturas del cliente
             try (PreparedStatement s = conn.prepareStatement(
                     "DELETE FROM FACTURA WHERE id_cliente=? OR id_cliente=?")) {
                 s.setString(1, numId);
@@ -276,7 +275,10 @@ public class ClienteDAOImpl extends BaseDAO implements IClienteDAO, IClienteBusq
             return null;
         });
     }
-private Cliente mapearFila(ResultSet rs) throws SQLException {
+
+    // ── Mapeador ─────────────────────────────────────────────────────────────
+
+    private Cliente mapearFila(ResultSet rs) throws SQLException {
         Cliente c = new Cliente();
         c.setDocumento(rs.getString("cedula_str"));
         c.setId(rs.getInt("id"));
@@ -286,8 +288,10 @@ private Cliente mapearFila(ResultSet rs) throws SQLException {
         c.setApellido2(rs.getString("apellido_2"));
         c.setEmail(rs.getString("email"));
         c.setTelefono(rs.getString("telefono"));
-        c.setNacionalidad(rs.getString("nacionalidad"));
-        c.setCiudadOrigen(rs.getString("ciudad_origen"));
+        c.setIdPais(rs.getString("id_pais"));
+        c.setNacionalidad(rs.getString("nacionalidad"));      // nombre: "Colombia"
+        c.setIdCiudad(rs.getString("id_ciudad"));
+        c.setCiudadOrigen(rs.getString("ciudad_origen"));     // nombre: "Bogotá"
         java.sql.Date fechaReg = rs.getDate("fecha_registro");
         c.setFechaRegistro(fechaReg != null ? fechaReg.toLocalDate() : java.time.LocalDate.now());
         c.setEsVip(rs.getInt("es_vip") == 1);
