@@ -93,4 +93,19 @@ public class Factura {
 
     public MetodoPago getMetodoPago()           { return metodoPago; }
     public void setMetodoPago(MetodoPago m)     { this.metodoPago = m; }
+    
+    public double getMontoRecibido()                        { return montoRecibido; }
+    public void   setMontoRecibido(double montoRecibido)    { this.montoRecibido = montoRecibido; }
+
+    public double getCambio()                               { return cambio; }
+    public void   setCambio(double cambio)                  { this.cambio = cambio; }
+
+    public String getFranquiciaTarjeta()                    { return franquiciaTarjeta; }
+    public void   setFranquiciaTarjeta(String franquicia)   { this.franquiciaTarjeta = franquicia; }
+
+    public int  getNumCuotas()                              { return numCuotas; }
+    public void setNumCuotas(int numCuotas)                 { this.numCuotas = Math.max(1, numCuotas); }
+
+    public String getReferenciaTransferencia()                      { return referenciaTransferencia; }
+    public void   setReferenciaTransferencia(String referencia)     { this.referenciaTransferencia = referencia; }
 }
