@@ -131,4 +131,25 @@ public class FacturaService {
         ValidadorEntradas.validarIdPositivo(idCliente, "cliente");
         return facturaDAO.listarPorCliente(idCliente);
     }
+
+    // ── Métodos privados de apoyo ─────────────────────────────────────────────
+    private Reserva obtenerReservaCompletadaOLanzarError(int idReserva) throws ExcepcionNegocio {
+        Reserva reserva = reservaDAO.buscarPorId(idReserva)
+                .orElseThrow(() -> new ExcepcionNegocio("RESERVA_NOT_FOUND",
+                "No se encontró la reserva con ID: " + idReserva));
+
+        if (!Reserva.EstadoReserva.COMPLETADA.equals(reserva.getEstado())) {
+            throw new ExcepcionNegocio("RESERVA_NO_COMPLETADA",
+                    "Solo se pueden facturar reservas con estado COMPLETADA. "
+                    + "Estado actual: " + reserva.getEstado());
+        }
+        return reserva;
+    }
+
+    private void verificarQueNoTieneFactura(int idReserva) throws ExcepcionNegocio {
+        if (facturaDAO.buscarPorReserva(idReserva).isPresent()) {
+            throw new ExcepcionNegocio("FACTURA_DUPLICADA",
+                    "La reserva " + idReserva + " ya tiene una factura generada.");
+        }
+    }
 }
