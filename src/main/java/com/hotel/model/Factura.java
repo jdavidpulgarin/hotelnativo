@@ -62,5 +62,5 @@ public class Factura {
         this.total        = Math.round((subtotal + this.impuestos) * 100.0) / 100.0;
         this.estadoPago   = EstadoPago.PENDIENTE;
     }
-    
+     public boolean estaPagada() { return EstadoPago.PAGADA.equals(estadoPago); }
 }
