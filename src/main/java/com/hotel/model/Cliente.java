@@ -13,11 +13,13 @@ public class Cliente extends Persona {
     private String segundoNombre;
     private String apellido2;
     private String documento;
-    private String nacionalidad;
+    private String nacionalidad;   // nombre del país para mostrar en pantalla (ej. "Colombia")
+    private String idPais;         // clave FK: "PAI01" — usado para INSERT/UPDATE en BD
     private LocalDate fechaRegistro;
     private boolean esVip;
     private String subtipoDocumento;
-    private String ciudadOrigen;
+    private String ciudadOrigen;   // nombre de la ciudad para mostrar en pantalla (ej. "Bogotá")
+    private String idCiudad;       // clave FK: "CIU79" — usado para INSERT/UPDATE en BD
 
     public Cliente() {}
 
@@ -44,6 +46,7 @@ public class Cliente extends Persona {
         this.subtipoDocumento = (subtipoDocumento != null) ? subtipoDocumento : "COLOMBIANA";
         this.ciudadOrigen     = ciudadOrigen;
     }
+
     public String getSegundoNombre() { return segundoNombre; }
     public void setSegundoNombre(String segundoNombre) { this.segundoNombre = segundoNombre; }
 
@@ -55,6 +58,10 @@ public class Cliente extends Persona {
 
     public String getNacionalidad() { return nacionalidad; }
     public void setNacionalidad(String nacionalidad) { this.nacionalidad = nacionalidad; }
+
+    /** Clave FK de la tabla PAIS (ej. "PAI01"). Usar para INSERT/UPDATE en BD. */
+    public String getIdPais() { return idPais; }
+    public void setIdPais(String idPais) { this.idPais = idPais; }
 
     public LocalDate getFechaRegistro() { return fechaRegistro; }
     public void setFechaRegistro(LocalDate fechaRegistro) { this.fechaRegistro = fechaRegistro; }
@@ -69,7 +76,11 @@ public class Cliente extends Persona {
 
     public String getCiudadOrigen() { return ciudadOrigen; }
     public void setCiudadOrigen(String ciudadOrigen) { this.ciudadOrigen = ciudadOrigen; }
-    
+
+    /** Clave FK de la tabla CIUDAD (ej. "CIU79"). Usar para INSERT/UPDATE en BD. */
+    public String getIdCiudad() { return idCiudad; }
+    public void setIdCiudad(String idCiudad) { this.idCiudad = idCiudad; }
+
     @Override
     public String toString() {
         return String.format("Cliente[id=%d, nombre=%s %s, apellido=%s %s]",
