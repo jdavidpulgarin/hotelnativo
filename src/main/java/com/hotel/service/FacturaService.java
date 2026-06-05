@@ -126,4 +126,9 @@ public class FacturaService {
         ValidadorEntradas.validarIdPositivo(idReserva, "reserva");
         return facturaDAO.buscarPorReserva(idReserva);
     }
+
+    public List<Factura> listarFacturasPorCliente(int idCliente) throws ExcepcionNegocio {
+        ValidadorEntradas.validarIdPositivo(idCliente, "cliente");
+        return facturaDAO.listarPorCliente(idCliente);
+    }
 }
