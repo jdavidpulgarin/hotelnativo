@@ -141,4 +141,22 @@ public class ReservaService {
         emailService.notificarConfirmacionReserva(reserva.getCliente(), reserva);
         System.out.println("[RESERVA] Reserva #" + idReserva + " confirmada.");
     }
-}
+
+    /**
+     * Cancela una reserva activa.
+     *
+     * CORRECCIÓN BUG #4: Solo libera la habitación si su estado actual es
+     * OCUPADA. Antes, siempre se llamaba habitacion.liberar() sin verificar, lo
+     * que podía cambiar MANTENIMIENTO o DISPONIBLE a DISPONIBLE
+     * incorrectamente.
+     *
+     * @throws ExcepcionNegocio si la reserva no existe o no puede cancelarse
+     */
+    public void cancelarReserva(int idReserva) throws ExcepcionNegocio {
+        Reserva reserva = obtenerReservaOLanzarError(idReserva);
+        verificarQueReservaEsCancelable(reserva);
+
+        reserva.cancelar();
+        reservaDAO.actualizar(reserva);
+
+    }
