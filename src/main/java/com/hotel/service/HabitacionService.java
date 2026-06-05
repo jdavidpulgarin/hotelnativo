@@ -35,5 +35,11 @@ public class HabitacionService {
         this.habitacionDAO = habitacionDAO;
     }
 
+    public Habitacion registrarHabitacion(HabitacionDTO dto) throws ExcepcionNegocio {
+        validarDatosHabitacion(dto);
+        verificarNumeroNoRegistrado(dto.getNumero());
 
+        Habitacion nuevaHabitacion = construirHabitacionDesdeDTO(dto);
+        return habitacionDAO.insertar(nuevaHabitacion);
+    }
 }
