@@ -90,4 +90,15 @@ public class HabitacionService {
         habitacion.liberar();
         habitacionDAO.actualizarEstado(numero, habitacion.getEstado().name());
     }
+    
+        /**
+     * @param numero PK de la habitación en v3, ej. "101", "202"
+     */
+    public Optional<Habitacion> buscarPorId(String numero) {
+        return habitacionDAO.buscarPorNumero(numero);
+    }
+
+    public List<Habitacion> listarTodasLasHabitaciones() {
+        return habitacionDAO.listarTodas();
+    }
 }
