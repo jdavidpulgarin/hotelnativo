@@ -1,10 +1,5 @@
-
 package com.hotel.dao.impl;
 
-/**
- *
- * @author rober
- */
 import com.hotel.dao.interfaces.IMantenimientoDAO;
 import com.hotel.exception.ExcepcionBaseDatos;
 import com.hotel.model.*;
@@ -32,23 +27,22 @@ public class MantenimientoDAOImpl extends BaseDAO implements IMantenimientoDAO {
     // JOIN a HABITACION y EMPLEADO para obtener numero y nombre en una sola query
     private static final String COLS =
             "TO_NUMBER(REGEXP_REPLACE(m.id_mantenimiento,'[^0-9]','')) AS id, " +
-            "TO_NUMBER(REGEXP_REPLACE(m.id_habitacion,'[^0-9]',''))    AS id_habitacion, " +
-            "h.numero AS hab_numero, " +
+            "m.numero_habitacion AS hab_numero, " +        // v3: PK de HABITACION es numero
             "TO_NUMBER(REGEXP_REPLACE(m.id_empleado,'[^0-9]',''))      AS id_empleado, " +
             "e.primer_nombre AS emp_nombre, e.apellido_1 AS emp_apellido, " +
             "m.fecha_solicitud, m.fecha_realizacion, m.tipo, m.estado, m.costo, m.descripcion_trabajo";
 
     private static final String FROM_JOIN =
             "FROM MANTENIMIENTO m " +
-            "LEFT JOIN HABITACION h ON m.id_habitacion = h.id_habitacion " +
-            "LEFT JOIN EMPLEADO   e ON m.id_empleado   = e.id_empleado";
+            "LEFT JOIN HABITACION h ON m.numero_habitacion = h.numero " +   // v3: FK por numero
+            "LEFT JOIN EMPLEADO   e ON m.id_empleado       = e.id_empleado";
 
     private static final String SQL_BUSCAR_POR_ID =
             "SELECT " + COLS + " " + FROM_JOIN + " WHERE m.id_mantenimiento = ?";
 
     private static final String SQL_POR_HABITACION =
             "SELECT " + COLS + " " + FROM_JOIN +
-            " WHERE m.id_habitacion = ? ORDER BY m.fecha_solicitud DESC";
+            " WHERE m.numero_habitacion = ? ORDER BY m.fecha_solicitud DESC";   // numero VARCHAR2(10)
 
     private static final String SQL_PENDIENTES =
             "SELECT " + COLS + " " + FROM_JOIN +
@@ -66,46 +60,55 @@ public class MantenimientoDAOImpl extends BaseDAO implements IMantenimientoDAO {
 
     public MantenimientoDAOImpl() { super(); }
 
-@Override
+    // ── Escrituras — todas con enTransaccion() ────────────────────────────────
+
+    @Override
     public Mantenimiento insertar(Mantenimiento m) {
-        String sql = "INSERT INTO MANTENIMIENTO " +
-                "(id_mantenimiento, id_habitacion, id_empleado, fecha_solicitud, tipo, estado, descripcion_trabajo) " +
-                "VALUES (?, ?, ?, ?, ?, 'SOLICITADO', ?)";
-        return enTransaccion(conn -> {
-            int seqVal = siguienteSeq(conn, "seq_mantenimiento");
-            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-                stmt.setString(1, fmt("MAN", seqVal));
-                stmt.setString(2, fmt("HAB", m.getHabitacion().getId()));
-                stmt.setString(3, fmt("EMP", m.getEmpleadoResponsable().getId()));
-                stmt.setDate(4, Date.valueOf(m.getFechaSolicitud()));
-                stmt.setString(5, m.getTipo().name());
-                stmt.setString(6, m.getDescripcionTrabajo());
-                stmt.executeUpdate();
-            }
-            m.setId(seqVal);
+        // prc_registrar_mantenimiento: genera el ID, inserta en MANTENIMIENTO
+        // y marca la habitación como MANTENIMIENTO si el tipo es EMERGENCIA.
+        Connection conn = obtener();
+        try (CallableStatement cs = conn.prepareCall(
+                "{call PKG_ADMIN.registrar_mantenimiento(?, ?, ?, ?, ?)}")) {
+            cs.setString(1, m.getHabitacion().getNumero());
+            // v2: id_empleado = cedula (String.valueOf), no fmt("EMP", id)
+            cs.setString(2, String.valueOf(m.getEmpleadoResponsable().getId()));
+            cs.setString(3, m.getTipo().name());
+            cs.setString(4, m.getDescripcionTrabajo());
+            cs.registerOutParameter(5, java.sql.Types.VARCHAR);
+            cs.execute();
+            String idGenerado = cs.getString(5);
+            m.setId(Integer.parseInt(idGenerado.replaceAll("[^0-9]", "")));
             return m;
-        });
+        } catch (SQLException e) {
+            throw new ExcepcionBaseDatos("Error al registrar mantenimiento: " + e.getMessage(), e);
+        } finally {
+            liberar(conn);
+        }
     }
-@Override
+
+    @Override
     public boolean actualizar(Mantenimiento m) {
         return enTransaccion(conn -> {
             try (PreparedStatement stmt = conn.prepareStatement(SQL_ACTUALIZAR)) {
-                stmt.setString(1, fmt("EMP", m.getEmpleadoResponsable().getId()));
+                stmt.setString(1, String.valueOf(m.getEmpleadoResponsable().getId()));
                 stmt.setDate(2, m.getFechaRealizacion() != null
                         ? Date.valueOf(m.getFechaRealizacion()) : null);
                 stmt.setString(3, m.getEstado().name());
                 stmt.setDouble(4, m.getCosto());
                 stmt.setString(5, m.getDescripcionTrabajo());
-                stmt.setString(6, fmt("MAN", m.getId()));
+                stmt.setString(6, fmt3("MNT", m.getId()));
                 return stmt.executeUpdate() > 0;
             }
         });
     }
-@Override
+
+    // ── Lecturas — ResultSet en try-with-resources anidado ───────────────────
+
+    @Override
     public Optional<Mantenimiento> buscarPorId(int id) {
         Connection conn = obtener();
         try (PreparedStatement stmt = conn.prepareStatement(SQL_BUSCAR_POR_ID)) {
-            stmt.setString(1, fmt("MAN", id));
+            stmt.setString(1, fmt3("MNT", id));
             try (ResultSet rs = stmt.executeQuery()) {
                 return rs.next() ? Optional.of(mapearFila(rs)) : Optional.empty();
             }
@@ -117,11 +120,11 @@ public class MantenimientoDAOImpl extends BaseDAO implements IMantenimientoDAO {
     }
 
     @Override
-    public List<Mantenimiento> listarPorHabitacion(int idHabitacion) {
+    public List<Mantenimiento> listarPorHabitacion(String numero) {
         List<Mantenimiento> lista = new ArrayList<>();
         Connection conn = obtener();
         try (PreparedStatement stmt = conn.prepareStatement(SQL_POR_HABITACION)) {
-            stmt.setString(1, fmt("HAB", idHabitacion));
+            stmt.setString(1, numero);   // numero_habitacion VARCHAR2(10) — ej. 'HAB-101'
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) lista.add(mapearFila(rs));
             }
@@ -132,7 +135,8 @@ public class MantenimientoDAOImpl extends BaseDAO implements IMantenimientoDAO {
         }
         return lista;
     }
-@Override
+
+    @Override
     public List<Mantenimiento> listarPendientes() {
         List<Mantenimiento> lista = new ArrayList<>();
         Connection conn = obtener();
@@ -161,7 +165,8 @@ public class MantenimientoDAOImpl extends BaseDAO implements IMantenimientoDAO {
         }
         return lista;
     }
-/**
+
+    /**
      * Versión paginada. pagina=0 devuelve la primera página.
      * Usa Oracle OFFSET/FETCH para no cargar todo el historial en memoria.
      */
@@ -181,15 +186,17 @@ public class MantenimientoDAOImpl extends BaseDAO implements IMantenimientoDAO {
         }
         return lista;
     }
-private Mantenimiento mapearFila(ResultSet rs) throws SQLException {
+
+    // ── Mapeador ─────────────────────────────────────────────────────────────
+
+    private Mantenimiento mapearFila(ResultSet rs) throws SQLException {
         Habitacion habRef = new Habitacion();
-        habRef.setId(rs.getInt("id_habitacion"));
-        habRef.setNumero(rs.getString("hab_numero") != null ? rs.getString("hab_numero") : "");
+        habRef.setNumero(rs.getString("hab_numero"));   // v3: numero es la PK de HABITACION
 
         Empleado empRef = new Empleado();
         empRef.setId(rs.getInt("id_empleado"));
-        empRef.setNombre(rs.getString("emp_nombre") != null ? rs.getString("emp_nombre") : "");
-        empRef.setApellido(rs.getString("emp_apellido") != null ? rs.getString("emp_apellido") : "");
+        empRef.setNombre(rs.getString("emp_nombre"));
+        empRef.setApellido(rs.getString("emp_apellido"));
 
         Mantenimiento m = new Mantenimiento();
         m.setId(rs.getInt("id"));
@@ -198,12 +205,10 @@ private Mantenimiento mapearFila(ResultSet rs) throws SQLException {
         m.setFechaSolicitud(rs.getDate("fecha_solicitud").toLocalDate());
         Date fechaReal = rs.getDate("fecha_realizacion");
         if (fechaReal != null) m.setFechaRealizacion(fechaReal.toLocalDate());
-        String tipoStr = rs.getString("tipo");
-        String estadoStr = rs.getString("estado");
-        m.setTipo(tipoStr != null ? Mantenimiento.TipoMantenimiento.valueOf(tipoStr) : null);
-        m.setEstado(estadoStr != null ? Mantenimiento.EstadoMantenimiento.valueOf(estadoStr) : null);
+        m.setTipo(Mantenimiento.TipoMantenimiento.valueOf(rs.getString("tipo")));
+        m.setEstado(Mantenimiento.EstadoMantenimiento.valueOf(rs.getString("estado")));
         m.setCosto(rs.getDouble("costo"));
-        m.setDescripcionTrabajo(rs.getString("descripcion_trabajo") != null ? rs.getString("descripcion_trabajo") : "");
+        m.setDescripcionTrabajo(rs.getString("descripcion_trabajo"));
         return m;
     }
 }
