@@ -36,5 +36,36 @@ public class Mantenimiento {
         this.tipo = tipo;
         this.estado = EstadoMantenimiento.SOLICITADO;
     }
-    
+    public boolean estaCompletado() {
+        return EstadoMantenimiento.COMPLETADO.equals(estado);
+    }
+
+    public int getId() { return id; }
+    public void setId(int id) { this.id = id; }
+
+    public Habitacion getHabitacion() { return habitacion; }
+    public void setHabitacion(Habitacion habitacion) { this.habitacion = habitacion; }
+
+    public Empleado getEmpleadoResponsable() { return empleadoResponsable; }
+    public void setEmpleadoResponsable(Empleado empleadoResponsable) {
+        this.empleadoResponsable = empleadoResponsable;
+    }
+
+    public LocalDate getFechaSolicitud() { return fechaSolicitud; }
+    public void setFechaSolicitud(LocalDate fechaSolicitud) { this.fechaSolicitud = fechaSolicitud; }
+
+    public LocalDate getFechaRealizacion() { return fechaRealizacion; }
+    public void setFechaRealizacion(LocalDate fechaRealizacion) { this.fechaRealizacion = fechaRealizacion; }
+
+    public TipoMantenimiento getTipo() { return tipo; }
+    public void setTipo(TipoMantenimiento tipo) { this.tipo = tipo; }
+
+    public EstadoMantenimiento getEstado() { return estado; }
+    public void setEstado(EstadoMantenimiento estado) { this.estado = estado; }
+
+    public double getCosto() { return costo; }
+    public void setCosto(double costo) { this.costo = costo; }
+
+    public String getDescripcionTrabajo() { return descripcionTrabajo; }
+    public void setDescripcionTrabajo(String descripcionTrabajo) { this.descripcionTrabajo = descripcionTrabajo; }
 }
