@@ -126,4 +126,34 @@ public class GeminiApiService {
         }
         return pregunta;
     }
+
+    private String construirCuerpoJson() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("{");
+
+        // System instruction (personalidad del bot)
+        sb.append("\"system_instruction\":{\"parts\":[{\"text\":");
+        sb.append(encodeJson(obtenerSystemPrompt()));
+        sb.append("}]},");
+
+        // Historial de conversación (contents)
+        sb.append("\"contents\":[");
+        for (int i = 0; i < historial.size(); i++) {
+            if (i > 0) {
+                sb.append(",");
+            }
+            sb.append(historial.get(i));
+        }
+        sb.append("],");
+
+        // Configuración de generación
+        sb.append("\"generationConfig\":{");
+        sb.append("\"maxOutputTokens\":700,");
+        sb.append("\"temperature\":0.65,");
+        sb.append("\"topP\":0.9");
+        sb.append("}");
+
+        sb.append("}");
+        return sb.toString();
+    }
 }
