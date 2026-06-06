@@ -88,6 +88,26 @@ public class MantenimientoService {
         emailService.notificarMantenimientoCompletado(mantenimiento);
     }
 
+    public void cancelarMantenimiento(int idMantenimiento, String motivo)
+            throws ExcepcionNegocio {
+        ValidadorEntradas.validarIdPositivo(idMantenimiento, "mantenimiento");
+
+        Mantenimiento mantenimiento = obtenerMantenimientoOLanzarError(idMantenimiento);
+
+        if (Mantenimiento.EstadoMantenimiento.COMPLETADO.equals(mantenimiento.getEstado())) {
+            throw new ExcepcionNegocio("CANCELACION_NO_PERMITIDA",
+                    "No se puede cancelar un mantenimiento ya completado.");
+        }
+
+        mantenimiento.setEstado(Mantenimiento.EstadoMantenimiento.CANCELADO);
+        mantenimiento.setDescripcionTrabajo(
+                mantenimiento.getDescripcionTrabajo() + " [CANCELADO: " + motivo + "]");
+        mantenimientoDAO.actualizar(mantenimiento);
+
+        habitacionDAO.actualizarEstado(mantenimiento.getHabitacion().getNumero(),
+                Habitacion.EstadoHabitacion.DISPONIBLE.name());
+    }
+
     private Habitacion obtenerHabitacionOLanzarError(String numero) throws ExcepcionNegocio {
         return habitacionDAO.buscarPorNumero(numero)
                 .orElseThrow(() -> new ExcepcionNegocio("HABITACION_NOT_FOUND",
