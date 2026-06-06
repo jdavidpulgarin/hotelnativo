@@ -1,1 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.*?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
+
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.hotel.ui.controllers.EmpleadosController"
+      spacing="0" styleClass="main-bg">
+
+    <!-- ── 1. HEADER (breadcrumb + badges fecha/turno) ── -->
+    <HBox style="-fx-padding:20 24 12 24;" alignment="CENTER_LEFT" spacing="0">
+        <HBox alignment="CENTER_LEFT" spacing="2">
+            <Label text="Empleados"
+                   style="-fx-font-size:14; -fx-font-weight:600; -fx-text-fill:#1E293B;"/>
+            <Label text=" / "
+                   style="-fx-font-size:14; -fx-text-fill:#94A3B8;"/>
+            <Label text="Gestión de empleados"
+                   style="-fx-font-size:14; -fx-text-fill:#64748B;"/>
+        </HBox>
+        <Region HBox.hgrow="ALWAYS"/>
+        <HBox spacing="8" alignment="CENTER_RIGHT">
+            <Label fx:id="lblFechaBadge" text="" styleClass="header-date-badge"/>
+            <Label fx:id="lblTurnoBadge" text="" styleClass="header-date-badge"/>
+        </HBox>
+    </HBox>
+
+    <!-- ── 2. BARRA DE HERRAMIENTAS ── -->
+    <HBox style="-fx-padding:0 24 12 24;" spacing="10" alignment="CENTER_LEFT">
+
+        <!-- Búsqueda 500px -->
+        <TextField fx:id="searchField"
+                   promptText="🔍  Buscar por nombre, email o cargo..."
+                   styleClass="search-field-factura"
+                   prefWidth="500"
+                   onKeyReleased="#filtrar"/>
+        <Region HBox.hgrow="ALWAYS"/>
+
+        <!-- ➕ Nuevo empleado: azul #3B82F6 -->
+        <Button mnemonicParsing="false" styleClass="btn-circle,btn-primary" onAction="#nuevoEmpleado">
+            <graphic><FontIcon iconLiteral="fas-plus" iconSize="16" iconColor="white"/></graphic>
+            <tooltip><Tooltip text="Nuevo Empleado" styleClass="tooltip"/></tooltip>
+        </Button>
+
+        <!-- ✎ Editar empleado: azul #3B82F6 -->
+        <Button mnemonicParsing="false" styleClass="btn-circle,btn-primary" onAction="#editarEmpleado">
+            <graphic><FontIcon iconLiteral="fas-pencil-alt" iconSize="14" iconColor="white"/></graphic>
+            <tooltip><Tooltip text="Editar Empleado" styleClass="tooltip"/></tooltip>
+        </Button>
+
+        <!-- 🗑 Eliminar empleado: rojo #EF4444 -->
+        <Button mnemonicParsing="false" styleClass="btn-circle,btn-danger" onAction="#eliminarEmpleado">
+            <graphic><FontIcon iconLiteral="fas-trash" iconSize="14" iconColor="white"/></graphic>
+            <tooltip><Tooltip text="Eliminar Empleado" styleClass="tooltip"/></tooltip>
+        </Button>
+
+        <!-- ↻ Refrescar: gris outline -->
+        <Button mnemonicParsing="false" styleClass="btn-circle,btn-outline" onAction="#cargarDatos">
+            <graphic><FontIcon iconLiteral="fas-sync-alt" iconSize="14" iconColor="#64748b"/></graphic>
+            <tooltip><Tooltip text="Refrescar" styleClass="tooltip"/></tooltip>
+        </Button>
+    </HBox>
+
+    <!-- ── 3. BADGE RESUMEN ── -->
+    <HBox fx:id="statsRow" spacing="10"
+          style="-fx-padding:0 24 14 24;" alignment="CENTER_LEFT"/>
+
+    <!-- ── 4. TABLA en card blanca ── -->
+    <VBox VBox.vgrow="ALWAYS" style="-fx-padding:0 24 24 24;">
+        <VBox styleClass="table-container" VBox.vgrow="ALWAYS">
+            <TableView fx:id="tabla" VBox.vgrow="ALWAYS" styleClass="table-view,empleados-table"
+                       onMouseClicked="#handleDobleClick">
+                <columns>
+                    <TableColumn fx:id="colId"           text="ID"             prefWidth="60"/>
+                    <TableColumn fx:id="colNombre"       text="NOMBRE"         prefWidth="120"/>
+                    <TableColumn fx:id="colApellido"     text="APELLIDO"       prefWidth="120"/>
+                    <TableColumn fx:id="colEmail"        text="EMAIL"          prefWidth="220"/>
+                    <TableColumn fx:id="colTelefono"     text="TELÉFONO"       prefWidth="120"/>
+                    <TableColumn fx:id="colCargo"        text="CARGO"          prefWidth="180"/>
+                    <TableColumn fx:id="colContratacion" text="CONTRATACIÓN"   prefWidth="120"/>
+                </columns>
+                <placeholder>
+                    <Label text="Sin empleados registrados" styleClass="text-muted"/>
+                </placeholder>
+            </TableView>
+        </VBox>
+    </VBox>
+
+    <ProgressBar fx:id="progressBar" maxWidth="Infinity" visible="false"
+                 style="-fx-accent:#3563e9; -fx-pref-height:3px;"/>
+</VBox>
   
