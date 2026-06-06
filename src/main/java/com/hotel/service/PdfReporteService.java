@@ -537,4 +537,37 @@ public class PdfReporteService {
         return "$" + nf.format(valor);
     }
 
+    private String crearRuta(String nombreArchivo) {
+        try { Files.createDirectories(Paths.get(CARPETA_REPORTES)); }
+        catch (Exception e) { throw new ExcepcionBaseDatos("No se pudo crear carpeta: " + CARPETA_REPORTES, e); }
+        return CARPETA_REPORTES + "/" + nombreArchivo;
+    }
+
+    private void agregarHeaderHotel(Document doc, String titulo) throws DocumentException {
+        Font fontHotel  = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 22, COLOR_AZUL_HOTEL);
+        Font fontSub    = FontFactory.getFont(FontFactory.HELVETICA, 11, COLOR_DORADO);
+        Font fontTitulo = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16, Color.WHITE);
+        Paragraph hotel = new Paragraph("HOTEL NATIVO", fontHotel);
+        hotel.setAlignment(Element.ALIGN_CENTER);
+        doc.add(hotel);
+        Paragraph sub = new Paragraph("Sistema de Gestion Hotelera", fontSub);
+        sub.setAlignment(Element.ALIGN_CENTER);
+        sub.setSpacingAfter(10);
+        doc.add(sub);
+        PdfPTable cabecera = new PdfPTable(1);
+        cabecera.setWidthPercentage(100);
+        PdfPCell celdaTitulo = new PdfPCell(new Phrase(titulo, fontTitulo));
+        celdaTitulo.setBackgroundColor(COLOR_AZUL_HOTEL);
+        celdaTitulo.setHorizontalAlignment(Element.ALIGN_CENTER);
+        celdaTitulo.setPadding(10);
+        celdaTitulo.setBorder(Rectangle.NO_BORDER);
+        cabecera.addCell(celdaTitulo);
+        doc.add(cabecera);
+        Paragraph fecha = new Paragraph("Generado el: " + LocalDate.now(),
+                FontFactory.getFont(FontFactory.HELVETICA_OBLIQUE, 9, Color.GRAY));
+        fecha.setAlignment(Element.ALIGN_RIGHT);
+        fecha.setSpacingAfter(16);
+        doc.add(fecha);
+    }
+
 }
