@@ -129,4 +129,18 @@ public final class ValidadorEntradas {
                     "La contraseña debe contener al menos un carácter especial (!@#$%^&* etc.).");
         }
     }
+
+    /**
+     * Valida que el subtipo de documento sea "COLOMBIANA" o "EXTRANJERA".
+     *
+     * @param subtipo valor a validar
+     * @throws ExcepcionValidacion si el valor no es uno de los permitidos
+     */
+    public static void validarSubtipoDocumento(String subtipo) throws ExcepcionValidacion {
+        validarCampoRequerido(subtipo, "subtipoDocumento");
+        if (!"COLOMBIANA".equalsIgnoreCase(subtipo) && !"EXTRANJERA".equalsIgnoreCase(subtipo)) {
+            throw new ExcepcionValidacion("subtipoDocumento",
+                    "El subtipo de documento debe ser 'COLOMBIANA' o 'EXTRANJERA'.");
+        }
+    }
 }
