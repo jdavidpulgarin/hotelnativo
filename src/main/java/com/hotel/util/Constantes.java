@@ -30,6 +30,16 @@ public final class Constantes {
     public static final int HORAS_LIMITE_CHECKIN = 14;   // 2:00 PM
     public static final int HORAS_LIMITE_CHECKOUT = 12;   // 12:00 PM
 
+    // ── Descuentos ────────────────────────────────────────────────────────────
+    public static final double DESCUENTO_CLIENTE_VIP = 0.15;  // 15%
+    public static final double DESCUENTO_TEMPORADA_BAJA = 0.10;  // 10%
+    // ── Sesiones (NUEVO) ──────────────────────────────────────────────────────
+    /**
+     * Minutos hasta que una sesión expira automáticamente. 480 = 8 horas (turno
+     * laboral completo). Reducir a 60 en entornos de mayor seguridad.
+     */
+    public static final long MINUTOS_EXPIRACION_SESION = 480L;
+
     private Constantes() {
     }
 }
