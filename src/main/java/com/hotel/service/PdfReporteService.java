@@ -452,4 +452,35 @@ public class PdfReporteService {
         doc.add(tabla);
     }
 
+    private void agregarTotalesFact(Document doc, Factura f) throws DocumentException {
+        Font f10 = FontFactory.getFont(FontFactory.HELVETICA, 10, COLOR_GRIS_HEADER);
+        Font f10b = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10, COLOR_GRIS_HEADER);
+        Font f13b = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 13, COLOR_AZUL_HOTEL);
+        Color borde = new Color(0xe2, 0xe8, 0xf0);
+        int pctIva = (int) Math.round(f.getTasaIva() * 100);
+        PdfPTable totTab = new PdfPTable(2);
+        totTab.setWidthPercentage(100);
+        totTab.setWidths(new float[]{7, 3});
+        PdfPCell emptyL = new PdfPCell(new Phrase(" "));
+        emptyL.setBorder(Rectangle.NO_BORDER);
+        totTab.addCell(emptyL);
+        PdfPTable innerTot = new PdfPTable(2);
+        innerTot.setWidths(new float[]{1.5f, 1.5f});
+        agregarFilaKV(innerTot, "Subtotal:", fmtCOP(f.getSubtotal()), f10, f10b, false);
+        agregarFilaKV(innerTot, "IVA (" + pctIva + "%):", fmtCOP(f.getImpuestos()), f10, f10b, false);
+        PdfPCell cTLbl = new PdfPCell(new Phrase("TOTAL:", f13b));
+        cTLbl.setPadding(8); cTLbl.setBorderColor(borde);
+        cTLbl.setBackgroundColor(new Color(0xf0, 0xf9, 0xff));
+        innerTot.addCell(cTLbl);
+        PdfPCell cTVal = new PdfPCell(new Phrase(fmtCOP(f.getTotal()), f13b));
+        cTVal.setPadding(8); cTVal.setBorderColor(borde);
+        cTVal.setBackgroundColor(new Color(0xf0, 0xf9, 0xff));
+        cTVal.setHorizontalAlignment(Element.ALIGN_RIGHT);
+        innerTot.addCell(cTVal);
+        PdfPCell rightWrapper = new PdfPCell(innerTot);
+        rightWrapper.setBorder(Rectangle.NO_BORDER);
+        totTab.addCell(rightWrapper);
+        doc.add(totTab);
+    }
+
 }
