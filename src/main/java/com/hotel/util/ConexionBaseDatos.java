@@ -63,4 +63,52 @@ public class ConexionBaseDatos {
         }
         return instanciaUnica;
     }
+
+    /**
+     * Carga las propiedades desde config/db.properties. Prueba múltiples rutas
+     * relativas para ser compatible con distintos directorios de trabajo
+     * (Maven, VSCode F5, ejecución directa). Si el archivo no existe en ninguna
+     * ruta, intenta leer variables de entorno. Si tampoco existen, lanza
+     * ExcepcionBaseDatos con instrucciones claras.
+     */
+    private static Properties cargarPropiedades() {
+        // Rutas candidatas en orden de prioridad
+        Path[] candidatos = {
+            Path.of("config", "db.properties"), // CWD = raíz del proyecto
+            Path.of("hotel-system", "config", "db.properties"), // CWD = carpeta workspace padre
+            Path.of("..", "config", "db.properties"), // CWD = dentro del proyecto
+        };
+
+        for (Path candidato : candidatos) {
+            if (Files.exists(candidato)) {
+                try (InputStream is = Files.newInputStream(candidato)) {
+                    Properties props = new Properties();
+                    props.load(is);
+                    validarPropiedades(props, candidato.toString());
+                    return props;
+                } catch (IOException e) {
+                    throw new ExcepcionBaseDatos(
+                            "No se pudo leer " + candidato + ": " + e.getMessage(), e);
+                }
+            }
+        }
+
+        // Fallback: variables de entorno
+        String url = System.getenv("HOTEL_DB_URL");
+        String user = System.getenv("HOTEL_DB_USER");
+        String pass = System.getenv("HOTEL_DB_PASS");
+
+        if (url != null && user != null && pass != null) {
+            Properties props = new Properties();
+            props.setProperty("db.url", url);
+            props.setProperty("db.user", user);
+            props.setProperty("db.password", pass);
+            return props;
+        }
+
+        throw new ExcepcionBaseDatos(
+                "No se encontraron credenciales de BD. "
+                + "Crea el archivo 'config/db.properties' con db.url, db.user y db.password, "
+                + "o define las variables de entorno HOTEL_DB_URL, HOTEL_DB_USER y HOTEL_DB_PASS.");
+    }
 }
