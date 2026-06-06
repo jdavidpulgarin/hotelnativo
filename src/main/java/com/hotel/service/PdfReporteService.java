@@ -346,4 +346,62 @@ public class PdfReporteService {
         doc.add(headerTab);
     }
 
+    private void agregarLineaSep(Document doc, float before, float after) throws DocumentException {
+        PdfPTable sep = new PdfPTable(1);
+        sep.setWidthPercentage(100);
+        sep.setSpacingBefore(before);
+        sep.setSpacingAfter(after);
+        PdfPCell cell = new PdfPCell(new Phrase(" "));
+        cell.setBorder(Rectangle.TOP);
+        cell.setBorderWidthTop(1f);
+        cell.setBorderColorTop(new Color(0xe2, 0xe8, 0xf0));
+        sep.addCell(cell);
+        doc.add(sep);
+    }
+
+    private void agregarInfoFact(Document doc, Factura f) throws DocumentException {
+        Font fSecTitle = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 11, COLOR_AZUL_HOTEL);
+        Font fKey = FontFactory.getFont(FontFactory.HELVETICA, 9, Color.GRAY);
+        Font fVal = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 9, COLOR_GRIS_HEADER);
+        Color borde = new Color(0xe2, 0xe8, 0xf0);
+        PdfPTable dualTab = new PdfPTable(2);
+        dualTab.setWidthPercentage(100);
+        dualTab.setWidths(new float[]{1, 1});
+        dualTab.setSpacingAfter(12);
+        PdfPCell leftCell = new PdfPCell();
+        leftCell.setPadding(10);
+        leftCell.setBorderColor(borde);
+        Paragraph pTL = new Paragraph("INFORMACION DE FACTURACION", fSecTitle);
+        pTL.setSpacingAfter(5);
+        leftCell.addElement(pTL);
+        PdfPTable kvL = new PdfPTable(2);
+        kvL.setWidths(new float[]{1.5f, 1.5f});
+        agregarFilaKV(kvL, "ID Factura:", String.valueOf(f.getId()), fKey, fVal, false);
+        agregarFilaKV(kvL, "Fecha:", f.getFechaEmision() != null ? f.getFechaEmision().toString() : "-", fKey, fVal, false);
+        agregarFilaKV(kvL, "Estado:", f.getEstadoPago() != null ? f.getEstadoPago().name() : "-", fKey, fVal, true);
+        agregarFilaKV(kvL, "Metodo:", f.getMetodoPago() != null ? f.getMetodoPago().name().replace("_", " ") : "-", fKey, fVal, false);
+        leftCell.addElement(kvL);
+        dualTab.addCell(leftCell);
+        PdfPCell rightCell = new PdfPCell();
+        rightCell.setPadding(10);
+        rightCell.setBorderColor(borde);
+        Paragraph pTR = new Paragraph("INFORMACION DEL CLIENTE", fSecTitle);
+        pTR.setSpacingAfter(5);
+        rightCell.addElement(pTR);
+        PdfPTable kvR = new PdfPTable(2);
+        kvR.setWidths(new float[]{1.2f, 1.8f});
+        if (f.getCliente() != null) {
+            agregarFilaKV(kvR, "Cliente:", f.getCliente().obtenerNombreCompleto(), fKey, fVal, false);
+            agregarFilaKV(kvR, "Email:", f.getCliente().getEmail() != null ? f.getCliente().getEmail() : "-", fKey, fVal, false);
+        }
+        if (f.getReserva() != null) {
+            agregarFilaKV(kvR, "Reserva:", "#" + f.getReserva().getId(), fKey, fVal, false);
+            if (f.getReserva().getHabitacion() != null)
+                agregarFilaKV(kvR, "Habitacion:", f.getReserva().getHabitacion().getNumero(), fKey, fVal, false);
+        }
+        rightCell.addElement(kvR);
+        dualTab.addCell(rightCell);
+        doc.add(dualTab);
+    }
+
 }
