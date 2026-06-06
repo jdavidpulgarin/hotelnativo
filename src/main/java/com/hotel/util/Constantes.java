@@ -40,6 +40,19 @@ public final class Constantes {
      */
     public static final long MINUTOS_EXPIRACION_SESION = 480L;
 
+    // ── Pool de conexiones (NUEVO) ────────────────────────────────────────────
+    /**
+     * Número de conexiones en el pool de BD. 5 es suficiente para consola;
+     * aumentar si se migra a servidor web.
+     */
+    public static final int TAMANO_POOL_CONEXIONES = 5;
+    /**
+     * Segundos máximos de espera para obtener conexión del pool.
+     */
+    public static final int TIMEOUT_CONEXION_SEGUNDOS = 10;
+    // ── Paginación ────────────────────────────────────────────────────────────
+    public static final int REGISTROS_POR_PAGINA = 10;
+
     private Constantes() {
     }
 }
