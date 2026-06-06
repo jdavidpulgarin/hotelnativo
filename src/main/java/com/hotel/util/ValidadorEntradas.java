@@ -20,4 +20,12 @@ public final class ValidadorEntradas {
 
     private ValidadorEntradas() {
     }
+
+    public static void validarCampoRequerido(String valor, String nombreCampo)
+            throws ExcepcionValidacion {
+        if (valor == null || valor.trim().isEmpty()) {
+            throw new ExcepcionValidacion(nombreCampo,
+                    "El campo '" + nombreCampo + "' es obligatorio y no puede estar vacío.");
+        }
+    }
 }
