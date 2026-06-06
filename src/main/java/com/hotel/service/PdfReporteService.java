@@ -295,4 +295,55 @@ public class PdfReporteService {
         return ruta;
     }
 
+    private void agregarHeaderFact(Document doc, Factura f) throws DocumentException {
+        Image logoImg = null;
+        try {
+            java.io.InputStream is = getClass().getResourceAsStream("/com/hotel/ui/images/logo.png");
+            if (is != null) { logoImg = Image.getInstance(is.readAllBytes()); logoImg.scaleToFit(80, 80); }
+        } catch (Exception ignored) {}
+        PdfPTable headerTab = new PdfPTable(3);
+        headerTab.setWidthPercentage(100);
+        headerTab.setWidths(new float[]{3, 4, 3});
+        PdfPCell cellLogo = new PdfPCell();
+        cellLogo.setBorder(Rectangle.NO_BORDER);
+        cellLogo.setHorizontalAlignment(Element.ALIGN_CENTER);
+        cellLogo.setVerticalAlignment(Element.ALIGN_MIDDLE);
+        cellLogo.setPadding(8);
+        if (logoImg != null) { cellLogo.addElement(logoImg); }
+        else {
+            Paragraph pFallback = new Paragraph("HOTEL NATIVO",
+                    FontFactory.getFont(FontFactory.HELVETICA_BOLD, 14, COLOR_AZUL_HOTEL));
+            pFallback.setAlignment(Element.ALIGN_CENTER);
+            cellLogo.addElement(pFallback);
+        }
+        headerTab.addCell(cellLogo);
+        PdfPCell cellInfo = new PdfPCell();
+        cellInfo.setBorder(Rectangle.NO_BORDER);
+        cellInfo.setHorizontalAlignment(Element.ALIGN_CENTER);
+        cellInfo.setPadding(8);
+        Font fNombreH = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 20, COLOR_AZUL_HOTEL);
+        Font fInfoGray = FontFactory.getFont(FontFactory.HELVETICA, 9, Color.GRAY);
+        Font fInfoDark = FontFactory.getFont(FontFactory.HELVETICA, 9, COLOR_GRIS_HEADER);
+        Paragraph pNombre = new Paragraph("HOTEL NATIVO", fNombreH);
+        pNombre.setAlignment(Element.ALIGN_CENTER);
+        cellInfo.addElement(pNombre);
+        String[] hotelLines = {"SISTEMA DE GESTION HOTELERA","Dg. 21 #27-89","Valledupar, Cesar","Colombia","Tel: +57 300 5780623","hotelnativo1@gmail.com"};
+        for (String line : hotelLines) {
+            Paragraph pl = new Paragraph(line, fInfoDark);
+            pl.setAlignment(Element.ALIGN_CENTER);
+            cellInfo.addElement(pl);
+        }
+        headerTab.addCell(cellInfo);
+        PdfPCell cellQR = new PdfPCell();
+        cellQR.setBorder(Rectangle.NO_BORDER);
+        cellQR.setHorizontalAlignment(Element.ALIGN_CENTER);
+        cellQR.setPadding(8);
+        Paragraph pNumFactura = new Paragraph("FACTURA #" + f.getId(),
+                FontFactory.getFont(FontFactory.HELVETICA_BOLD, 11, COLOR_AZUL_HOTEL));
+        pNumFactura.setAlignment(Element.ALIGN_CENTER);
+        cellQR.addElement(pNumFactura);
+        headerTab.addCell(cellQR);
+        doc.add(headerTab);
+    }
+
 }
