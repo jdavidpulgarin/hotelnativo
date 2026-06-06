@@ -121,4 +121,21 @@ public class ConexionBaseDatos {
             }
         }
     }
+
+    /**
+     * Obtiene una conexión del pool, creándola si aún no existe ninguna libre.
+     * Nunca bloquea al arrancar la app; solo bloquea durante queries reales.
+     */
+    public Connection obtenerConexion() {
+        Connection conn = pool.poll();
+        if (conn != null) {
+            try {
+                if (conn.isValid(2)) {
+                    return conn;
+                }
+            } catch (SQLException ignored) {
+            }
+        }
+        return crearNuevaConexion();
+    }
 }
