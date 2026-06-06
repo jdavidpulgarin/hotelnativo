@@ -570,4 +570,33 @@ public class PdfReporteService {
         doc.add(fecha);
     }
 
+    private PdfPTable crearTabla(int columnas, float[] anchos) throws DocumentException {
+        PdfPTable tabla = new PdfPTable(columnas);
+        tabla.setWidthPercentage(100);
+        tabla.setWidths(anchos);
+        tabla.setSpacingBefore(8);
+        return tabla;
+    }
+
+    private void agregarEncabezado(PdfPTable tabla, String[] encabezados) {
+        Font fontHeader = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10, Color.WHITE);
+        for (String enc : encabezados) {
+            PdfPCell celda = new PdfPCell(new Phrase(enc, fontHeader));
+            celda.setBackgroundColor(COLOR_AZUL_HOTEL);
+            celda.setHorizontalAlignment(Element.ALIGN_CENTER);
+            celda.setPadding(8);
+            celda.setBorderColor(Color.WHITE);
+            tabla.addCell(celda);
+        }
+    }
+
+    private void agregarCelda(PdfPTable tabla, String texto, Font font, Color fondo, int alineacion) {
+        PdfPCell celda = new PdfPCell(new Phrase(texto, font));
+        celda.setBackgroundColor(fondo);
+        celda.setHorizontalAlignment(alineacion);
+        celda.setPadding(6);
+        celda.setBorderColor(new Color(0xe2, 0xe8, 0xf0));
+        tabla.addCell(celda);
+    }
+
 }
