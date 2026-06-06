@@ -120,7 +120,27 @@ public class MantenimientoService {
                 "No se encontro el empleado con ID: " + id));
     }
 
-    private void verificarSinReservasActivasProximas(Habitacion habitacion) throws ExcepcionNegocio {
+    private void verificarSinReservasActivasProximas(Habitacion habitacion)
+            throws ExcepcionNegocio {
+        List<Reserva> reservasActivas = reservaDAO
+                .buscarReservasSolapadas(habitacion.getNumero(),
+                        LocalDate.now(), LocalDate.now().plusYears(50))
+                .stream()
+                .filter(r -> r.getEstado() == Reserva.EstadoReserva.CONFIRMADA
+                || r.getEstado() == Reserva.EstadoReserva.PENDIENTE)
+                .collect(Collectors.toList());
+
+        if (!reservasActivas.isEmpty()) {
+            StringBuilder detalle = new StringBuilder(
+                    "La habitacion " + habitacion.getNumero()
+                    + " tiene reservas activas que deben reasignarse primero:\n");
+            for (Reserva r : reservasActivas) {
+                detalle.append("  Reserva #").append(r.getId())
+                        .append(" | ").append(r.getFechaEntrada())
+                        .append(" -> ").append(r.getFechaSalida()).append("\n");
+            }
+            throw new ExcepcionNegocio("RESERVAS_ACTIVAS_EXISTENTES", detalle.toString());
+        }
     }
 
     private Mantenimiento obtenerMantenimientoOLanzarError(int id) throws ExcepcionNegocio {
