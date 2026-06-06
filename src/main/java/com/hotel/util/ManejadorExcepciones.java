@@ -41,4 +41,53 @@ public class ManejadorExcepciones implements Thread.UncaughtExceptionHandler {
             Platform.runLater(() -> mostrarError(mensaje, e));
         }
     }
+
+    private String clasificarError(Throwable e) {
+        Throwable causa = e;
+        while (causa.getCause() != null && causa.getCause() != causa) {
+            causa = causa.getCause();
+        }
+
+        if (causa instanceof ExcepcionValidacion ve) {
+            return "Error de validación en '" + ve.getCampoInvalido()
+                    + "': " + ve.getMessage();
+        }
+        if (causa instanceof ExcepcionNegocio be) {
+            return "Error de negocio [" + be.getCodigoError() + "]: " + be.getMessage();
+        }
+        if (causa instanceof ExcepcionBaseDatos) {
+            return "Error de conexión con la base de datos. Verifique que Oracle "
+                    + "esté ejecutándose.\n\nDetalle: " + causa.getMessage();
+        }
+        if (causa instanceof java.sql.SQLException) {
+            return "Error de base de datos: " + causa.getMessage()
+                    + "\n\nVerifique la conexión con Oracle.";
+        }
+        if (causa instanceof java.net.ConnectException
+                || causa instanceof java.net.SocketException) {
+            return "No se pudo conectar al servidor. Verifique su conexión de red.";
+        }
+        if (causa instanceof NullPointerException) {
+            return "Error interno: se intentó acceder a un dato que no existe."
+                    + "\n\nUbicación: "
+                    + (causa.getStackTrace().length > 0
+                    ? causa.getStackTrace()[0].toString() : "desconocida");
+        }
+        if (causa instanceof NumberFormatException) {
+            return "Error de formato: se ingresó texto donde se esperaba un número.";
+        }
+        if (causa instanceof IllegalArgumentException) {
+            return "Dato inválido: " + causa.getMessage();
+        }
+        if (causa instanceof java.io.IOException) {
+            return "Error de lectura/escritura de archivos: " + causa.getMessage();
+        }
+        if (causa instanceof OutOfMemoryError) {
+            return "La aplicación se quedó sin memoria. Reinicie el sistema.";
+        }
+
+        return "Ha ocurrido un error inesperado.\n\n"
+                + causa.getClass().getSimpleName() + ": "
+                + (causa.getMessage() != null ? causa.getMessage() : "Sin detalles");
+    }
 }
