@@ -404,4 +404,52 @@ public class PdfReporteService {
         doc.add(dualTab);
     }
 
+    private void agregarDetallesFact(Document doc, Factura f) throws DocumentException {
+        Font fSecTitle = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 11, COLOR_AZUL_HOTEL);
+        Font fHead = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 9, COLOR_GRIS_HEADER);
+        Font fFila = FontFactory.getFont(FontFactory.HELVETICA, 9, COLOR_GRIS_HEADER);
+        Color borde = new Color(0xe2, 0xe8, 0xf0);
+        Paragraph pTitulo = new Paragraph("DETALLES DE SERVICIOS", fSecTitle);
+        pTitulo.setSpacingBefore(4);
+        pTitulo.setSpacingAfter(6);
+        doc.add(pTitulo);
+        Reserva r = f.getReserva();
+        long noches = 1;
+        double precioNoche = f.getSubtotal();
+        String habNum = "-";
+        String habTipo = "Hospedaje";
+        if (r != null) {
+            if (r.getFechaEntrada() != null && r.getFechaSalida() != null) {
+                long n = java.time.temporal.ChronoUnit.DAYS.between(r.getFechaEntrada(), r.getFechaSalida());
+                noches = n > 0 ? n : 1;
+            }
+            if (r.getHabitacion() != null) {
+                habNum = r.getHabitacion().getNumero();
+                if (r.getHabitacion().getTipoHabitacion() != null) habTipo = r.getHabitacion().getTipoHabitacion().obtenerEtiquetaTipo();
+            }
+            precioNoche = f.getSubtotal() / noches;
+        }
+        PdfPTable tabla = new PdfPTable(4);
+        tabla.setWidthPercentage(100);
+        tabla.setWidths(new float[]{4f, 1.5f, 2.2f, 2.3f});
+        for (String h : new String[]{"DESCRIPCION", "CANTIDAD", "VALOR UNITARIO", "TOTAL"}) {
+            PdfPCell ch = new PdfPCell(new Phrase(h, fHead));
+            ch.setBackgroundColor(COLOR_FILA_PAR);
+            ch.setPadding(7);
+            ch.setBorderColor(borde);
+            ch.setHorizontalAlignment(Element.ALIGN_CENTER);
+            tabla.addCell(ch);
+        }
+        String desc = "Hospedaje - Habitacion " + habNum + " (" + noches + " noche(s)) - " + habTipo;
+        PdfPCell cD = new PdfPCell(new Phrase(desc, fFila));
+        cD.setPadding(6); cD.setBorderColor(borde); tabla.addCell(cD);
+        PdfPCell cC = new PdfPCell(new Phrase(String.valueOf(noches), fFila));
+        cC.setPadding(6); cC.setBorderColor(borde); cC.setHorizontalAlignment(Element.ALIGN_CENTER); tabla.addCell(cC);
+        PdfPCell cU = new PdfPCell(new Phrase(fmtCOP(precioNoche), fFila));
+        cU.setPadding(6); cU.setBorderColor(borde); cU.setHorizontalAlignment(Element.ALIGN_RIGHT); tabla.addCell(cU);
+        PdfPCell cT = new PdfPCell(new Phrase(fmtCOP(f.getSubtotal()), fFila));
+        cT.setPadding(6); cT.setBorderColor(borde); cT.setHorizontalAlignment(Element.ALIGN_RIGHT); tabla.addCell(cT);
+        doc.add(tabla);
+    }
+
 }
