@@ -4,17 +4,26 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
                              http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+
     <groupId>com.hotel</groupId>
     <artifactId>hotelnativo</artifactId>
     <version>1.0.0</version>
     <packaging>jar</packaging>
+
     <properties>
         <maven.compiler.release>21</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <javafx.version>21.0.1</javafx.version>
     </properties>
+
     <dependencies>
-        <!-- JavaFX -->
+        <!-- BCrypt para hashing seguro de contraseñas -->
+        <dependency>
+            <groupId>org.mindrot</groupId>
+            <artifactId>jbcrypt</artifactId>
+            <version>0.4</version>
+        </dependency>
+
         <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-controls</artifactId>
@@ -30,7 +39,6 @@
             <artifactId>javafx-graphics</artifactId>
             <version>${javafx.version}</version>
         </dependency>
-        <!-- Oracle JDBC (coloca ojdbc11.jar en la carpeta lib/ del proyecto) -->
         <dependency>
             <groupId>com.oracle.database.jdbc</groupId>
             <artifactId>ojdbc11</artifactId>
@@ -38,24 +46,21 @@
             <scope>system</scope>
             <systemPath>${project.basedir}/lib/ojdbc11.jar</systemPath>
         </dependency>
-        <!-- BCrypt para contraseñas seguras -->
-        <dependency>
-            <groupId>org.mindrot</groupId>
-            <artifactId>jbcrypt</artifactId>
-            <version>0.4</version>
-        </dependency>
-        <!-- Correo electrónico SMTP (compatible con Java 21) -->
+
+        <!-- Jakarta Mail (angus-mail) para envío de correos SMTP — compatible con Java 21 -->
         <dependency>
             <groupId>org.eclipse.angus</groupId>
             <artifactId>angus-mail</artifactId>
             <version>2.0.3</version>
         </dependency>
-        <!-- Generación de PDFs -->
+
+        <!-- OpenPDF para generación de reportes en formato PDF -->
         <dependency>
             <groupId>com.github.librepdf</groupId>
             <artifactId>openpdf</artifactId>
             <version>2.0.2</version>
         </dependency>
+
         <!-- Ikonli - iconos FontAwesome 5 -->
         <dependency>
             <groupId>org.kordamp.ikonli</groupId>
@@ -67,7 +72,9 @@
             <artifactId>ikonli-fontawesome5-pack</artifactId>
             <version>12.3.1</version>
         </dependency>
+
     </dependencies>
+
     <build>
         <sourceDirectory>src/main/java</sourceDirectory>
         <resources>
@@ -77,6 +84,9 @@
                     <include>**/*.fxml</include>
                     <include>**/*.css</include>
                     <include>**/*.properties</include>
+                    <include>**/*.png</include>
+                    <include>**/*.jpg</include>
+                    <include>**/*.jpeg</include>
                 </includes>
             </resource>
         </resources>
@@ -91,6 +101,15 @@
                         <arg>--add-reads</arg>
                         <arg>com.hotel=ALL-UNNAMED</arg>
                     </compilerArgs>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.1.0</version>
+                <configuration>
+                    <mainClass>com.hotel.util.GenerarHash</mainClass>
+                    <addResourcesToClasspath>true</addResourcesToClasspath>
                 </configuration>
             </plugin>
             <plugin>
