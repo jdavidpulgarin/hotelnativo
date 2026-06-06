@@ -53,6 +53,14 @@ public final class Constantes {
     // ── Paginación ────────────────────────────────────────────────────────────
     public static final int REGISTROS_POR_PAGINA = 10;
 
+    // ── Menú ──────────────────────────────────────────────────────────────────
+    public static final int OPCION_SALIR = 0;
+    // ── Mensajes de sistema ───────────────────────────────────────────────────
+    public static final String SEPARADOR_MENU = "═══════════════════════════════════════";
+    public static final String ETIQUETA_EXITO = "[OK] ";
+    public static final String ETIQUETA_ERROR = "[ERROR] ";
+    public static final String ETIQUETA_ADVERTENCIA = "[AVISO] ";
+
     private Constantes() {
     }
 }
