@@ -128,4 +128,18 @@ public class MantenimientoService {
                 .orElseThrow(() -> new ExcepcionNegocio("MANTENIMIENTO_NOT_FOUND",
                 "No se encontro el mantenimiento con ID: " + id));
     }
+
+    public List<Mantenimiento> listarMantenimientosPendientes() {
+        return mantenimientoDAO.listarPendientes();
+    }
+
+    public List<Mantenimiento> listarTodosLosMantenimientos() {
+        return mantenimientoDAO.listarTodos();
+    }
+
+    public List<Mantenimiento> listarMantenimientosPorHabitacion(String numero)
+            throws ExcepcionValidacion {
+        ValidadorEntradas.validarCampoRequerido(numero, "numero de habitacion");
+        return mantenimientoDAO.listarPorHabitacion(numero);
+    }
 }
