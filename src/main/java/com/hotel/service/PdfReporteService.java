@@ -196,4 +196,54 @@ public class PdfReporteService {
         return ruta;
     }
 
+    public String generarReporteIngresosMensualesPdf(int anio) {
+        List<Factura> todasLasFacturas = facturaDAO.listarTodas();
+        String[] MESES = {"Enero","Febrero","Marzo","Abril","Mayo","Junio",
+                          "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"};
+        Map<Integer, Double> porMes = todasLasFacturas.stream()
+                .filter(f -> f.getEstadoPago() == Factura.EstadoPago.PAGADA)
+                .filter(f -> f.getFechaEmision() != null && f.getFechaEmision().getYear() == anio)
+                .collect(Collectors.groupingBy(
+                        f -> f.getFechaEmision().getMonthValue(),
+                        Collectors.summingDouble(Factura::getTotal)));
+        double totalAnio = porMes.values().stream().mapToDouble(Double::doubleValue).sum();
+        String nombreArchivo = "IngresosMensuales_" + anio + ".pdf";
+        String ruta = crearRuta(nombreArchivo);
+        Document doc = new Document(PageSize.A4);
+        try {
+            PdfWriter.getInstance(doc, new FileOutputStream(ruta));
+            doc.open();
+            agregarHeaderHotel(doc, "INGRESOS MENSUALES - " + anio);
+            PdfPTable tabla = crearTabla(3, new float[]{2f, 2f, 1.5f});
+            agregarEncabezado(tabla, new String[]{"Mes", "Ingresos", "% del total"});
+            boolean parImpar = false;
+            for (int m = 1; m <= 12; m++) {
+                double ingreso  = porMes.getOrDefault(m, 0.0);
+                double porcentaje = totalAnio > 0 ? (ingreso / totalAnio) * 100 : 0;
+                Color fondo = parImpar ? COLOR_FILA_PAR : Color.WHITE;
+                Font fontFila = FontFactory.getFont(FontFactory.HELVETICA, 10, COLOR_GRIS_HEADER);
+                agregarCelda(tabla, MESES[m - 1], fontFila, fondo, Element.ALIGN_LEFT);
+                agregarCelda(tabla,
+                        ingreso > 0 ? String.format("$ %,.2f", ingreso) : "$ 0.00",
+                        ingreso > 0 ? FontFactory.getFont(FontFactory.HELVETICA, 10, COLOR_VERDE) : fontFila,
+                        fondo, Element.ALIGN_RIGHT);
+                agregarCelda(tabla, String.format("%.1f%%", porcentaje), fontFila, fondo, Element.ALIGN_CENTER);
+                parImpar = !parImpar;
+            }
+            Font fontTotal  = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 11, COLOR_VERDE);
+            Color fondoTotal = new Color(0xf0, 0xfd, 0xf4);
+            agregarCelda(tabla, "TOTAL ANUAL",                        fontTotal, fondoTotal, Element.ALIGN_LEFT);
+            agregarCelda(tabla, String.format("$ %,.2f", totalAnio),  fontTotal, fondoTotal, Element.ALIGN_RIGHT);
+            agregarCelda(tabla, "100.0%",                              fontTotal, fondoTotal, Element.ALIGN_CENTER);
+            doc.add(tabla);
+            agregarPiePagina(doc);
+        } catch (Exception e) {
+            throw new ExcepcionBaseDatos("Error generando PDF de ingresos mensuales: " + e.getMessage(), e);
+        } finally {
+            doc.close();
+        }
+        abrirPdf(ruta);
+        return ruta;
+    }
+
 }
