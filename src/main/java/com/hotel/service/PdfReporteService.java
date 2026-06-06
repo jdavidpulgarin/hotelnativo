@@ -52,4 +52,34 @@ public class PdfReporteService {
         this.reservaBusqueda = reservaBusqueda;
     }
 
+    public String generarFacturaPdf(int idFactura) {
+        Factura f = facturaDAO.buscarPorId(idFactura)
+                .orElseThrow(() -> new ExcepcionBaseDatos(
+                        "No existe la factura con ID " + idFactura));
+
+        String nombreArchivo = "Factura_" + idFactura + "_" + LocalDate.now() + ".pdf";
+        String ruta = crearRuta(nombreArchivo);
+
+        Document doc = new Document(PageSize.A4);
+        doc.setMargins(36, 36, 40, 36);
+        try {
+            PdfWriter.getInstance(doc, new FileOutputStream(ruta));
+            doc.open();
+            agregarHeaderFact(doc, f);
+            agregarLineaSep(doc, 15, 15);
+            agregarInfoFact(doc, f);
+            agregarDetallesFact(doc, f);
+            agregarTotalesFact(doc, f);
+            agregarFooterFact(doc, f);
+            agregarLineaSep(doc, 8, 4);
+            agregarDisclaimer(doc);
+        } catch (Exception e) {
+            throw new ExcepcionBaseDatos("Error generando PDF de factura: " + e.getMessage(), e);
+        } finally {
+            doc.close();
+        }
+        abrirPdf(ruta);
+        return ruta;
+    }
+
 }
