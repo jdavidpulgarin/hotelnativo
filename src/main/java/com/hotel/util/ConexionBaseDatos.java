@@ -160,4 +160,14 @@ public class ConexionBaseDatos {
             }
         }
     }
+
+    public void cerrarPool() {
+        Connection conn;
+        while ((conn = pool.poll()) != null) {
+            try {
+                conn.close();
+            } catch (SQLException ignored) {
+            }
+        }
+    }
 }
