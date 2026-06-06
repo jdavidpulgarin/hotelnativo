@@ -59,6 +59,35 @@ public class MantenimientoService {
         return guardado;
     }
 
+    public void completarMantenimiento(int idMantenimiento, double costoFinal)
+            throws ExcepcionNegocio {
+        ValidadorEntradas.validarIdPositivo(idMantenimiento, "mantenimiento");
+        ValidadorEntradas.validarPrecioPositivo(costoFinal, "costoFinal");
+
+        Mantenimiento mantenimiento = obtenerMantenimientoOLanzarError(idMantenimiento);
+
+        if (Mantenimiento.EstadoMantenimiento.COMPLETADO.equals(mantenimiento.getEstado())) {
+            throw new ExcepcionNegocio("MANTENIMIENTO_YA_COMPLETADO",
+                    "El mantenimiento #" + idMantenimiento + " ya fue completado previamente.");
+        }
+
+        Habitacion habitacion = mantenimiento.getHabitacion();
+        if (habitacion == null) {
+            throw new ExcepcionNegocio("HABITACION_NO_ENCONTRADA",
+                    "El mantenimiento #" + idMantenimiento + " no tiene habitacion asociada.");
+        }
+
+        mantenimiento.setEstado(Mantenimiento.EstadoMantenimiento.COMPLETADO);
+        mantenimiento.setFechaRealizacion(LocalDate.now());
+        mantenimiento.setCosto(costoFinal);
+        mantenimientoDAO.actualizar(mantenimiento);
+
+        habitacionDAO.actualizarEstado(habitacion.getNumero(),
+                Habitacion.EstadoHabitacion.DISPONIBLE.name());
+
+        emailService.notificarMantenimientoCompletado(mantenimiento);
+    }
+
     private Habitacion obtenerHabitacionOLanzarError(String numero) throws ExcepcionNegocio {
         return habitacionDAO.buscarPorNumero(numero)
                 .orElseThrow(() -> new ExcepcionNegocio("HABITACION_NOT_FOUND",
