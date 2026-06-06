@@ -518,4 +518,23 @@ public class PdfReporteService {
         doc.add(disc);
     }
 
+    private void agregarFilaKV(PdfPTable tabla, String clave, String valor,
+                                Font fKey, Font fVal, boolean fondoGris) {
+        Color fondo = fondoGris ? COLOR_FILA_PAR : Color.WHITE;
+        Color borde = new Color(0xe2, 0xe8, 0xf0);
+        PdfPCell ck = new PdfPCell(new Phrase(clave, fKey));
+        ck.setBackgroundColor(fondo); ck.setPadding(4); ck.setBorderColor(borde);
+        tabla.addCell(ck);
+        PdfPCell cv = new PdfPCell(new Phrase(valor, fVal));
+        cv.setBackgroundColor(fondo); cv.setPadding(4); cv.setBorderColor(borde);
+        tabla.addCell(cv);
+    }
+
+    private String fmtCOP(double valor) {
+        java.text.NumberFormat nf = java.text.NumberFormat.getInstance(Locale.forLanguageTag("es-CO"));
+        nf.setMinimumFractionDigits(2);
+        nf.setMaximumFractionDigits(2);
+        return "$" + nf.format(valor);
+    }
+
 }
