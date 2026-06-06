@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.*?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
+
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.hotel.ui.controllers.ClientesController"
+      spacing="0" styleClass="main-bg">
+
+    <!-- ── Header ── -->
+    <HBox style="-fx-padding:24 24 12 24;" alignment="CENTER_LEFT" spacing="0">
+        <VBox spacing="3" HBox.hgrow="ALWAYS">
+            <Label text="Clientes" styleClass="section-title"/>
+            <Label text="Clientes / Gestión de clientes" styleClass="section-subtitle"/>
+        </VBox>
+        <Label fx:id="lblFecha"
+               style="-fx-font-size:13px; -fx-font-weight:600; -fx-text-fill:#3563e9;
+                      -fx-background-color:#eef2ff; -fx-background-radius:20;
+                      -fx-padding:5 14;"/>
+    </HBox>
+
+    <!-- ── Toolbar ── -->
+    <HBox style="-fx-padding:0 24 12 24;" spacing="10" alignment="CENTER_LEFT">
+        <!-- Búsqueda 500px -->
+        <TextField fx:id="searchField"
+                   promptText="🔍  Buscar por nombre, email o ciudad..."
+                   styleClass="search-field"
+                   prefWidth="500"
+                   onKeyReleased="#filtrar"/>
+        <Region HBox.hgrow="ALWAYS"/>
+
+        <!-- Nuevo cliente: azul -->
+        <Button mnemonicParsing="false" styleClass="btn-circle,btn-primary" onAction="#nuevoCliente">
+            <graphic><FontIcon iconLiteral="fas-plus" iconSize="16" iconColor="white"/></graphic>
+            <tooltip><Tooltip text="Nuevo Cliente" styleClass="tooltip"/></tooltip>
+        </Button>
+
+        <!-- Editar: azul outline -->
+        <Button mnemonicParsing="false" styleClass="btn-circle,btn-outline" onAction="#editarCliente">
+            <graphic><FontIcon iconLiteral="fas-pencil-alt" iconSize="14" iconColor="#3563e9"/></graphic>
+            <tooltip><Tooltip text="Editar Cliente" styleClass="tooltip"/></tooltip>
+        </Button>
+
+        <!-- Eliminar: rojo -->
+        <Button mnemonicParsing="false" styleClass="btn-circle,btn-danger" onAction="#eliminarCliente">
+            <graphic><FontIcon iconLiteral="fas-trash" iconSize="14" iconColor="white"/></graphic>
+            <tooltip><Tooltip text="Eliminar Cliente" styleClass="tooltip"/></tooltip>
+        </Button>
+
+        <!-- VIP: amarillo dorado -->
+        <Button mnemonicParsing="false" styleClass="btn-circle,btn-vip" onAction="#toggleVip">
+            <graphic><FontIcon iconLiteral="fas-star" iconSize="14" iconColor="white"/></graphic>
+            <tooltip><Tooltip text="Marcar / Desmarcar VIP" styleClass="tooltip"/></tooltip>
+        </Button>
+
+        <!-- Separador -->
+        <Region styleClass="action-toolbar-separator"/>
+
+        <!-- Refrescar: gris outline -->
+        <Button mnemonicParsing="false" styleClass="btn-circle,btn-outline" onAction="#cargarDatos">
+            <graphic><FontIcon iconLiteral="fas-sync-alt" iconSize="14" iconColor="#6b7280"/></graphic>
+            <tooltip><Tooltip text="Refrescar" styleClass="tooltip"/></tooltip>
+        </Button>
+    </HBox>
+
+    <!-- ── Badges resumen ── -->
+    <HBox fx:id="statsRow" spacing="8"
+          style="-fx-padding:0 24 14 24;" alignment="CENTER_LEFT"/>
+
+    <!-- ── Tabla ── -->
+    <VBox VBox.vgrow="ALWAYS" style="-fx-padding:0 24 24 24;">
+        <VBox styleClass="table-container" VBox.vgrow="ALWAYS">
+            <TableView fx:id="tabla" VBox.vgrow="ALWAYS" styleClass="table-view,clientes-table"
+                       onMouseClicked="#handleDobleClick">
+                <columns>
+                    <TableColumn fx:id="colDocumento"    text="CÉDULA"        prefWidth="95"/>
+                    <TableColumn fx:id="colNombre"       text="NOMBRE"        prefWidth="110"/>
+                    <TableColumn fx:id="colApellido"     text="APELLIDO"      prefWidth="110"/>
+                    <TableColumn fx:id="colEmail"        text="EMAIL"         prefWidth="210"/>
+                    <TableColumn fx:id="colTelefono"     text="TELÉFONO"      prefWidth="120"/>
+                    <TableColumn fx:id="colCiudad"       text="CIUDAD ORIGEN" prefWidth="125"/>
+                    <TableColumn fx:id="colNacionalidad" text="NACIONALIDAD"  prefWidth="130"/>
+                    <TableColumn fx:id="colVip"          text="VIP"           prefWidth="65"/>
+                    <TableColumn fx:id="colRegistro"     text="REGISTRO"      prefWidth="105"/>
+                </columns>
+                <placeholder>
+                    <Label text="Sin clientes registrados" styleClass="text-muted"/>
+                </placeholder>
+            </TableView>
+        </VBox>
+    </VBox>
+
+    <ProgressBar fx:id="progressBar" maxWidth="Infinity" visible="false"
+                 style="-fx-accent:#3563e9; -fx-pref-height:3px;"/>
+</VBox>
+  
