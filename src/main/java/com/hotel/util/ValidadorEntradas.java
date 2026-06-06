@@ -77,4 +77,15 @@ public final class ValidadorEntradas {
                     "El campo '" + nombreCampo + "' debe ser mayor a cero.");
         }
     }
+
+    public static void validarLargoNombre(String nombre, String nombreCampo)
+            throws ExcepcionValidacion {
+        validarCampoRequerido(nombre, nombreCampo);
+        int largo = nombre.trim().length();
+        if (largo < LARGO_MINIMO_NOMBRE || largo > LARGO_MAXIMO_NOMBRE) {
+            throw new ExcepcionValidacion(nombreCampo,
+                    "El campo '" + nombreCampo + "' debe tener entre "
+                    + LARGO_MINIMO_NOMBRE + " y " + LARGO_MAXIMO_NOMBRE + " caracteres.");
+        }
+    }
 }
