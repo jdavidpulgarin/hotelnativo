@@ -1,1 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.image.ImageView?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.hotel.ui.controllers.DashboardController"
+            prefWidth="1280" prefHeight="800"
+            styleClass="main-bg">
+
+    <left>
+        <VBox styleClass="sidebar" spacing="0">
+
+            <!-- ── Cabecera: Logo + Nombre ── -->
+            <VBox alignment="CENTER" spacing="8"
+                  style="-fx-padding: 18 12 14 12;
+                         -fx-border-color: transparent transparent rgba(255,255,255,0.10) transparent;
+                         -fx-border-width: 0 0 1 0;">
+
+                <!-- Logo directo sobre el sidebar (sin fondo blanco) -->
+                <ImageView fx:id="logoView"
+                           fitWidth="140" fitHeight="140"
+                           preserveRatio="true" smooth="true"/>
+
+                <Label text="SISTEMA DE GESTIÓN" styleClass="sidebar-title"
+                       style="-fx-padding: 4 0 0 0; -fx-font-size: 11px;"/>
+                <Label text="Hotel Nativo" styleClass="sidebar-subtitle"
+                       style="-fx-font-size: 10px;"/>
+            </VBox>
+
+            <!-- ── Menú de navegación ── -->
+            <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS"
+                        style="-fx-background-color: transparent; -fx-border-color: transparent;">
+                <VBox spacing="2" style="-fx-padding: 8 12;">
+
+                    <Label text="PRINCIPAL" styleClass="sidebar-category"/>
+                    <Button fx:id="navDashboard" text="  Dashboard"
+                            styleClass="sidebar-item, active"
+                            onAction="#irADashboard" maxWidth="Infinity">
+                        <graphic><FontIcon iconLiteral="fas-chart-bar" iconSize="14" iconColor="white"/></graphic>
+                    </Button>
+
+                    <Label fx:id="sectionOperaciones" text="OPERACIONES" styleClass="sidebar-category"/>
+                    <Button fx:id="navReservas" text="  Reservas"
+                            styleClass="sidebar-item"
+                            onAction="#irAReservas" maxWidth="Infinity">
+                        <graphic><FontIcon iconLiteral="fas-calendar-alt" iconSize="14" iconColor="#9ca3af"/></graphic>
+                    </Button>
+                    <Button fx:id="navCheckin" text="  Check-in / Check-out"
+                            styleClass="sidebar-item"
+                            onAction="#irACheckin" maxWidth="Infinity">
+                        <graphic><FontIcon iconLiteral="fas-key" iconSize="14" iconColor="#9ca3af"/></graphic>
+                    </Button>
+                    <Button fx:id="navClientes" text="  Clientes"
+                            styleClass="sidebar-item"
+                            onAction="#irAClientes" maxWidth="Infinity">
+                        <graphic><FontIcon iconLiteral="fas-users" iconSize="14" iconColor="#9ca3af"/></graphic>
+                    </Button>
+
+                    <Label fx:id="sectionRecursos" text="RECURSOS" styleClass="sidebar-category"/>
+                    <Button fx:id="navHabitaciones" text="  Habitaciones"
+                            styleClass="sidebar-item"
+                            onAction="#irAHabitaciones" maxWidth="Infinity">
+                        <graphic><FontIcon iconLiteral="fas-hotel" iconSize="14" iconColor="#9ca3af"/></graphic>
+                    </Button>
+                    <Button fx:id="navMantenimiento" text="  Mantenimiento"
+                            styleClass="sidebar-item"
+                            onAction="#irAMantenimiento" maxWidth="Infinity">
+                        <graphic><FontIcon iconLiteral="fas-wrench" iconSize="14" iconColor="#9ca3af"/></graphic>
+                    </Button>
+
+                    <Label fx:id="sectionAdministracion" text="ADMINISTRACIÓN" styleClass="sidebar-category"/>
+                    <Button fx:id="navFacturacion" text="  Facturación"
+                            styleClass="sidebar-item"
+                            onAction="#irAFacturacion" maxWidth="Infinity">
+                        <graphic><FontIcon iconLiteral="fas-dollar-sign" iconSize="14" iconColor="#9ca3af"/></graphic>
+                    </Button>
+                    <Button fx:id="navReportes" text="  Reportes"
+                            styleClass="sidebar-item"
+                            onAction="#irAReportes" maxWidth="Infinity">
+                        <graphic><FontIcon iconLiteral="fas-chart-line" iconSize="14" iconColor="#9ca3af"/></graphic>
+                    </Button>
+                    <Button fx:id="navEmpleados" text="  Empleados"
+                            styleClass="sidebar-item"
+                            onAction="#irAEmpleados" maxWidth="Infinity">
+                        <graphic><FontIcon iconLiteral="fas-user-tie" iconSize="14" iconColor="#9ca3af"/></graphic>
+                    </Button>
+
+                </VBox>
+            </ScrollPane>
+
+            <!-- ── Footer: Usuario ── -->
+            <VBox styleClass="sidebar-user-box" spacing="2">
+                <HBox fx:id="sidebarUserHBox" spacing="10" alignment="CENTER_LEFT">
+                    <Label fx:id="userAvatarLabel" text="U"
+                           style="-fx-font-size:13px; -fx-font-weight:bold;
+                                  -fx-background-color:#0047ab; -fx-text-fill:white;
+                                  -fx-background-radius:50%; -fx-padding:6px 10px;"/>
+                    <VBox spacing="1">
+                        <Label fx:id="labelUsuario" text="Usuario" styleClass="sidebar-user-name"/>
+                        <Label fx:id="labelRol"     text="Rol"     styleClass="sidebar-user-role"/>
+                    </VBox>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Button text="X" onAction="#handleLogout"
+                            style="-fx-background-color:transparent; -fx-text-fill:#9ca3af;
+                                   -fx-font-size:13px; -fx-cursor:hand; -fx-padding:4;"/>
+                </HBox>
+            </VBox>
+
+        </VBox>
+    </left>
+
+    <center>
+        <StackPane fx:id="centerRoot">
+            <VBox StackPane.alignment="TOP_LEFT">
+                <!-- Topbar -->
+                <HBox styleClass="topbar" alignment="CENTER_LEFT" spacing="16">
+                    <VBox spacing="2">
+                        <Label fx:id="topbarTitle"      text="Dashboard"         styleClass="topbar-title"/>
+                        <Label fx:id="topbarBreadcrumb" text="Inicio > Dashboard" styleClass="topbar-breadcrumb"/>
+                    </VBox>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <HBox alignment="CENTER_LEFT" spacing="8">
+                        <Label fx:id="lblReloj" styleClass="lbl-reloj"/>
+                        <Label fx:id="labelFecha" styleClass="topbar-date-badge"/>
+                        <Button fx:id="btnMaximize" text="⬜"
+                                styleClass="btn-window" mnemonicParsing="false"
+                                onAction="#handleMaximize"/>
+                        <Button fx:id="btnCerrar" text="✕"
+                                styleClass="btn-window,btn-close" mnemonicParsing="false"
+                                onAction="#handleCerrar"/>
+                    </HBox>
+                </HBox>
+                <StackPane fx:id="contentArea" VBox.vgrow="ALWAYS"/>
+            </VBox>
+        </StackPane>
+    </center>
+
+</BorderPane>
   
