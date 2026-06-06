@@ -111,4 +111,14 @@ public class ConexionBaseDatos {
                 + "Crea el archivo 'config/db.properties' con db.url, db.user y db.password, "
                 + "o define las variables de entorno HOTEL_DB_URL, HOTEL_DB_USER y HOTEL_DB_PASS.");
     }
+
+    private static void validarPropiedades(Properties props, String fuente) {
+        String[] requeridas = {"db.url", "db.user", "db.password"};
+        for (String clave : requeridas) {
+            if (props.getProperty(clave) == null || props.getProperty(clave).isBlank()) {
+                throw new ExcepcionBaseDatos(
+                        "La propiedad '" + clave + "' es requerida en " + fuente + " pero está ausente o vacía.");
+            }
+        }
+    }
 }
