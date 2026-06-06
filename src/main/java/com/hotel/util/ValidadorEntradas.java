@@ -143,4 +143,29 @@ public final class ValidadorEntradas {
                     "El subtipo de documento debe ser 'COLOMBIANA' o 'EXTRANJERA'.");
         }
     }
+
+    /**
+     * Valida que un texto contenga solo letras y espacios (nombres, apellidos).
+     * Permite acentos, ñ, ü y otros caracteres latinos.
+     */
+    public static void validarSoloLetras(String valor, String nombreCampo)
+            throws ExcepcionValidacion {
+        validarCampoRequerido(valor, nombreCampo);
+        if (!valor.trim().matches("^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\\s]+$")) {
+            throw new ExcepcionValidacion(nombreCampo,
+                    "El campo '" + nombreCampo + "' solo permite letras y espacios.");
+        }
+    }
+
+    /**
+     * Valida que un texto contenga solo números.
+     */
+    public static void validarSoloNumeros(String valor, String nombreCampo)
+            throws ExcepcionValidacion {
+        validarCampoRequerido(valor, nombreCampo);
+        if (!valor.trim().matches("^[0-9]+$")) {
+            throw new ExcepcionValidacion(nombreCampo,
+                    "El campo '" + nombreCampo + "' solo permite números.");
+        }
+    }
 }
