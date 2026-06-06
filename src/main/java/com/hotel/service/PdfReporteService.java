@@ -246,4 +246,53 @@ public class PdfReporteService {
         return ruta;
     }
 
+    public String generarReporteIngresosAnualesPdf() {
+        List<Factura> todasLasFacturas = facturaDAO.listarTodas();
+        int anioActual = LocalDate.now().getYear();
+        String nombreArchivo = "IngresosAnuales_" + anioActual + ".pdf";
+        String ruta = crearRuta(nombreArchivo);
+        Document doc = new Document(PageSize.A4);
+        try {
+            PdfWriter.getInstance(doc, new FileOutputStream(ruta));
+            doc.open();
+            agregarHeaderHotel(doc, "INGRESOS ANUALES - ULTIMOS 5 ANOS");
+            PdfPTable tabla = crearTabla(3, new float[]{1f, 2f, 2f});
+            agregarEncabezado(tabla, new String[]{"Ano", "Ingresos totales", "Variacion vs. ano anterior"});
+            double ingresoAnterior = 0;
+            boolean parImpar = false;
+            for (int i = 4; i >= 0; i--) {
+                int anio = anioActual - i;
+                final int anioFinal = anio;
+                double ingreso = todasLasFacturas.stream()
+                        .filter(f -> f.getEstadoPago() == Factura.EstadoPago.PAGADA)
+                        .filter(f -> f.getFechaEmision() != null && f.getFechaEmision().getYear() == anioFinal)
+                        .mapToDouble(Factura::getTotal).sum();
+                double variacion = (ingresoAnterior > 0) ? ((ingreso - ingresoAnterior) / ingresoAnterior) * 100 : 0;
+                String variacionStr = (i == 4 || ingresoAnterior == 0) ? "-" :
+                        (variacion >= 0 ? String.format("+%.1f%%", variacion) : String.format("%.1f%%", variacion));
+                Color fondo = parImpar ? COLOR_FILA_PAR : Color.WHITE;
+                Font fontFila = FontFactory.getFont(FontFactory.HELVETICA, anio == anioActual ? 11 : 10,
+                        anio == anioActual ? COLOR_AZUL_HOTEL : COLOR_GRIS_HEADER);
+                Font fontVar  = variacion >= 0 && i < 4
+                        ? FontFactory.getFont(FontFactory.HELVETICA, 10, COLOR_VERDE)
+                        : FontFactory.getFont(FontFactory.HELVETICA, 10, new Color(0xdc, 0x26, 0x26));
+                agregarCelda(tabla, String.valueOf(anio), fontFila, fondo, Element.ALIGN_CENTER);
+                agregarCelda(tabla, ingreso > 0 ? String.format("$ %,.2f", ingreso) : "$ 0.00",
+                        FontFactory.getFont(FontFactory.HELVETICA, 10, COLOR_VERDE), fondo, Element.ALIGN_RIGHT);
+                agregarCelda(tabla, variacionStr,
+                        (i == 4 || ingresoAnterior == 0) ? fontFila : fontVar, fondo, Element.ALIGN_CENTER);
+                ingresoAnterior = ingreso;
+                parImpar = !parImpar;
+            }
+            doc.add(tabla);
+            agregarPiePagina(doc);
+        } catch (Exception e) {
+            throw new ExcepcionBaseDatos("Error generando PDF de ingresos anuales: " + e.getMessage(), e);
+        } finally {
+            doc.close();
+        }
+        abrirPdf(ruta);
+        return ruta;
+    }
+
 }
