@@ -140,4 +140,18 @@ public class ReporteService {
                 + "Factura generada electrónicamente.</div>"
                 + "</body></html>";
     }
+
+    public String guardarFacturaHTML(int idFactura) {
+        String html = generarFacturaHTML(idFactura);
+        String carpeta = "C:/Facturas";
+        new java.io.File(carpeta).mkdirs();
+        java.nio.file.Path path = java.nio.file.Paths.get(carpeta, "factura_" + idFactura + ".html");
+        try {
+            java.nio.file.Files.writeString(path, html);
+            System.out.println("[REPORTE] Factura HTML guardada en: " + path);
+        } catch (Exception e) {
+            System.err.println("[REPORTE] Error al guardar factura: " + e.getMessage());
+        }
+        return path.toString();
+    }
 }
