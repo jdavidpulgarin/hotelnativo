@@ -62,4 +62,19 @@ public final class ValidadorEntradas {
                     "La fecha de entrada no puede ser en el pasado.");
         }
     }
+
+    public static void validarIdPositivo(int id, String nombreEntidad) throws ExcepcionValidacion {
+        if (id <= 0) {
+            throw new ExcepcionValidacion("id",
+                    "El ID de " + nombreEntidad + " debe ser un número positivo.");
+        }
+    }
+
+    public static void validarPrecioPositivo(double precio, String nombreCampo)
+            throws ExcepcionValidacion {
+        if (precio <= 0) {
+            throw new ExcepcionValidacion(nombreCampo,
+                    "El campo '" + nombreCampo + "' debe ser mayor a cero.");
+        }
+    }
 }
