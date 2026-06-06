@@ -82,4 +82,64 @@ public class PdfReporteService {
         return ruta;
     }
 
+    public String generarReporteOcupacionPdf(int anio, int mes) {
+        LocalDate inicio = LocalDate.of(anio, mes, 1);
+        LocalDate fin    = inicio.withDayOfMonth(inicio.lengthOfMonth());
+        List<Reserva> reservas = reservaBusqueda.buscarPorRangoFechas(inicio, fin);
+        String nombreMes = inicio.getMonth().getDisplayName(TextStyle.FULL, Locale.forLanguageTag("es"));
+        String nombreArchivo = "Ocupacion_" + anio + "_" + String.format("%02d", mes) + ".pdf";
+        String ruta = crearRuta(nombreArchivo);
+
+        Document doc = new Document(PageSize.A4.rotate());
+        try {
+            PdfWriter.getInstance(doc, new FileOutputStream(ruta));
+            doc.open();
+            agregarHeaderHotel(doc, "REPORTE DE OCUPACION - " + nombreMes.toUpperCase() + " " + anio);
+            long confirmadas = reservas.stream().filter(r ->
+                    r.getEstado() == Reserva.EstadoReserva.CONFIRMADA ||
+                    r.getEstado() == Reserva.EstadoReserva.EN_PROCESO).count();
+            long canceladas  = reservas.stream().filter(r ->
+                    r.getEstado() == Reserva.EstadoReserva.CANCELADA).count();
+            long completadas = reservas.stream().filter(r ->
+                    r.getEstado() == Reserva.EstadoReserva.COMPLETADA).count();
+            PdfPTable kpiTab = crearTabla(4, new float[]{1, 1, 1, 1});
+            agregarKPI(kpiTab, "Total reservas", String.valueOf(reservas.size()), COLOR_AZUL_HOTEL);
+            agregarKPI(kpiTab, "Activas",        String.valueOf(confirmadas),     COLOR_VERDE);
+            agregarKPI(kpiTab, "Completadas",    String.valueOf(completadas),     COLOR_GRIS_HEADER);
+            agregarKPI(kpiTab, "Canceladas",     String.valueOf(canceladas),      new Color(0xdc, 0x26, 0x26));
+            doc.add(kpiTab);
+            doc.add(Chunk.NEWLINE);
+            PdfPTable tabla = crearTabla(6, new float[]{0.5f, 2f, 1.5f, 1.2f, 1.2f, 1.2f});
+            agregarEncabezado(tabla, new String[]{"ID", "Cliente", "Habitacion", "Entrada", "Salida", "Estado"});
+            boolean parImpar = false;
+            for (Reserva r : reservas) {
+                Color fondo = parImpar ? COLOR_FILA_PAR : Color.WHITE;
+                Font fontFila = FontFactory.getFont(FontFactory.HELVETICA, 9, COLOR_GRIS_HEADER);
+                agregarCelda(tabla, String.valueOf(r.getId()), fontFila, fondo, Element.ALIGN_CENTER);
+                agregarCelda(tabla, r.getCliente() != null ? r.getCliente().obtenerNombreCompleto() : "-", fontFila, fondo, Element.ALIGN_LEFT);
+                agregarCelda(tabla, r.getHabitacion() != null ? "Hab. " + r.getHabitacion().getNumero() : "-", fontFila, fondo, Element.ALIGN_CENTER);
+                agregarCelda(tabla, r.getFechaEntrada() != null ? r.getFechaEntrada().toString() : "-", fontFila, fondo, Element.ALIGN_CENTER);
+                agregarCelda(tabla, r.getFechaSalida()  != null ? r.getFechaSalida().toString()  : "-", fontFila, fondo, Element.ALIGN_CENTER);
+                agregarCelda(tabla, r.getEstado() != null ? r.getEstado().name() : "-", fontFila, fondo, Element.ALIGN_CENTER);
+                parImpar = !parImpar;
+            }
+            if (reservas.isEmpty()) {
+                PdfPCell vacio = new PdfPCell(new Phrase("Sin reservas en este periodo",
+                        FontFactory.getFont(FontFactory.HELVETICA_OBLIQUE, 10, Color.GRAY)));
+                vacio.setColspan(6);
+                vacio.setHorizontalAlignment(Element.ALIGN_CENTER);
+                vacio.setPadding(12);
+                tabla.addCell(vacio);
+            }
+            doc.add(tabla);
+            agregarPiePagina(doc);
+        } catch (Exception e) {
+            throw new ExcepcionBaseDatos("Error generando PDF de ocupacion: " + e.getMessage(), e);
+        } finally {
+            doc.close();
+        }
+        abrirPdf(ruta);
+        return ruta;
+    }
+
 }
