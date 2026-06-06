@@ -28,4 +28,20 @@ public final class ValidadorEntradas {
                     "El campo '" + nombreCampo + "' es obligatorio y no puede estar vacío.");
         }
     }
+
+    public static void validarFormatoEmail(String email) throws ExcepcionValidacion {
+        validarCampoRequerido(email, "email");
+        if (!PATRON_EMAIL.matcher(email).matches()) {
+            throw new ExcepcionValidacion("email",
+                    "El email '" + email + "' no tiene un formato válido.");
+        }
+    }
+
+    public static void validarFormatoTelefono(String telefono) throws ExcepcionValidacion {
+        validarCampoRequerido(telefono, "telefono");
+        if (!PATRON_TELEFONO.matcher(telefono).matches()) {
+            throw new ExcepcionValidacion("telefono",
+                    "El teléfono '" + telefono + "' no tiene un formato válido (7-15 dígitos).");
+        }
+    }
 }
