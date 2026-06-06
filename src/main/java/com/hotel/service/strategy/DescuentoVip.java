@@ -11,18 +11,18 @@ import com.hotel.util.Constantes;
  * @author Pulgarin
  */
 /**
- * Descuento por temporada baja. SOLID - O: Nueva estrategia de descuento sin
- * tocar código existente.
+ * Descuento para clientes VIP. SOLID - O: Extensión del contrato Descuento sin
+ * modificar código existente.
  */
-public class DescuentoTemporadaBaja implements Descuento {
+public class DescuentoVip implements Descuento {
 
     @Override
     public double calcularDescuento(double precioOriginal) {
-        return precioOriginal * Constantes.DESCUENTO_TEMPORADA_BAJA;
+        return precioOriginal * Constantes.DESCUENTO_CLIENTE_VIP;
     }
 
     @Override
     public String obtenerDescripcion() {
-        return "Descuento Temporada Baja " + (int) (Constantes.DESCUENTO_TEMPORADA_BAJA * 100) + "%";
+        return "Descuento VIP " + (int) (Constantes.DESCUENTO_CLIENTE_VIP * 100) + "%";
     }
 }
