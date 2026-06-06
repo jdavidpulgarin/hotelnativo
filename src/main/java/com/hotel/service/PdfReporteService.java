@@ -142,4 +142,58 @@ public class PdfReporteService {
         return ruta;
     }
 
+    public String generarReporteIngresosDiariosPdf(int anio, int mes) {
+        List<Factura> todasLasFacturas = facturaDAO.listarTodas();
+        String nombreMes = LocalDate.of(anio, mes, 1).getMonth()
+                .getDisplayName(TextStyle.FULL, Locale.forLanguageTag("es"));
+        Map<Integer, Double> porDia = todasLasFacturas.stream()
+                .filter(f -> f.getEstadoPago() == Factura.EstadoPago.PAGADA)
+                .filter(f -> f.getFechaEmision() != null
+                          && f.getFechaEmision().getYear() == anio
+                          && f.getFechaEmision().getMonthValue() == mes)
+                .collect(Collectors.groupingBy(
+                        f -> f.getFechaEmision().getDayOfMonth(),
+                        Collectors.summingDouble(Factura::getTotal)));
+        int diasEnMes = LocalDate.of(anio, mes, 1).lengthOfMonth();
+        double totalMes = porDia.values().stream().mapToDouble(Double::doubleValue).sum();
+        String nombreArchivo = "IngresosDiarios_" + anio + "_" + String.format("%02d", mes) + ".pdf";
+        String ruta = crearRuta(nombreArchivo);
+        Document doc = new Document(PageSize.A4);
+        try {
+            PdfWriter.getInstance(doc, new FileOutputStream(ruta));
+            doc.open();
+            agregarHeaderHotel(doc, "INGRESOS DIARIOS - " + nombreMes.toUpperCase() + " " + anio);
+            PdfPTable tabla = crearTabla(3, new float[]{1f, 2f, 2f});
+            agregarEncabezado(tabla, new String[]{"Dia", "Ingresos del dia", "Acumulado"});
+            double acumulado = 0;
+            boolean parImpar = false;
+            for (int dia = 1; dia <= diasEnMes; dia++) {
+                double ingresoDia = porDia.getOrDefault(dia, 0.0);
+                acumulado += ingresoDia;
+                Color fondo = parImpar ? COLOR_FILA_PAR : Color.WHITE;
+                Font fontFila = FontFactory.getFont(FontFactory.HELVETICA, 10, COLOR_GRIS_HEADER);
+                agregarCelda(tabla, String.valueOf(dia), fontFila, fondo, Element.ALIGN_CENTER);
+                agregarCelda(tabla,
+                        ingresoDia > 0 ? String.format("$ %,.2f", ingresoDia) : "-",
+                        ingresoDia > 0 ? FontFactory.getFont(FontFactory.HELVETICA, 10, COLOR_VERDE) : fontFila,
+                        fondo, Element.ALIGN_RIGHT);
+                agregarCelda(tabla, String.format("$ %,.2f", acumulado), fontFila, fondo, Element.ALIGN_RIGHT);
+                parImpar = !parImpar;
+            }
+            Font fontTotal = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 11, COLOR_VERDE);
+            Color fondoTotal = new Color(0xf0, 0xfd, 0xf4);
+            agregarCelda(tabla, "TOTAL",                               fontTotal, fondoTotal, Element.ALIGN_CENTER);
+            agregarCelda(tabla, String.format("$ %,.2f", totalMes),   fontTotal, fondoTotal, Element.ALIGN_RIGHT);
+            agregarCelda(tabla, String.format("$ %,.2f", totalMes),   fontTotal, fondoTotal, Element.ALIGN_RIGHT);
+            doc.add(tabla);
+            agregarPiePagina(doc);
+        } catch (Exception e) {
+            throw new ExcepcionBaseDatos("Error generando PDF de ingresos diarios: " + e.getMessage(), e);
+        } finally {
+            doc.close();
+        }
+        abrirPdf(ruta);
+        return ruta;
+    }
+
 }
