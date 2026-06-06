@@ -90,4 +90,31 @@ public class ManejadorExcepciones implements Thread.UncaughtExceptionHandler {
                 + causa.getClass().getSimpleName() + ": "
                 + (causa.getMessage() != null ? causa.getMessage() : "Sin detalles");
     }
+
+    private void mostrarError(String mensaje, Throwable e) {
+        try {
+            NotificationUtil.error(mensaje);
+        } catch (Exception fallback) {
+            try {
+                javafx.scene.control.Alert alerta = new javafx.scene.control.Alert(
+                        javafx.scene.control.Alert.AlertType.ERROR);
+                alerta.setTitle("Error");
+                alerta.setHeaderText("Ha ocurrido un error");
+                alerta.setContentText(mensaje);
+
+                java.io.StringWriter sw = new java.io.StringWriter();
+                e.printStackTrace(new java.io.PrintWriter(sw));
+                javafx.scene.control.TextArea detalles
+                        = new javafx.scene.control.TextArea(sw.toString());
+                detalles.setEditable(false);
+                detalles.setWrapText(true);
+                detalles.setMaxWidth(Double.MAX_VALUE);
+                detalles.setMaxHeight(Double.MAX_VALUE);
+                alerta.getDialogPane().setExpandableContent(detalles);
+                alerta.showAndWait();
+            } catch (Exception ignorado) {
+                System.err.println("[FATAL] No se pudo mostrar el error: " + mensaje);
+            }
+        }
+    }
 }
