@@ -599,4 +599,31 @@ public class PdfReporteService {
         tabla.addCell(celda);
     }
 
+    private void agregarKPI(PdfPTable tabla, String etiqueta, String valor, Color color) {
+        Font fontValor = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18, color);
+        Font fontEtiq  = FontFactory.getFont(FontFactory.HELVETICA, 9, COLOR_GRIS_HEADER);
+        PdfPCell celda = new PdfPCell();
+        celda.addElement(new Paragraph(valor, fontValor));
+        celda.addElement(new Paragraph(etiqueta, fontEtiq));
+        celda.setPadding(10);
+        celda.setBorderColor(new Color(0xe2, 0xe8, 0xf0));
+        celda.setHorizontalAlignment(Element.ALIGN_CENTER);
+        tabla.addCell(celda);
+    }
+
+    private void agregarPiePagina(Document doc) throws DocumentException {
+        Paragraph pie = new Paragraph(
+                "Hotel Nativo - Sistema de Gestion Hotelera | Documento generado automaticamente",
+                FontFactory.getFont(FontFactory.HELVETICA_OBLIQUE, 8, Color.GRAY));
+        pie.setAlignment(Element.ALIGN_CENTER);
+        pie.setSpacingBefore(20);
+        doc.add(pie);
+    }
+
+    private void abrirPdf(String ruta) {
+        if (Desktop.isDesktopSupported()) {
+            try { Desktop.getDesktop().open(new File(ruta)); }
+            catch (Exception ignored) {}
+        }
+    }
 }
