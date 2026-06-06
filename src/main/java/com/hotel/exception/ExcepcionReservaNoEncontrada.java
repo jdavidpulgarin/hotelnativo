@@ -11,7 +11,7 @@ package com.hotel.exception;
 /**
  * Excepción cuando no se encuentra una reserva por su identificador.
  */
-public class ExcepcionReservaNoEncontrada {
+public class ExcepcionReservaNoEncontrada extends ExcepcionNegocio{
 
     public ExcepcionReservaNoEncontrada(int idReserva) {
         super("RESERVA_NO_ENCONTRADA",
