@@ -12,7 +12,7 @@ package com.hotel.exception;
  * Excepción base para errores de lógica de negocio. SOLID: S - Excepción
  * específica del dominio, no genérica
  */
-public class ExcepcionNegocio {
+public class ExcepcionNegocio extends Exception  {
 
     private final String codigoError;
 
