@@ -170,4 +170,22 @@ public class ConexionBaseDatos {
             }
         }
     }
+
+    private Connection crearNuevaConexion() {
+        try {
+            return DriverManager.getConnection(urlConexion, usuarioBD, contrasenaBD);
+        } catch (SQLException e) {
+            throw new ExcepcionBaseDatos(
+                    "No se pudo conectar con Oracle (" + urlConexion + "): " + e.getMessage(), e);
+        }
+    }
+
+    private void inicializarDriver() {
+        try {
+            Class.forName(DRIVER_ORACLE);
+        } catch (ClassNotFoundException e) {
+            throw new ExcepcionBaseDatos(
+                    "Driver Oracle no encontrado en classpath: " + e.getMessage(), e);
+        }
+    }
 }
