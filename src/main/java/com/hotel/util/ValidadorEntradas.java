@@ -88,4 +88,45 @@ public final class ValidadorEntradas {
                     + LARGO_MINIMO_NOMBRE + " y " + LARGO_MAXIMO_NOMBRE + " caracteres.");
         }
     }
+
+    /**
+     * Valida la complejidad de una contraseña según la política de seguridad:
+     * mínimo 8 caracteres, máximo 128, al menos una mayúscula, una minúscula,
+     * un dígito y un carácter especial.
+     *
+     * @param contrasena contraseña a validar
+     * @param nombreCampo nombre del campo para los mensajes de error
+     * @throws ExcepcionValidacion si la contraseña no cumple la política
+     */
+    public static void validarPassword(String contrasena, String nombreCampo)
+            throws ExcepcionValidacion {
+        validarCampoRequerido(contrasena, nombreCampo);
+        int largo = contrasena.length();
+        if (largo < 8) {
+            throw new ExcepcionValidacion(nombreCampo,
+                    "La contraseña debe tener al menos 8 caracteres.");
+        }
+        if (largo > 128) {
+            throw new ExcepcionValidacion(nombreCampo,
+                    "La contraseña no puede superar los 128 caracteres.");
+        }
+        if (!contrasena.chars().anyMatch(Character::isUpperCase)) {
+            throw new ExcepcionValidacion(nombreCampo,
+                    "La contraseña debe contener al menos una letra mayúscula.");
+        }
+        if (!contrasena.chars().anyMatch(Character::isLowerCase)) {
+            throw new ExcepcionValidacion(nombreCampo,
+                    "La contraseña debe contener al menos una letra minúscula.");
+        }
+        if (!contrasena.chars().anyMatch(Character::isDigit)) {
+            throw new ExcepcionValidacion(nombreCampo,
+                    "La contraseña debe contener al menos un número.");
+        }
+        boolean tieneEspecial = contrasena.chars()
+                .anyMatch(c -> !Character.isLetterOrDigit(c));
+        if (!tieneEspecial) {
+            throw new ExcepcionValidacion(nombreCampo,
+                    "La contraseña debe contener al menos un carácter especial (!@#$%^&* etc.).");
+        }
+    }
 }
