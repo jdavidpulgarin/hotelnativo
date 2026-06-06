@@ -1,38 +1,23 @@
 package com.hotel.util;
 
 import com.hotel.exception.ExcepcionValidacion;
+import java.time.LocalDate;
+import java.util.regex.Pattern;
 
-public class ValidadorEntradas {
+/**
+ * Validaciones reutilizables de entrada de datos.
+ *
+ * GRASP: Fabricación Pura - no existe en el dominio, pero centraliza
+ * validaciones evitando duplicación en múltiples servicios. SOLID: S -
+ * responsabilidad única: validar entradas.
+ */
+public final class ValidadorEntradas {
 
-    public static void validarCampoRequerido(String valor, String campo) {
-        if (valor == null || valor.isBlank())
-            throw new ExcepcionValidacion("El campo '" + campo + "' es obligatorio.");
-    }
+    private static final Pattern PATRON_EMAIL = Pattern.compile("^[\\w.-]+@[\\w.-]+\\.[a-zA-Z]{2,}$");
+    private static final Pattern PATRON_TELEFONO = Pattern.compile("^[+]?[0-9]{7,15}$");
+    private static final int LARGO_MINIMO_NOMBRE = 2;
+    private static final int LARGO_MAXIMO_NOMBRE = 100;
 
-    public static void validarIdPositivo(int id, String entidad) {
-        if (id <= 0)
-            throw new ExcepcionValidacion("El ID de " + entidad + " debe ser mayor a cero.");
-    }
-
-    public static void validarSoloNumeros(String valor, String campo) {
-        if (!valor.matches("\\d+"))
-            throw new ExcepcionValidacion("El campo '" + campo + "' solo acepta números.");
-    }
-
-    public static void validarLargoNombre(String valor, String campo) {
-        validarCampoRequerido(valor, campo);
-        if (valor.length() < 2 || valor.length() > 50)
-            throw new ExcepcionValidacion("El campo '" + campo + "' debe tener entre 2 y 50 caracteres.");
-    }
-
-    public static void validarFormatoEmail(String email) {
-        validarCampoRequerido(email, "email");
-        if (!email.matches("^[\\w.+-]+@[\\w-]+\\.[\\w.]+$"))
-            throw new ExcepcionValidacion("El formato del email es inválido.");
-    }
-
-    public static void validarFormatoTelefono(String tel) {
-        if (tel != null && !tel.isBlank() && !tel.matches("[+\\d\\s()-]{7,20}"))
-            throw new ExcepcionValidacion("El formato del teléfono es inválido.");
+    private ValidadorEntradas() {
     }
 }
