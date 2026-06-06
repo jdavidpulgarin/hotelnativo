@@ -138,4 +138,26 @@ public class ConexionBaseDatos {
         }
         return crearNuevaConexion();
     }
+
+    public void liberarConexion(Connection conn) {
+        if (conn == null) {
+            return;
+        }
+        try {
+            if (conn.isClosed()) {
+                return;
+            }
+            if (!conn.getAutoCommit()) {
+                conn.rollback();
+            }
+            if (!pool.offer(conn)) {
+                conn.close();
+            }
+        } catch (SQLException e) {
+            try {
+                conn.close();
+            } catch (SQLException ignored) {
+            }
+        }
+    }
 }
