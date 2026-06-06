@@ -44,4 +44,22 @@ public final class ValidadorEntradas {
                     "El teléfono '" + telefono + "' no tiene un formato válido (7-15 dígitos).");
         }
     }
+
+    public static void validarRangoFechas(LocalDate fechaEntrada, LocalDate fechaSalida)
+            throws ExcepcionValidacion {
+        if (fechaEntrada == null) {
+            throw new ExcepcionValidacion("fechaEntrada", "La fecha de entrada es obligatoria.");
+        }
+        if (fechaSalida == null) {
+            throw new ExcepcionValidacion("fechaSalida", "La fecha de salida es obligatoria.");
+        }
+        if (!fechaEntrada.isBefore(fechaSalida)) {
+            throw new ExcepcionValidacion("fechas",
+                    "La fecha de entrada debe ser anterior a la fecha de salida.");
+        }
+        if (fechaEntrada.isBefore(LocalDate.now())) {
+            throw new ExcepcionValidacion("fechaEntrada",
+                    "La fecha de entrada no puede ser en el pasado.");
+        }
+    }
 }
