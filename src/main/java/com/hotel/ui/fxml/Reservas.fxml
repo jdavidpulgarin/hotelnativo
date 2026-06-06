@@ -1,1 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.*?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
+
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.hotel.ui.controllers.ReservasController"
+      spacing="0" styleClass="main-bg">
+
+    <!-- ── Header: título + fecha/turno a la derecha ── -->
+    <HBox style="-fx-padding:24 24 12 24;" alignment="CENTER_LEFT" spacing="0">
+        <VBox spacing="3" HBox.hgrow="ALWAYS">
+            <Label text="Reservas"
+                   style="-fx-font-size:24px; -fx-font-weight:bold; -fx-text-fill:#1e293b;"/>
+            <Label text="Gestiona todas las reservas del hotel"
+                   style="-fx-font-size:14px; -fx-text-fill:#64748b;"/>
+        </VBox>
+        <!-- Fecha y turno -->
+        <HBox spacing="10" alignment="CENTER_RIGHT">
+            <Label fx:id="lblFecha"
+                   style="-fx-font-size:13px; -fx-font-weight:600; -fx-text-fill:#3563e9;
+                          -fx-background-color:#eef2ff; -fx-background-radius:20;
+                          -fx-padding:5 14;"/>
+            <Label fx:id="lblTurno"
+                   style="-fx-font-size:12px; -fx-font-weight:600; -fx-text-fill:#7c3aed;
+                          -fx-background-color:#f5f3ff; -fx-background-radius:20;
+                          -fx-padding:5 14;"/>
+        </HBox>
+    </HBox>
+
+    <!-- ── Toolbar: búsqueda + filtro + botones ── -->
+    <HBox style="-fx-padding:0 24 12 24;" spacing="12" alignment="CENTER_LEFT">
+        <!-- Búsqueda 500px -->
+        <TextField fx:id="searchField"
+                   promptText="🔍  Buscar por cliente, habitación o ID..."
+                   styleClass="search-field"
+                   prefWidth="500"
+                   onKeyReleased="#filtrar"/>
+
+        <!-- Filtro estado -->
+        <ComboBox fx:id="filtroEstado" prefWidth="155" onAction="#filtrar"/>
+
+        <Region HBox.hgrow="ALWAYS"/>
+
+        <!-- Nueva reserva: azul -->
+        <Button mnemonicParsing="false" styleClass="btn-circle,btn-primary" onAction="#nuevaReserva">
+            <graphic><FontIcon iconLiteral="fas-plus" iconSize="16" iconColor="white"/></graphic>
+            <tooltip><Tooltip text="Nueva Reserva" styleClass="tooltip"/></tooltip>
+        </Button>
+
+        <!-- Confirmar: verde -->
+        <Button mnemonicParsing="false" styleClass="btn-circle,btn-success" onAction="#confirmar">
+            <graphic><FontIcon iconLiteral="fas-check" iconSize="16" iconColor="white"/></graphic>
+            <tooltip><Tooltip text="Confirmar Reserva" styleClass="tooltip"/></tooltip>
+        </Button>
+
+        <!-- Cancelar: rojo -->
+        <Button mnemonicParsing="false" styleClass="btn-circle,btn-danger" onAction="#cancelar">
+            <graphic><FontIcon iconLiteral="fas-times" iconSize="16" iconColor="white"/></graphic>
+            <tooltip><Tooltip text="Cancelar Reserva" styleClass="tooltip"/></tooltip>
+        </Button>
+
+        <!-- Separador -->
+        <Region styleClass="action-toolbar-separator"/>
+
+        <!-- Refrescar: gris outline -->
+        <Button mnemonicParsing="false" styleClass="btn-circle,btn-outline" onAction="#cargarDatos">
+            <graphic><FontIcon iconLiteral="fas-sync-alt" iconSize="14" iconColor="#6b7280"/></graphic>
+            <tooltip><Tooltip text="Refrescar" styleClass="tooltip"/></tooltip>
+        </Button>
+    </HBox>
+
+    <!-- ── Badges resumen (outlined) ── -->
+    <HBox fx:id="statsRow" spacing="10"
+          style="-fx-padding:0 24 16 24;" alignment="CENTER_LEFT"/>
+
+    <!-- ── Tabla ── -->
+    <VBox VBox.vgrow="ALWAYS" style="-fx-padding:0 24 24 24;">
+        <VBox styleClass="table-container" VBox.vgrow="ALWAYS">
+            <TableView fx:id="tabla" VBox.vgrow="ALWAYS" styleClass="table-view"
+                       onMouseClicked="#handleDobleClick">
+                <columns>
+                    <TableColumn fx:id="colId"       text="ID"        prefWidth="65"/>
+                    <TableColumn fx:id="colCliente"  text="CLIENTE"   prefWidth="155"/>
+                    <TableColumn fx:id="colHab"      text="HABITACIÓN" prefWidth="110"/>
+                    <TableColumn fx:id="colEntrada"  text="ENTRADA"   prefWidth="115"/>
+                    <TableColumn fx:id="colSalida"   text="SALIDA"    prefWidth="115"/>
+                    <TableColumn fx:id="colDias"     text="NOCHES"    prefWidth="78"/>
+                    <TableColumn fx:id="colPersonas" text="PERSONAS"  prefWidth="90"/>
+                    <TableColumn fx:id="colTotal"    text="TOTAL"     prefWidth="120"/>
+                    <TableColumn fx:id="colEstado"   text="ESTADO"    prefWidth="140"/>
+                </columns>
+                <placeholder>
+                    <Label text="Sin reservas registradas" styleClass="text-muted"/>
+                </placeholder>
+            </TableView>
+        </VBox>
+    </VBox>
+
+    <ProgressBar fx:id="progressBar" maxWidth="Infinity" visible="false"
+                 style="-fx-accent:#3563e9; -fx-pref-height:3px;"/>
+</VBox>
  
