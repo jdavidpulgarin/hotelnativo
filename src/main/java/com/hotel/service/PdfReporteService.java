@@ -483,4 +483,39 @@ public class PdfReporteService {
         doc.add(totTab);
     }
 
+    private void agregarFooterFact(Document doc, Factura f) throws DocumentException {
+        Font fLabel = FontFactory.getFont(FontFactory.HELVETICA, 8, Color.GRAY);
+        Font fValue = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8, COLOR_GRIS_HEADER);
+        Color borde = new Color(0xe2, 0xe8, 0xf0);
+        String numRef = "HN-" + LocalDate.now().getYear() + "-" + String.format("%06d", f.getId());
+        PdfPTable footTab = new PdfPTable(3);
+        footTab.setWidthPercentage(100);
+        footTab.setWidths(new float[]{1, 1, 1});
+        footTab.setSpacingBefore(20);
+        for (String[] par : new String[][]{
+            {"Generada por:", "Sistema Hotel Nativo"},
+            {"Fecha:", LocalDate.now().toString()},
+            {"Referencia:", numRef}
+        }) {
+            PdfPCell cell = new PdfPCell();
+            cell.setBorder(Rectangle.TOP);
+            cell.setBorderWidthTop(1f);
+            cell.setBorderColorTop(borde);
+            cell.setPadding(6);
+            cell.addElement(new Paragraph(par[0], fLabel));
+            cell.addElement(new Paragraph(par[1], fValue));
+            footTab.addCell(cell);
+        }
+        doc.add(footTab);
+    }
+
+    private void agregarDisclaimer(Document doc) throws DocumentException {
+        Paragraph disc = new Paragraph(
+            "Documento generado automaticamente por el Sistema de Gestion Hotelera de Hotel Nativo.",
+            FontFactory.getFont(FontFactory.HELVETICA_OBLIQUE, 8, Color.GRAY));
+        disc.setAlignment(Element.ALIGN_CENTER);
+        disc.setSpacingBefore(6);
+        doc.add(disc);
+    }
+
 }
