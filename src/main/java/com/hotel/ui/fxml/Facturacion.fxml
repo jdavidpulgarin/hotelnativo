@@ -1,1 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.*?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
+
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.hotel.ui.controllers.FacturacionController"
+      spacing="0" styleClass="main-bg">
+
+    <!-- ── 1. BARRA DE HERRAMIENTAS ── -->
+    <HBox style="-fx-padding:20 24 12 24;" spacing="10" alignment="CENTER_LEFT">
+
+        <!-- Búsqueda 400px -->
+        <TextField fx:id="searchField"
+                   promptText="🔍  Buscar por cliente, reserva o estado..."
+                   styleClass="search-field-factura"
+                   prefWidth="400"
+                   onKeyReleased="#filtrar"/>
+        <Region HBox.hgrow="ALWAYS"/>
+
+        <!-- ➕ Nueva factura: azul #3B82F6 -->
+        <Button mnemonicParsing="false" styleClass="btn-circle,btn-primary"
+                onAction="#cobrar">
+            <graphic><FontIcon iconLiteral="fas-plus" iconSize="16" iconColor="white"/></graphic>
+            <tooltip><Tooltip text="Nueva Factura" styleClass="tooltip"/></tooltip>
+        </Button>
+
+        <!-- ✉ Enviar por email: azul #3B82F6 -->
+        <Button mnemonicParsing="false" styleClass="btn-circle,btn-primary"
+                onAction="#enviarEmail">
+            <graphic><FontIcon iconLiteral="fas-envelope" iconSize="14" iconColor="white"/></graphic>
+            <tooltip><Tooltip text="Enviar por Email" styleClass="tooltip"/></tooltip>
+        </Button>
+
+        <!-- 📄 Ver PDF: rojo #EF4444 -->
+        <Button mnemonicParsing="false" styleClass="btn-circle,btn-danger"
+                onAction="#generarHtml">
+            <graphic><FontIcon iconLiteral="fas-file-pdf" iconSize="14" iconColor="white"/></graphic>
+            <tooltip><Tooltip text="Ver / Generar PDF" styleClass="tooltip"/></tooltip>
+        </Button>
+
+        <!-- 🖨 Imprimir: verde #22C55E -->
+        <Button mnemonicParsing="false" styleClass="btn-circle,btn-success"
+                onAction="#imprimirFactura">
+            <graphic><FontIcon iconLiteral="fas-print" iconSize="14" iconColor="white"/></graphic>
+            <tooltip><Tooltip text="Imprimir Factura" styleClass="tooltip"/></tooltip>
+        </Button>
+
+        <!-- ↻ Refrescar: gris outline -->
+        <Button mnemonicParsing="false" styleClass="btn-circle,btn-outline"
+                onAction="#cargarDatos">
+            <graphic><FontIcon iconLiteral="fas-sync-alt" iconSize="14" iconColor="#64748b"/></graphic>
+            <tooltip><Tooltip text="Refrescar" styleClass="tooltip"/></tooltip>
+        </Button>
+    </HBox>
+
+    <!-- ── 2. BADGES RESUMEN ── -->
+    <HBox fx:id="statsRow" spacing="10"
+          style="-fx-padding:0 24 14 24;" alignment="CENTER_LEFT"/>
+
+    <!-- ── 3. TABLA en card blanca ── -->
+    <VBox VBox.vgrow="ALWAYS" style="-fx-padding:0 24 24 24;">
+        <VBox styleClass="table-container" VBox.vgrow="ALWAYS">
+            <TableView fx:id="tabla" VBox.vgrow="ALWAYS" styleClass="table-view,factura-table"
+                       onMouseClicked="#handleDobleClick">
+                <columns>
+                    <!-- fx:ids coinciden exactamente con controller -->
+                    <TableColumn fx:id="colId"         text="ID"            prefWidth="60"/>
+                    <TableColumn fx:id="colCliente"    text="CLIENTE"       prefWidth="140"/>
+                    <TableColumn fx:id="colReserva"    text="RESERVA"       prefWidth="85"/>
+                    <TableColumn fx:id="colEmision"    text="FECHA EMISIÓN" prefWidth="130"/>
+                    <TableColumn fx:id="colSubtotal"   text="SUBTOTAL"      prefWidth="110"/>
+                    <TableColumn fx:id="colImpuestos"  text="IMPUESTOS"     prefWidth="110"/>
+                    <TableColumn fx:id="colTotal"      text="TOTAL"         prefWidth="110"/>
+                    <TableColumn fx:id="colEstado"     text="ESTADO PAGO"   prefWidth="135"/>
+                    <TableColumn fx:id="colMetodoPago" text="MÉTODO PAGO"   prefWidth="130"/>
+                </columns>
+                <placeholder>
+                    <Label text="Sin facturas registradas" styleClass="text-muted"/>
+                </placeholder>
+            </TableView>
+        </VBox>
+    </VBox>
+
+    <ProgressBar fx:id="progressBar" maxWidth="Infinity" visible="false"
+                 style="-fx-accent:#3563e9; -fx-pref-height:3px;"/>
+</VBox>
   
