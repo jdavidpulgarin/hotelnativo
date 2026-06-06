@@ -1,1 +1,220 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.*?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
+
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.hotel.ui.controllers.ReportesController"
+      spacing="0" styleClass="main-bg">
+
+    <!-- ── 1. HEADER (breadcrumb + badges fecha/turno) ── -->
+    <HBox style="-fx-padding:20 24 8 24;" alignment="CENTER_LEFT" spacing="0">
+        <HBox alignment="CENTER_LEFT" spacing="2">
+            <Label text="Reportes"
+                   style="-fx-font-size:14; -fx-font-weight:600; -fx-text-fill:#1E293B;"/>
+            <Label text=" / "
+                   style="-fx-font-size:14; -fx-text-fill:#94A3B8;"/>
+            <Label text="Generación de reportes"
+                   style="-fx-font-size:14; -fx-text-fill:#64748B;"/>
+        </HBox>
+        <Region HBox.hgrow="ALWAYS"/>
+        <HBox spacing="8" alignment="CENTER_RIGHT">
+            <Label fx:id="lblFechaBadge" text="" styleClass="header-date-badge"/>
+            <Label fx:id="lblTurnoBadge" text="" styleClass="header-date-badge"/>
+        </HBox>
+    </HBox>
+
+    <!-- ── 2. TÍTULO ── -->
+    <VBox style="-fx-padding:8 24 16 24;" spacing="4">
+        <Label text="Reportes"
+               style="-fx-font-size:24; -fx-font-weight:bold; -fx-text-fill:#1E293B;"/>
+        <Label text="Genera y exporta reportes del sistema en formato HTML y PDF"
+               style="-fx-font-size:14; -fx-text-fill:#64748B;"/>
+    </VBox>
+
+    <!-- ── 3. GRID DE CARDS (2 columnas) ── -->
+    <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" styleClass="content-scroll"
+                style="-fx-background-color:transparent;">
+        <GridPane hgap="14" vgap="14" style="-fx-padding:0 24 28 24;">
+            <columnConstraints>
+                <ColumnConstraints hgrow="ALWAYS" percentWidth="50"/>
+                <ColumnConstraints hgrow="ALWAYS" percentWidth="50"/>
+            </columnConstraints>
+
+            <!-- ══ ROW 0 ══ ──────────────────────────────────────────────────── -->
+
+            <!-- CARD 1 — Factura HTML (col 0) -->
+            <VBox styleClass="report-card" spacing="10"
+                  GridPane.columnIndex="0" GridPane.rowIndex="0">
+                <HBox alignment="CENTER_LEFT" spacing="12">
+                    <StackPane styleClass="report-icon,icon-blue">
+                        <FontIcon iconLiteral="fas-file-alt" iconSize="17" iconColor="#1D4ED8"/>
+                    </StackPane>
+                    <HBox alignment="CENTER_LEFT" spacing="7">
+                        <Label text="Factura HTML"
+                               style="-fx-font-size:14; -fx-font-weight:bold; -fx-text-fill:#1E293B;"/>
+                        <Label text="HTML" styleClass="tag-html"/>
+                    </HBox>
+                </HBox>
+                <Label text="Genera el archivo HTML de una factura existente por su ID."
+                       style="-fx-font-size:11; -fx-text-fill:#94A3B8;" wrapText="true"/>
+                <HBox spacing="8" alignment="CENTER_LEFT">
+                    <Label text="ID Factura:"
+                           style="-fx-font-size:11; -fx-font-weight:600; -fx-text-fill:#374151;"/>
+                    <TextField fx:id="fIdFactura" promptText="Ej: 5" styleClass="report-input"/>
+                    <Button mnemonicParsing="false" text="Generar HTML" styleClass="btn-navy"
+                            onAction="#generarFacturaHTML">
+                        <graphic><FontIcon iconLiteral="fas-globe" iconSize="11" iconColor="white"/></graphic>
+                    </Button>
+                </HBox>
+            </VBox>
+
+            <!-- CARD 2 — Factura PDF (col 1) -->
+            <VBox styleClass="report-card" spacing="10"
+                  GridPane.columnIndex="1" GridPane.rowIndex="0">
+                <HBox alignment="CENTER_LEFT" spacing="12">
+                    <StackPane styleClass="report-icon,icon-red">
+                        <FontIcon iconLiteral="fas-file-pdf" iconSize="17" iconColor="#B91C1C"/>
+                    </StackPane>
+                    <HBox alignment="CENTER_LEFT" spacing="7">
+                        <Label text="Factura PDF"
+                               style="-fx-font-size:14; -fx-font-weight:bold; -fx-text-fill:#1E293B;"/>
+                        <Label text="PDF" styleClass="tag-pdf"/>
+                    </HBox>
+                </HBox>
+                <Label text="Genera y abre el PDF de una factura. Se guarda en ~/HotelReportes."
+                       style="-fx-font-size:11; -fx-text-fill:#94A3B8;" wrapText="true"/>
+                <HBox spacing="8" alignment="CENTER_LEFT">
+                    <Label text="ID Factura:"
+                           style="-fx-font-size:11; -fx-font-weight:600; -fx-text-fill:#374151;"/>
+                    <TextField fx:id="fIdFacturaPdf" promptText="Ej: 5" styleClass="report-input"/>
+                    <Button mnemonicParsing="false" text="Generar PDF" styleClass="btn-green"
+                            onAction="#generarFacturaPDF">
+                        <graphic><FontIcon iconLiteral="fas-file-pdf" iconSize="11" iconColor="white"/></graphic>
+                    </Button>
+                </HBox>
+            </VBox>
+
+            <!-- ══ ROW 1 ══ ──────────────────────────────────────────────────── -->
+
+            <!-- CARD 3 — Ocupación mensual (colspan 2) -->
+            <VBox styleClass="report-card" spacing="10"
+                  GridPane.columnIndex="0" GridPane.rowIndex="1" GridPane.columnSpan="2">
+                <HBox alignment="CENTER_LEFT" spacing="12">
+                    <StackPane styleClass="report-icon,icon-teal">
+                        <FontIcon iconLiteral="fas-building" iconSize="17" iconColor="#065F46"/>
+                    </StackPane>
+                    <Label text="Reporte de ocupación mensual"
+                           style="-fx-font-size:14; -fx-font-weight:bold; -fx-text-fill:#1E293B;"/>
+                </HBox>
+                <Label text="Genera el reporte de ocupación de habitaciones para un mes específico."
+                       style="-fx-font-size:11; -fx-text-fill:#94A3B8;" wrapText="true"/>
+                <HBox spacing="8" alignment="CENTER_LEFT">
+                    <Label text="Año:"
+                           style="-fx-font-size:11; -fx-font-weight:600; -fx-text-fill:#374151;"/>
+                    <TextField fx:id="fAnio" promptText="2026" styleClass="report-input"/>
+                    <Label text="Mes:"
+                           style="-fx-font-size:11; -fx-font-weight:600; -fx-text-fill:#374151;"/>
+                    <TextField fx:id="fMes" promptText="1-12" styleClass="report-input"
+                               style="-fx-pref-width:65;"/>
+                    <Button mnemonicParsing="false" text="HTML" styleClass="btn-navy"
+                            onAction="#generarReporteOcupacion">
+                        <graphic><FontIcon iconLiteral="fas-globe" iconSize="11" iconColor="white"/></graphic>
+                    </Button>
+                    <Region style="-fx-background-color:#E2E8F0; -fx-pref-width:1; -fx-pref-height:22; -fx-max-height:22;"/>
+                    <Button mnemonicParsing="false" text="PDF" styleClass="btn-green"
+                            onAction="#generarReporteOcupacionPDF">
+                        <graphic><FontIcon iconLiteral="fas-file-pdf" iconSize="11" iconColor="white"/></graphic>
+                    </Button>
+                </HBox>
+            </VBox>
+
+            <!-- ══ ROW 2 ══ ──────────────────────────────────────────────────── -->
+
+            <!-- CARD 4 — Ingresos diarios (col 0) -->
+            <VBox styleClass="report-card" spacing="10"
+                  GridPane.columnIndex="0" GridPane.rowIndex="2">
+                <HBox alignment="CENTER_LEFT" spacing="12">
+                    <StackPane styleClass="report-icon,icon-amber">
+                        <FontIcon iconLiteral="fas-calendar-day" iconSize="17" iconColor="#92400E"/>
+                    </StackPane>
+                    <HBox alignment="CENTER_LEFT" spacing="7">
+                        <Label text="Ingresos diarios"
+                               style="-fx-font-size:14; -fx-font-weight:bold; -fx-text-fill:#1E293B;"/>
+                        <Label text="PDF" styleClass="tag-pdf"/>
+                    </HBox>
+                </HBox>
+                <Label text="Reporte con los ingresos día a día de un mes específico."
+                       style="-fx-font-size:11; -fx-text-fill:#94A3B8;" wrapText="true"/>
+                <HBox spacing="8" alignment="CENTER_LEFT">
+                    <Label text="Año:"
+                           style="-fx-font-size:11; -fx-font-weight:600; -fx-text-fill:#374151;"/>
+                    <TextField fx:id="fAnioDiario" promptText="2026" styleClass="report-input"/>
+                    <Label text="Mes:"
+                           style="-fx-font-size:11; -fx-font-weight:600; -fx-text-fill:#374151;"/>
+                    <TextField fx:id="fMesDiario" promptText="1-12" styleClass="report-input"
+                               style="-fx-pref-width:65;"/>
+                    <Button mnemonicParsing="false" text="Generar PDF" styleClass="btn-green"
+                            onAction="#generarIngresosDiariosPDF">
+                        <graphic><FontIcon iconLiteral="fas-file-pdf" iconSize="11" iconColor="white"/></graphic>
+                    </Button>
+                </HBox>
+            </VBox>
+
+            <!-- CARD 5 — Ingresos mensuales (col 1) -->
+            <VBox styleClass="report-card" spacing="10"
+                  GridPane.columnIndex="1" GridPane.rowIndex="2">
+                <HBox alignment="CENTER_LEFT" spacing="12">
+                    <StackPane styleClass="report-icon,icon-purple">
+                        <FontIcon iconLiteral="fas-chart-line" iconSize="17" iconColor="#6D28D9"/>
+                    </StackPane>
+                    <HBox alignment="CENTER_LEFT" spacing="7">
+                        <Label text="Ingresos mensuales"
+                               style="-fx-font-size:14; -fx-font-weight:bold; -fx-text-fill:#1E293B;"/>
+                        <Label text="PDF" styleClass="tag-pdf"/>
+                    </HBox>
+                </HBox>
+                <Label text="Resumen mensual de ingresos de un año completo."
+                       style="-fx-font-size:11; -fx-text-fill:#94A3B8;" wrapText="true"/>
+                <HBox spacing="8" alignment="CENTER_LEFT">
+                    <Label text="Año:"
+                           style="-fx-font-size:11; -fx-font-weight:600; -fx-text-fill:#374151;"/>
+                    <TextField fx:id="fAnioMensual" promptText="2026" styleClass="report-input"/>
+                    <Button mnemonicParsing="false" text="Generar PDF" styleClass="btn-green"
+                            onAction="#generarIngresosMensualesPDF">
+                        <graphic><FontIcon iconLiteral="fas-file-pdf" iconSize="11" iconColor="white"/></graphic>
+                    </Button>
+                </HBox>
+            </VBox>
+
+            <!-- ══ ROW 3 ══ ──────────────────────────────────────────────────── -->
+
+            <!-- CARD 6 — Ingresos anuales (colspan 2) -->
+            <VBox styleClass="report-card" spacing="10"
+                  GridPane.columnIndex="0" GridPane.rowIndex="3" GridPane.columnSpan="2">
+                <HBox alignment="CENTER_LEFT" spacing="12">
+                    <StackPane styleClass="report-icon,icon-green">
+                        <FontIcon iconLiteral="fas-chart-area" iconSize="17" iconColor="#166534"/>
+                    </StackPane>
+                    <HBox alignment="CENTER_LEFT" spacing="7">
+                        <Label text="Ingresos anuales"
+                               style="-fx-font-size:14; -fx-font-weight:bold; -fx-text-fill:#1E293B;"/>
+                        <Label text="PDF" styleClass="tag-pdf"/>
+                    </HBox>
+                </HBox>
+                <Label text="Reporte PDF comparativo de ingresos de los últimos 5 años."
+                       style="-fx-font-size:11; -fx-text-fill:#94A3B8;" wrapText="true"/>
+                <HBox spacing="8" alignment="CENTER_LEFT">
+                    <Button mnemonicParsing="false" text="Generar PDF" styleClass="btn-green"
+                            onAction="#generarIngresosAnualesPDF">
+                        <graphic><FontIcon iconLiteral="fas-file-pdf" iconSize="11" iconColor="white"/></graphic>
+                    </Button>
+                </HBox>
+            </VBox>
+
+        </GridPane>
+    </ScrollPane>
+
+</VBox>
   
