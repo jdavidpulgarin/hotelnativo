@@ -154,4 +154,82 @@ public class ReporteService {
         }
         return path.toString();
     }
+
+    // ── Reporte de ocupación mensual ──────────────────────────────────────────
+    /**
+     * Genera un reporte HTML de ocupación e ingresos para el mes indicado.
+     *
+     * CORRECCIÓN WARN #6: Antes se llamaba reservaDAO.listarTodas() cargando
+     * TODAS las reservas históricas en memoria para luego filtrar en Java.
+     * Ahora se usa reservaBusqueda.buscarPorRangoFechas() que ejecuta la query
+     * SQL con WHERE fecha_entrada BETWEEN inicio AND fin. Esto es O(resultado)
+     * en lugar de O(total_reservas).
+     *
+     * @param anio año del reporte
+     * @param mes mes (1–12)
+     * @return HTML del reporte
+     */
+    public String generarReporteOcupacionHTML(int anio, int mes) {
+        LocalDate inicio = LocalDate.of(anio, mes, 1);
+        LocalDate fin = inicio.withDayOfMonth(inicio.lengthOfMonth());
+
+        List<Reserva> reservasDelMes = reservaBusqueda.buscarPorRangoFechas(inicio, fin);
+
+        long totalReservas = reservasDelMes.size();
+        long completadas = reservasDelMes.stream()
+                .filter(r -> r.getEstado() == Reserva.EstadoReserva.COMPLETADA).count();
+        long canceladas = reservasDelMes.stream()
+                .filter(r -> r.getEstado() == Reserva.EstadoReserva.CANCELADA).count();
+        double ingresos = reservasDelMes.stream()
+                .filter(r -> r.getEstado() == Reserva.EstadoReserva.COMPLETADA)
+                .mapToDouble(Reserva::getPrecioTotal).sum();
+
+        String nombreMes = inicio.format(FMT_MES).toUpperCase();
+
+        StringBuilder filas = new StringBuilder();
+        reservasDelMes.forEach(r -> {
+            long noches = (r.getFechaEntrada() != null && r.getFechaSalida() != null)
+                    ? r.getFechaEntrada().until(r.getFechaSalida()).getDays() : 0;
+            filas.append("<tr>")
+                    .append("<td>#").append(r.getId()).append("</td>")
+                    .append("<td>").append(r.getCliente() != null ? r.getCliente().obtenerNombreCompleto() : "—").append("</td>")
+                    .append("<td>").append(r.getHabitacion() != null ? r.getHabitacion().getNumero() : "—").append("</td>")
+                    .append("<td>").append(r.getFechaEntrada() != null ? r.getFechaEntrada().format(FMT_FECHA) : "—").append("</td>")
+                    .append("<td>").append(noches).append("</td>")
+                    .append("<td>$").append(String.format("%,.0f", r.getPrecioTotal())).append("</td>")
+                    .append("<td>").append(r.getEstado()).append("</td>")
+                    .append("</tr>");
+        });
+
+        return "<!DOCTYPE html><html lang='es'><head><meta charset='UTF-8'>"
+                + "<title>Reporte " + nombreMes + "</title>"
+                + "<style>"
+                + "body{font-family:Arial,sans-serif;margin:40px;color:#2c3e50;font-size:13px}"
+                + "h1{color:#1a3a5c;border-bottom:2px solid #c9aa71;padding-bottom:10px}"
+                + ".kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin:24px 0}"
+                + ".kpi{background:#f8f9fa;border-radius:8px;padding:16px;text-align:center;border-top:3px solid #1a3a5c}"
+                + ".kpi-val{font-size:26px;font-weight:bold;color:#1a3a5c}"
+                + ".kpi-lbl{font-size:11px;color:#7f8c8d;margin-top:4px;text-transform:uppercase}"
+                + "table{width:100%;border-collapse:collapse;margin-top:16px}"
+                + "th{background:#1a3a5c;color:#fff;padding:9px 12px;text-align:left;font-size:12px}"
+                + "td{padding:8px 12px;border-bottom:1px solid #dee2e6}"
+                + "</style></head><body>"
+                + "<h1>Reporte de Ocupación – " + nombreMes + "</h1>"
+                + "<p style='color:#7f8c8d'>Generado: " + LocalDate.now().format(FMT_FECHA)
+                + " · Hotel Nativo S.A.S.</p>"
+                + "<div class='kpis'>"
+                + "<div class='kpi'><div class='kpi-val'>" + totalReservas + "</div>"
+                + "<div class='kpi-lbl'>Reservas</div></div>"
+                + "<div class='kpi'><div class='kpi-val'>" + completadas + "</div>"
+                + "<div class='kpi-lbl'>Completadas</div></div>"
+                + "<div class='kpi'><div class='kpi-val'>" + canceladas + "</div>"
+                + "<div class='kpi-lbl'>Canceladas</div></div>"
+                + "<div class='kpi'><div class='kpi-val'>$" + String.format("%,.0f", ingresos) + "</div>"
+                + "<div class='kpi-lbl'>Ingresos</div></div></div>"
+                + "<table><thead><tr>"
+                + "<th>#</th><th>Cliente</th><th>Hab.</th><th>Entrada</th>"
+                + "<th>Noches</th><th>Total</th><th>Estado</th>"
+                + "</tr></thead><tbody>" + filas + "</tbody></table>"
+                + "</body></html>";
+    }
 }
