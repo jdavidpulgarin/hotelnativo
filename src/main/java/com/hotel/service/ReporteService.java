@@ -232,4 +232,19 @@ public class ReporteService {
                 + "</tr></thead><tbody>" + filas + "</tbody></table>"
                 + "</body></html>";
     }
+
+    public String guardarReporteOcupacion(int anio, int mes) {
+        String html = generarReporteOcupacionHTML(anio, mes);
+        String carpeta = "C:/Facturas";
+        new java.io.File(carpeta).mkdirs();
+        java.nio.file.Path path = java.nio.file.Paths.get(
+                carpeta, "reporte_" + anio + "_" + String.format("%02d", mes) + ".html");
+        try {
+            java.nio.file.Files.writeString(path, html);
+            System.out.println("[REPORTE] Reporte guardado en: " + path);
+        } catch (Exception e) {
+            System.err.println("[REPORTE] Error al guardar reporte: " + e.getMessage());
+        }
+        return path.toString();
+    }
 }
