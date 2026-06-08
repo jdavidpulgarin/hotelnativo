@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.*?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
+
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.hotel.ui.controllers.MantenimientoController"
+      spacing="0" styleClass="main-bg">
+
+    <!-- ── 1. BREADCRUMB ROW — izquierda + fecha/turno derecha ── -->
+    <HBox style="-fx-padding:20 24 8 24;" alignment="CENTER_LEFT" spacing="0">
+        <!-- Breadcrumb: "Mantenimiento / Gestión de mantenimiento" -->
+        <HBox spacing="4" alignment="CENTER_LEFT" HBox.hgrow="ALWAYS">
+            <Label text="Mantenimiento"
+                   style="-fx-font-size:14px; -fx-font-weight:600; -fx-text-fill:#1e293b;"/>
+            <Label text=" / "
+                   style="-fx-font-size:14px; -fx-text-fill:#94a3b8;"/>
+            <Label text="Gestión de mantenimiento"
+                   style="-fx-font-size:14px; -fx-text-fill:#64748b;"/>
+        </HBox>
+        <!-- Fecha y turno con borde -->
+        <HBox spacing="8" alignment="CENTER_RIGHT">
+            <Label fx:id="lblFecha"
+                   style="-fx-font-size:12px; -fx-text-fill:#64748b;
+                          -fx-border-color:#e2e8f0; -fx-border-width:1;
+                          -fx-border-radius:20; -fx-background-radius:20;
+                          -fx-background-color:white; -fx-padding:5 13;"/>
+            <Label fx:id="lblTurno"
+                   style="-fx-font-size:12px; -fx-text-fill:#64748b;
+                          -fx-border-color:#e2e8f0; -fx-border-width:1;
+                          -fx-border-radius:20; -fx-background-radius:20;
+                          -fx-background-color:white; -fx-padding:5 13;"/>
+        </HBox>
+    </HBox>
+
+    <!-- ── 2. TÍTULO ── -->
+    <VBox style="-fx-padding:0 24 16 24;" spacing="4">
+        <Label text="Mantenimiento"
+               style="-fx-font-size:24px; -fx-font-weight:bold; -fx-text-fill:#1e293b;"/>
+        <Label text="Gestiona las solicitudes de mantenimiento del hotel"
+               style="-fx-font-size:14px; -fx-text-fill:#64748b;"/>
+    </VBox>
+
+    <!-- ── 3. BARRA DE HERRAMIENTAS ── -->
+    <HBox style="-fx-padding:0 24 12 24;" spacing="10" alignment="CENTER_LEFT">
+        <!-- Búsqueda 500px -->
+        <TextField fx:id="searchField"
+                   promptText="🔍  Buscar por habitación, empleado o tipo..."
+                   styleClass="search-field"
+                   prefWidth="500"
+                   onKeyReleased="#filtrar"/>
+        <Region HBox.hgrow="ALWAYS"/>
+
+        <!-- ➕ Nueva solicitud: azul #3B82F6 -->
+        <Button mnemonicParsing="false" styleClass="btn-circle,btn-primary"
+                onAction="#nuevoMantenimiento">
+            <graphic><FontIcon iconLiteral="fas-plus" iconSize="16" iconColor="white"/></graphic>
+            <tooltip><Tooltip text="Nueva solicitud" styleClass="tooltip"/></tooltip>
+        </Button>
+
+        <!-- ✓ Completar: verde #22C55E -->
+        <Button mnemonicParsing="false" styleClass="btn-circle,btn-success"
+                onAction="#completar">
+            <graphic><FontIcon iconLiteral="fas-check" iconSize="16" iconColor="white"/></graphic>
+            <tooltip><Tooltip text="Marcar como completado" styleClass="tooltip"/></tooltip>
+        </Button>
+
+        <!-- ✕ Cancelar: rojo #EF4444 -->
+        <Button mnemonicParsing="false" styleClass="btn-circle,btn-danger"
+                onAction="#cancelarMant">
+            <graphic><FontIcon iconLiteral="fas-times" iconSize="16" iconColor="white"/></graphic>
+            <tooltip><Tooltip text="Cancelar solicitud" styleClass="tooltip"/></tooltip>
+        </Button>
+
+        <!-- ↻ Refrescar: gris outline -->
+        <Button mnemonicParsing="false" styleClass="btn-circle,btn-outline"
+                onAction="#cargarDatos">
+            <graphic><FontIcon iconLiteral="fas-sync-alt" iconSize="14" iconColor="#64748b"/></graphic>
+            <tooltip><Tooltip text="Refrescar" styleClass="tooltip"/></tooltip>
+        </Button>
+    </HBox>
+
+    <!-- ── 4. SOLO 1 BADGE: Pendientes ── -->
+    <HBox fx:id="statsRow" spacing="8"
+          style="-fx-padding:0 24 14 24;" alignment="CENTER_LEFT"/>
+
+    <!-- ── 5. TABLA en card blanca ── -->
+    <VBox VBox.vgrow="ALWAYS" style="-fx-padding:0 24 24 24;">
+        <VBox styleClass="table-container" VBox.vgrow="ALWAYS">
+            <TableView fx:id="tabla" VBox.vgrow="ALWAYS" styleClass="table-view"
+                       onMouseClicked="#handleDobleClick">
+                <columns>
+                    <TableColumn fx:id="colId"          text="ID"          prefWidth="60"/>
+                    <TableColumn fx:id="colHab"         text="HABITACIÓN"  prefWidth="100"/>
+                    <TableColumn fx:id="colEmpleado"    text="EMPLEADO"    prefWidth="145"/>
+                    <TableColumn fx:id="colTipo"        text="TIPO"        prefWidth="120"/>
+                    <TableColumn fx:id="colEstado"      text="ESTADO"      prefWidth="120"/>
+                    <TableColumn fx:id="colSolicitud"   text="SOLICITAD"   prefWidth="110"/>
+                    <TableColumn fx:id="colRealizacion" text="REALIZACIÓN" prefWidth="110"/>
+                    <TableColumn fx:id="colCosto"       text="COSTO"       prefWidth="90"/>
+                    <TableColumn fx:id="colDescripcion" text="DESCRIPCIÓN" prefWidth="220"/>
+                </columns>
+                <placeholder>
+                    <Label text="Sin solicitudes de mantenimiento" styleClass="text-muted"/>
+                </placeholder>
+            </TableView>
+        </VBox>
+    </VBox>
+
+    <ProgressBar fx:id="progressBar" maxWidth="Infinity" visible="false"
+                 style="-fx-accent:#3563e9; -fx-pref-height:3px;"/>
+</VBox>
+  

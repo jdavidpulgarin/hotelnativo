@@ -1,0 +1,709 @@
+/* ============================================================
+   HOTEL NATIVO — DESIGN SYSTEM v4 (Minimalista & Profesional)
+   Paleta: Sidebar claro, KPI blancas, Ikonli FontAwesome 5
+   ============================================================ */
+
+.root {
+    -fx-font-family: "Segoe UI", Arial, sans-serif;
+    -fx-font-size: 13px;
+}
+.main-bg { -fx-background-color: #f3f4f8; }
+
+/* ============================================================
+   LOGIN — diseño minimalista tarjeta blanca sobre fondo navy
+   ============================================================ */
+.login-card { -fx-background-color: white; -fx-background-radius: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.25), 30, 0, 0, 8); -fx-padding: 40; -fx-max-width: 420; }
+.logo-container { -fx-background-color: white; -fx-border-color: #E2E8F0; -fx-border-width: 1; -fx-border-radius: 16; -fx-background-radius: 16; -fx-padding: 12; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.06), 8, 0, 0, 2); }
+.login-label { -fx-font-size: 11; -fx-font-weight: bold; -fx-text-fill: #64748B; -fx-padding: 0 0 6 0; }
+.login-input-wrapper { -fx-background-color: #F8FAFC; -fx-border-color: #E2E8F0; -fx-border-width: 1.5; -fx-border-radius: 12; -fx-background-radius: 12; -fx-padding: 0 16; -fx-pref-height: 48; -fx-alignment: CENTER_LEFT; }
+.login-input-wrapper:hover { -fx-border-color: #CBD5E1; }
+.login-input-wrapper.focused { -fx-border-color: #3B82F6; -fx-background-color: white; -fx-border-width: 2; }
+.login-input { -fx-background-color: transparent; -fx-border-color: transparent; -fx-border-width: 0; -fx-background-insets: 0; -fx-padding: 0 0 0 8; -fx-font-size: 13; -fx-text-fill: #1E293B; -fx-prompt-text-fill: #94A3B8; -fx-focus-color: transparent; -fx-faint-focus-color: transparent; }
+.login-input:focused { -fx-background-color: transparent; -fx-border-color: transparent; -fx-border-width: 0; -fx-effect: null; -fx-focus-color: transparent; -fx-faint-focus-color: transparent; }
+.login-btn { -fx-background-color: #3B82F6; -fx-text-fill: white; -fx-font-size: 14; -fx-font-weight: bold; -fx-background-radius: 12; -fx-pref-height: 48; -fx-cursor: hand; }
+.login-btn:hover { -fx-background-color: #2563EB; }
+.login-btn:pressed { -fx-translate-y: 1; }
+.login-forgot-link { -fx-font-size: 13; -fx-text-fill: #3B82F6; -fx-border-color: transparent; -fx-padding: 0; }
+.login-forgot-link:hover { -fx-text-fill: #2563EB; -fx-underline: true; }
+/* Mantener compatibilidad con btn-login (login legacy) */
+.btn-login { -fx-background-color: #3B82F6; -fx-text-fill: white; -fx-font-size: 14; -fx-font-weight: bold; -fx-background-radius: 12; -fx-pref-height: 48; -fx-cursor: hand; }
+.btn-login:hover { -fx-background-color: #2563EB; }
+.btn-close-login {
+    -fx-background-color: rgba(255,255,255,0.12); -fx-text-fill: rgba(255,255,255,0.80);
+    -fx-font-size: 14px; -fx-background-radius: 50%;
+    -fx-min-width: 36px; -fx-min-height: 36px; -fx-max-width: 36px; -fx-max-height: 36px;
+    -fx-cursor: hand; -fx-padding: 0;
+}
+.btn-close-login:hover { -fx-background-color: rgba(220,38,38,0.88); -fx-text-fill: white; }
+
+/* ============================================================
+   SIDEBAR — CLARO (NO navy oscuro)
+   ============================================================ */
+.sidebar {
+    -fx-background-color: #1a1a1a;
+    -fx-border-color: #2a2a2a;
+    -fx-border-width: 0 1 0 0;
+    -fx-pref-width: 250px;
+    -fx-min-width: 250px;
+}
+.sidebar-title {
+    -fx-text-fill: white;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-padding: 4 10 4 10;
+}
+.sidebar-subtitle {
+    -fx-text-fill: rgba(255,255,255,0.38);
+    -fx-font-size: 10px;
+    -fx-padding: 0 10 16 10;
+}
+.sidebar-category {
+    -fx-text-fill: rgba(255,255,255,0.32);
+    -fx-font-size: 9.5px;
+    -fx-font-weight: bold;
+    -fx-padding: 16 12 6 12;
+}
+.sidebar-item {
+    -fx-background-color: transparent;
+    -fx-text-fill: rgba(255,255,255,0.55);
+    -fx-font-size: 13px;
+    -fx-padding: 10 14;
+    -fx-background-radius: 10;
+    -fx-cursor: hand;
+    -fx-graphic-text-gap: 10;
+    -fx-alignment: center-left;
+    -fx-pref-width: 222px;
+    -fx-max-width: 222px;
+}
+.sidebar-item:hover {
+    -fx-background-color: rgba(255,255,255,0.08);
+    -fx-text-fill: white;
+}
+.sidebar-item.active {
+    -fx-background-color: #0047ab;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-effect: dropshadow(gaussian, rgba(0,71,171,0.45), 10, 0, 0, 3);
+}
+.sidebar-item.active:hover { -fx-background-color: #003d94; }
+
+.sidebar-user-box {
+    -fx-background-color: #111111;
+    -fx-padding: 14px 16px;
+    -fx-border-color: rgba(255,255,255,0.08) transparent transparent transparent;
+    -fx-border-width: 1px 0 0 0;
+}
+.sidebar-user-name { -fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: white; }
+.sidebar-user-role { -fx-font-size: 11px; -fx-text-fill: rgba(255,255,255,0.45); }
+
+/* Scroll pane transparente dentro del sidebar */
+.sidebar .scroll-pane { -fx-background-color: transparent; -fx-border-color: transparent; }
+.sidebar .scroll-pane > .viewport { -fx-background-color: transparent; }
+.sidebar .scroll-pane .scroll-bar:vertical { -fx-background-color: transparent; -fx-pref-width: 4px; }
+.sidebar .scroll-pane .scroll-bar:vertical .track { -fx-background-color: transparent; }
+.sidebar .scroll-pane .scroll-bar:vertical .thumb { -fx-background-color: rgba(255,255,255,0.18); -fx-background-radius: 4px; }
+.sidebar .scroll-pane .scroll-bar:vertical .increment-button,
+.sidebar .scroll-pane .scroll-bar:vertical .decrement-button { -fx-background-color: transparent; -fx-pref-height: 0; -fx-padding: 0; }
+
+/* ============================================================
+   TOPBAR
+   ============================================================ */
+.topbar {
+    -fx-background-color: white;
+    -fx-padding: 0 26px;
+    -fx-pref-height: 64px;
+    -fx-border-color: #e5e7eb;
+    -fx-border-width: 0 0 1px 0;
+}
+.topbar-title { -fx-font-size: 18px; -fx-font-weight: 800; -fx-text-fill: #111827; }
+.topbar-breadcrumb { -fx-font-size: 12px; -fx-text-fill: #9ca3af; }
+.hotel-selector-badge {
+    -fx-background-color: #f9fafb; -fx-border-color: #e5e7eb;
+    -fx-border-width: 1.5px; -fx-border-radius: 10px; -fx-background-radius: 10px;
+    -fx-padding: 7px 13px; -fx-cursor: hand;
+}
+.hotel-selector-badge:hover { -fx-border-color: #3563e9; -fx-background-color: #eef2ff; }
+.hotel-selector-text { -fx-font-size: 13px; -fx-font-weight: 600; -fx-text-fill: #374151; }
+.topbar-date-badge {
+    -fx-font-size: 12px; -fx-text-fill: #3563e9;
+    -fx-background-color: #eef2ff; -fx-background-radius: 20px;
+    -fx-padding: 5px 13px; -fx-font-weight: 600;
+}
+
+/* ============================================================
+   BOTONES CIRCULARES — SISTEMA UNICO
+   ============================================================ */
+.btn-circle {
+    -fx-min-width: 44; -fx-min-height: 44;
+    -fx-max-width: 44; -fx-max-height: 44;
+    -fx-background-radius: 14;
+    -fx-cursor: hand;
+    -fx-padding: 0;
+    -fx-alignment: center;
+}
+.btn-circle:pressed { -fx-translate-y: 1; }
+
+.btn-primary {
+    -fx-background-color: #3563e9;
+    -fx-effect: dropshadow(gaussian, rgba(53,99,233,0.35), 8, 0, 0, 3);
+}
+.btn-primary:hover { -fx-background-color: #2752d4; }
+
+.btn-success {
+    -fx-background-color: #22c55e;
+    -fx-effect: dropshadow(gaussian, rgba(34,197,94,0.35), 8, 0, 0, 3);
+}
+.btn-success:hover { -fx-background-color: #16a34a; }
+
+.btn-danger {
+    -fx-background-color: #ef4444;
+    -fx-effect: dropshadow(gaussian, rgba(239,68,68,0.35), 8, 0, 0, 3);
+}
+.btn-danger:hover { -fx-background-color: #dc2626; }
+
+.btn-warning {
+    -fx-background-color: #f59e0b;
+    -fx-effect: dropshadow(gaussian, rgba(245,158,11,0.35), 8, 0, 0, 3);
+}
+.btn-warning:hover { -fx-background-color: #d97706; }
+
+.btn-vip {
+    -fx-background-color: #f59e0b;
+    -fx-effect: dropshadow(gaussian, rgba(245,158,11,0.35), 8, 0, 0, 3);
+}
+.btn-vip:hover { -fx-background-color: #d97706; }
+
+.btn-outline {
+    -fx-background-color: white;
+    -fx-border-color: #e5e7eb;
+    -fx-border-radius: 14;
+    -fx-border-width: 2;
+}
+.btn-outline:hover { -fx-background-color: #f9fafb; -fx-border-color: #9ca3af; }
+
+/* Compatibilidad con estilos legacy (para no romper controladores) */
+.btn-icon-new { -fx-background-color: #3563e9; -fx-min-width: 44; -fx-min-height: 44; -fx-max-width: 44; -fx-max-height: 44; -fx-background-radius: 14; -fx-cursor: hand; -fx-padding: 0; -fx-text-fill: white; -fx-font-size: 18px; }
+.btn-icon-new:hover { -fx-background-color: #2752d4; }
+.btn-icon-confirm { -fx-background-color: #22c55e; -fx-min-width: 44; -fx-min-height: 44; -fx-max-width: 44; -fx-max-height: 44; -fx-background-radius: 14; -fx-cursor: hand; -fx-padding: 0; -fx-text-fill: white; -fx-font-size: 16px; }
+.btn-icon-confirm:hover { -fx-background-color: #16a34a; }
+.btn-icon-cancel { -fx-background-color: #ef4444; -fx-min-width: 44; -fx-min-height: 44; -fx-max-width: 44; -fx-max-height: 44; -fx-background-radius: 14; -fx-cursor: hand; -fx-padding: 0; -fx-text-fill: white; -fx-font-size: 16px; }
+.btn-icon-cancel:hover { -fx-background-color: #dc2626; }
+.btn-icon-refresh { -fx-background-color: white; -fx-border-color: #e5e7eb; -fx-border-width: 2; -fx-border-radius: 14; -fx-min-width: 44; -fx-min-height: 44; -fx-max-width: 44; -fx-max-height: 44; -fx-background-radius: 14; -fx-cursor: hand; -fx-padding: 0; -fx-text-fill: #6b7280; -fx-font-size: 16px; }
+.btn-icon-refresh:hover { -fx-background-color: #f3f4f6; }
+.btn-icon-edit { -fx-background-color: white; -fx-border-color: #e5e7eb; -fx-border-width: 2; -fx-border-radius: 14; -fx-min-width: 44; -fx-min-height: 44; -fx-max-width: 44; -fx-max-height: 44; -fx-background-radius: 14; -fx-cursor: hand; -fx-padding: 0; -fx-text-fill: #6b7280; }
+.btn-icon-edit:hover { -fx-background-color: #f3f4f6; }
+.btn-icon-delete { -fx-background-color: #ef4444; -fx-min-width: 44; -fx-min-height: 44; -fx-max-width: 44; -fx-max-height: 44; -fx-background-radius: 14; -fx-cursor: hand; -fx-padding: 0; -fx-text-fill: white; }
+.btn-icon-delete:hover { -fx-background-color: #dc2626; }
+.btn-icon-vip { -fx-background-color: #f59e0b; -fx-min-width: 44; -fx-min-height: 44; -fx-max-width: 44; -fx-max-height: 44; -fx-background-radius: 14; -fx-cursor: hand; -fx-padding: 0; -fx-text-fill: white; }
+.btn-icon-vip:hover { -fx-background-color: #d97706; }
+.btn-icon-pdf { -fx-background-color: #22c55e; -fx-min-width: 44; -fx-min-height: 44; -fx-max-width: 44; -fx-max-height: 44; -fx-background-radius: 14; -fx-cursor: hand; -fx-padding: 0; -fx-text-fill: white; }
+.btn-icon-pdf:hover { -fx-background-color: #16a34a; }
+.btn-icon-html { -fx-background-color: #3563e9; -fx-min-width: 44; -fx-min-height: 44; -fx-max-width: 44; -fx-max-height: 44; -fx-background-radius: 14; -fx-cursor: hand; -fx-padding: 0; -fx-text-fill: white; }
+.btn-icon-html:hover { -fx-background-color: #2752d4; }
+.btn-icon-email { -fx-background-color: white; -fx-border-color: #e5e7eb; -fx-border-width: 2; -fx-border-radius: 14; -fx-min-width: 44; -fx-min-height: 44; -fx-max-width: 44; -fx-max-height: 44; -fx-background-radius: 14; -fx-cursor: hand; -fx-padding: 0; -fx-text-fill: #6b7280; }
+.btn-icon-print { -fx-background-color: white; -fx-border-color: #e5e7eb; -fx-border-width: 2; -fx-border-radius: 14; -fx-min-width: 44; -fx-min-height: 44; -fx-max-width: 44; -fx-max-height: 44; -fx-background-radius: 14; -fx-cursor: hand; -fx-padding: 0; -fx-text-fill: #6b7280; }
+.btn-checkin { -fx-background-color: #3563e9; -fx-text-fill: white; -fx-font-size: 13px; -fx-font-weight: 700; -fx-background-radius: 14; -fx-padding: 9px 18px; -fx-cursor: hand; }
+.btn-checkout { -fx-background-color: #22c55e; -fx-text-fill: white; -fx-font-size: 13px; -fx-font-weight: 700; -fx-background-radius: 14; -fx-padding: 9px 18px; -fx-cursor: hand; }
+.btn-auto-checkout { -fx-background-color: #ef4444; -fx-text-fill: white; -fx-font-size: 13px; -fx-font-weight: 700; -fx-background-radius: 14; -fx-padding: 9px 18px; -fx-cursor: hand; }
+
+/* ============================================================
+   TOOLBAR
+   ============================================================ */
+.action-toolbar {
+    -fx-padding: 16px 24px 12px 24px;
+    -fx-spacing: 8px;
+    -fx-alignment: center-left;
+    -fx-background-color: transparent;
+}
+.action-toolbar-separator {
+    -fx-background-color: #e5e7eb; -fx-pref-width: 1px; -fx-min-width: 1px;
+    -fx-max-width: 1px; -fx-pref-height: 28px; -fx-min-height: 28px;
+}
+
+/* ============================================================
+   KPI CARDS — BLANCAS (NO gradientes)
+   ============================================================ */
+.kpi-card {
+    -fx-background-color: white;
+    -fx-background-radius: 14;
+    -fx-border-color: #e5e7eb;
+    -fx-border-radius: 14;
+    -fx-border-width: 1;
+    -fx-padding: 20 18;
+    -fx-spacing: 8;
+    -fx-min-width: 150;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 10, 0, 0, 2);
+    -fx-cursor: hand;
+}
+.kpi-card:hover {
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.10), 16, 0, 0, 4);
+    -fx-border-color: #d1d5db;
+}
+.kpi-icon-box {
+    -fx-min-width: 40; -fx-min-height: 40;
+    -fx-max-width: 40; -fx-max-height: 40;
+    -fx-background-radius: 10;
+}
+.kpi-number {
+    -fx-font-size: 28px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #111827;
+}
+.kpi-label {
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #6b7280;
+}
+.kpi-hint { -fx-font-size: 10px; -fx-text-fill: #d1d5db; }
+
+/* Legacy KPI (para backward compat) */
+.kpi-dark { -fx-background-color: #1e293b; -fx-background-radius: 14; }
+.kpi-emerald { -fx-background-color: #059669; -fx-background-radius: 14; }
+.kpi-blue { -fx-background-color: #3563e9; -fx-background-radius: 14; }
+.kpi-violet { -fx-background-color: #8b5cf6; -fx-background-radius: 14; }
+.kpi-green { -fx-background-color: #22c55e; -fx-background-radius: 14; }
+.kpi-rose { -fx-background-color: #f43f5e; -fx-background-radius: 14; }
+.kpi-amber { -fx-background-color: #f59e0b; -fx-background-radius: 14; }
+.kpi-icon { -fx-font-size: 22px; }
+.kpi-value { -fx-font-size: 28px; -fx-font-weight: 900; -fx-text-fill: white; }
+/* ============================================================
+   FILTER CHIPS / STATS CHIPS
+   ============================================================ */
+.filter-chip {
+    -fx-background-color: #f3f4f6; -fx-text-fill: #6b7280;
+    -fx-font-size: 12px; -fx-font-weight: 600;
+    -fx-background-radius: 20; -fx-padding: 5 14; -fx-cursor: hand;
+}
+.filter-chip:hover { -fx-background-color: #e5e7eb; -fx-text-fill: #374151; }
+.filter-chip-active { -fx-background-color: #3563e9; -fx-text-fill: white; -fx-font-size: 12px; -fx-font-weight: 700; -fx-background-radius: 20; -fx-padding: 5 14; }
+.filter-chip-pendiente { -fx-background-color: #fef9c3; -fx-text-fill: #92400e; -fx-font-size: 12px; -fx-font-weight: 700; -fx-background-radius: 20; -fx-padding: 5 14; }
+.filter-chip-confirmada { -fx-background-color: #dcfce7; -fx-text-fill: #166534; -fx-font-size: 12px; -fx-font-weight: 700; -fx-background-radius: 20; -fx-padding: 5 14; }
+.filter-chip-proceso { -fx-background-color: #dbeafe; -fx-text-fill: #1e40af; -fx-font-size: 12px; -fx-font-weight: 700; -fx-background-radius: 20; -fx-padding: 5 14; }
+.filter-chip-completada { -fx-background-color: #ede9fe; -fx-text-fill: #5b21b6; -fx-font-size: 12px; -fx-font-weight: 700; -fx-background-radius: 20; -fx-padding: 5 14; }
+.filter-chip-disponible { -fx-background-color: #dcfce7; -fx-text-fill: #166534; -fx-font-size: 12px; -fx-font-weight: 700; -fx-background-radius: 20; -fx-padding: 5 14; }
+.filter-chip-ocupada { -fx-background-color: #fef9c3; -fx-text-fill: #92400e; -fx-font-size: 12px; -fx-font-weight: 700; -fx-background-radius: 20; -fx-padding: 5 14; }
+.filter-chip-mantenimiento { -fx-background-color: #fee2e2; -fx-text-fill: #991b1b; -fx-font-size: 12px; -fx-font-weight: 700; -fx-background-radius: 20; -fx-padding: 5 14; }
+.filter-chip-reservada { -fx-background-color: #dbeafe; -fx-text-fill: #1e40af; -fx-font-size: 12px; -fx-font-weight: 700; -fx-background-radius: 20; -fx-padding: 5 14; }
+
+.stat-chip {
+    -fx-background-color: white; -fx-border-color: #e5e7eb;
+    -fx-border-width: 1.5; -fx-border-radius: 12; -fx-background-radius: 12;
+    -fx-padding: 8 16; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.04), 6, 0, 0, 1);
+}
+.stat-chip-value { -fx-font-size: 18px; -fx-font-weight: 900; -fx-text-fill: #111827; }
+.stat-chip-label { -fx-font-size: 10px; -fx-font-weight: 700; -fx-text-fill: #9ca3af; }
+.stat-chip-icon { -fx-font-size: 16px; }
+
+/* ============================================================
+   BADGES / STATUS PILLS
+   ============================================================ */
+.badge-pendiente { -fx-background-color: #fef9c3; -fx-text-fill: #92400e; -fx-font-size: 11px; -fx-font-weight: 700; -fx-background-radius: 20; -fx-padding: 3 10; }
+.badge-confirmada { -fx-background-color: #dcfce7; -fx-text-fill: #166534; -fx-font-size: 11px; -fx-font-weight: 700; -fx-background-radius: 20; -fx-padding: 3 10; }
+.badge-en-proceso { -fx-background-color: #dbeafe; -fx-text-fill: #1e40af; -fx-font-size: 11px; -fx-font-weight: 700; -fx-background-radius: 20; -fx-padding: 3 10; }
+.badge-completada { -fx-background-color: #dcfce7; -fx-text-fill: #166534; -fx-font-size: 11px; -fx-font-weight: 700; -fx-background-radius: 20; -fx-padding: 3 10; }
+.badge-cancelada { -fx-background-color: #fee2e2; -fx-text-fill: #991b1b; -fx-font-size: 11px; -fx-font-weight: 700; -fx-background-radius: 20; -fx-padding: 3 10; }
+.badge-no-show { -fx-background-color: #f3f4f6; -fx-text-fill: #6b7280; -fx-font-size: 11px; -fx-font-weight: 700; -fx-background-radius: 20; -fx-padding: 3 10; }
+.badge-disponible { -fx-background-color: #dcfce7; -fx-text-fill: #166534; -fx-font-size: 11px; -fx-font-weight: 700; -fx-background-radius: 20; -fx-padding: 3 10; }
+.badge-ocupada { -fx-background-color: #fee2e2; -fx-text-fill: #991b1b; -fx-font-size: 11px; -fx-font-weight: 700; -fx-background-radius: 20; -fx-padding: 3 10; }
+.badge-reservada { -fx-background-color: #dbeafe; -fx-text-fill: #1e40af; -fx-font-size: 11px; -fx-font-weight: 700; -fx-background-radius: 20; -fx-padding: 3 10; }
+.badge-mantenimiento { -fx-background-color: #fef9c3; -fx-text-fill: #92400e; -fx-font-size: 11px; -fx-font-weight: 700; -fx-background-radius: 20; -fx-padding: 3 10; }
+.badge-limpieza { -fx-background-color: #f3f4f6; -fx-text-fill: #6b7280; -fx-font-size: 11px; -fx-font-weight: 700; -fx-background-radius: 20; -fx-padding: 3 10; }
+.badge-vip { -fx-background-color: #fef9c3; -fx-text-fill: #92400e; -fx-font-size: 11px; -fx-font-weight: 700; -fx-background-radius: 20; -fx-padding: 3 10; }
+.badge-pagada { -fx-background-color: #dcfce7; -fx-text-fill: #166534; -fx-font-size: 11px; -fx-font-weight: 700; -fx-background-radius: 20; -fx-padding: 3 10; }
+.badge-pago-pendiente { -fx-background-color: #fef9c3; -fx-text-fill: #92400e; -fx-font-size: 11px; -fx-font-weight: 700; -fx-background-radius: 20; -fx-padding: 3 10; }
+.badge-anulada { -fx-background-color: #fee2e2; -fx-text-fill: #991b1b; -fx-font-size: 11px; -fx-font-weight: 700; -fx-background-radius: 20; -fx-padding: 3 10; }
+.badge-solicitado { -fx-background-color: #fef9c3; -fx-text-fill: #92400e; -fx-font-size: 11px; -fx-font-weight: 700; -fx-background-radius: 20; -fx-padding: 3 10; }
+.badge-mant-proceso { -fx-background-color: #dbeafe; -fx-text-fill: #1e40af; -fx-font-size: 11px; -fx-font-weight: 700; -fx-background-radius: 20; -fx-padding: 3 10; }
+.badge-mant-completado { -fx-background-color: #dcfce7; -fx-text-fill: #166534; -fx-font-size: 11px; -fx-font-weight: 700; -fx-background-radius: 20; -fx-padding: 3 10; }
+.badge-mant-cancelado { -fx-background-color: #f3f4f6; -fx-text-fill: #6b7280; -fx-font-size: 11px; -fx-font-weight: 700; -fx-background-radius: 20; -fx-padding: 3 10; }
+.badge-emergencia { -fx-background-color: #fee2e2; -fx-text-fill: #991b1b; -fx-font-size: 11px; -fx-font-weight: 700; -fx-background-radius: 20; -fx-padding: 3 10; }
+.badge-preventivo { -fx-background-color: #dbeafe; -fx-text-fill: #1e40af; -fx-font-size: 11px; -fx-font-weight: 700; -fx-background-radius: 20; -fx-padding: 3 10; }
+.badge-correctivo { -fx-background-color: #fef9c3; -fx-text-fill: #92400e; -fx-font-size: 11px; -fx-font-weight: 700; -fx-background-radius: 20; -fx-padding: 3 10; }
+
+/* ============================================================
+   TABLAS
+   ============================================================ */
+.table-view {
+    -fx-background-color: transparent; -fx-border-color: transparent;
+    -fx-table-cell-border-color: #f3f4f6; -fx-background-radius: 12;
+}
+.table-view .column-header-background { -fx-background-color: #f9fafb; -fx-border-color: #e5e7eb; -fx-border-width: 0 0 1.5 0; }
+.table-view .column-header { -fx-background-color: transparent; -fx-border-color: transparent; -fx-size: 44; }
+.table-view .column-header-background .filler { -fx-background-color: transparent; }
+.table-view .column-header .label { -fx-font-size: 11px; -fx-font-weight: 700; -fx-text-fill: #6b7280; -fx-padding: 0 10; }
+.table-view .table-row-cell      { -fx-background-color: white; -fx-border-color: transparent transparent #F1F5F9 transparent; -fx-border-width: 0 0 1 0; -fx-pref-height: 52; }
+.table-view .table-row-cell:odd  { -fx-background-color: #FAFBFC; }
+.table-view .table-row-cell:even { -fx-background-color: white; }
+.table-view .table-row-cell:hover      { -fx-background-color: #EEF2FF; }
+.table-view .table-row-cell:even:hover { -fx-background-color: #EEF2FF; }
+.table-view .table-row-cell:hover .table-cell { -fx-background-color: transparent; }
+.table-view .table-row-cell:selected            { -fx-background-color: #DBEAFE; -fx-border-color: transparent; }
+.table-view .table-row-cell:selected:even       { -fx-background-color: #DBEAFE; }
+.table-view .table-row-cell:selected:odd        { -fx-background-color: #DBEAFE; }
+.table-view .table-row-cell:selected:hover      { -fx-background-color: #DBEAFE; }
+.table-view .table-row-cell:selected .table-cell      { -fx-background-color: transparent; }
+.table-view .table-row-cell:selected:odd .table-cell  { -fx-background-color: transparent; }
+.table-view .table-row-cell:selected:even .table-cell { -fx-background-color: transparent; }
+.table-view .table-cell { -fx-padding: 0 12; -fx-text-fill: #374151; -fx-font-size: 13px; -fx-alignment: center-left; -fx-border-color: transparent; }
+.table-view .placeholder .label { -fx-text-fill: #9ca3af; -fx-font-size: 13px; }
+.table-container {
+    -fx-background-color: white; -fx-background-radius: 16; -fx-border-radius: 16;
+    -fx-border-color: #e5e7eb; -fx-border-width: 1;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 10, 0, 0, 2);
+}
+
+/* ============================================================
+   CARDS DE HABITACION
+   ============================================================ */
+.room-card {
+    -fx-background-color: white;
+    -fx-background-radius: 14; -fx-border-radius: 14;
+    -fx-border-width: 2;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.06), 10, 0, 0, 2);
+    -fx-cursor: hand; -fx-pref-width: 168; -fx-min-width: 160; -fx-max-width: 185;
+    -fx-padding: 14 14 12 14;
+}
+.room-card:hover { -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.12), 16, 0, 0, 5); -fx-scale-x: 1.02; -fx-scale-y: 1.02; }
+.room-card-disponible { -fx-background-color: white; -fx-border-color: #22c55e; }
+.room-card-disponible:hover { -fx-border-color: #16a34a; }
+.room-card-ocupada { -fx-background-color: white; -fx-border-color: #ef4444; }
+.room-card-ocupada:hover { -fx-border-color: #dc2626; }
+.room-card-reservada { -fx-background-color: white; -fx-border-color: #f59e0b; }
+.room-card-reservada:hover { -fx-border-color: #d97706; }
+.room-card-mantenimiento { -fx-background-color: white; -fx-border-color: #f59e0b; }
+.room-card-mantenimiento:hover { -fx-border-color: #d97706; }
+.room-card-limpieza { -fx-background-color: white; -fx-border-color: #9ca3af; }
+.room-card-number { -fx-font-size: 24px; -fx-font-weight: 900; -fx-text-fill: #111827; }
+.room-card-label { -fx-font-size: 9.5px; -fx-font-weight: 700; -fx-text-fill: #9ca3af; }
+.room-card-type { -fx-font-size: 11px; -fx-font-weight: 600; -fx-text-fill: #6b7280; }
+.room-card-price { -fx-font-size: 13px; -fx-font-weight: 700; -fx-text-fill: #111827; }
+.room-badge-disponible { -fx-background-color: #dcfce7; -fx-text-fill: #166534; -fx-background-radius: 20; -fx-padding: 3 9; -fx-font-size: 9.5px; -fx-font-weight: 700; }
+.room-badge-ocupada { -fx-background-color: #fee2e2; -fx-text-fill: #991b1b; -fx-background-radius: 20; -fx-padding: 3 9; -fx-font-size: 9.5px; -fx-font-weight: 700; }
+.room-badge-reservada { -fx-background-color: #fef9c3; -fx-text-fill: #92400e; -fx-background-radius: 20; -fx-padding: 3 9; -fx-font-size: 9.5px; -fx-font-weight: 700; }
+.room-badge-mantenimiento { -fx-background-color: #fef9c3; -fx-text-fill: #92400e; -fx-background-radius: 20; -fx-padding: 3 9; -fx-font-size: 9.5px; -fx-font-weight: 700; }
+.room-badge-limpieza { -fx-background-color: #f3f4f6; -fx-text-fill: #6b7280; -fx-background-radius: 20; -fx-padding: 3 9; -fx-font-size: 9.5px; -fx-font-weight: 700; }
+
+/* ============================================================
+   SECCION HEADER
+   ============================================================ */
+.section-header { -fx-padding: 24 24 0 24; }
+.section-title { -fx-font-size: 22px; -fx-font-weight: 900; -fx-text-fill: #111827; }
+.section-subtitle { -fx-font-size: 13px; -fx-text-fill: #9ca3af; }
+
+/* ============================================================
+   FORMULARIOS / INPUTS
+   ============================================================ */
+.text-field {
+    -fx-background-color: #f9fafb; -fx-border-color: #e5e7eb;
+    -fx-border-width: 1.5; -fx-border-radius: 10; -fx-background-radius: 10;
+    -fx-padding: 10 14; -fx-font-size: 13px; -fx-text-fill: #111827;
+    -fx-prompt-text-fill: #9ca3af; -fx-pref-height: 42;
+}
+.text-field:focused { -fx-border-color: #3563e9; -fx-background-color: white; }
+.text-field:hover { -fx-border-color: #9ca3af; }
+.password-field {
+    -fx-background-color: #f9fafb; -fx-border-color: #e5e7eb;
+    -fx-border-width: 1.5; -fx-border-radius: 10; -fx-background-radius: 10;
+    -fx-padding: 10 14; -fx-font-size: 13px; -fx-pref-height: 42;
+}
+.password-field:focused { -fx-border-color: #3563e9; -fx-background-color: white; }
+.combo-box {
+    -fx-background-color: #f9fafb; -fx-border-color: #e5e7eb;
+    -fx-border-width: 1.5; -fx-border-radius: 10; -fx-background-radius: 10;
+    -fx-pref-height: 42; -fx-padding: 0 4;
+}
+.combo-box:focused { -fx-border-color: #3563e9; }
+.combo-box .list-cell { -fx-font-size: 13px; -fx-text-fill: #111827; -fx-padding: 4 10; }
+.combo-box-popup .list-view { -fx-border-color: #e5e7eb; -fx-background-radius: 10; }
+.combo-box-popup .list-view .list-cell:hover { -fx-background-color: #eef2ff; }
+.combo-box-popup .list-view .list-cell:selected { -fx-background-color: #c7d2fe; -fx-text-fill: #111827; }
+.date-picker {
+    -fx-background-color: #f9fafb; -fx-border-color: #e5e7eb;
+    -fx-border-width: 1.5; -fx-border-radius: 10; -fx-background-radius: 10; -fx-pref-height: 42;
+}
+.date-picker:focused { -fx-border-color: #3563e9; }
+.text-area {
+    -fx-background-color: #f9fafb; -fx-border-color: #e5e7eb;
+    -fx-border-width: 1.5; -fx-border-radius: 10; -fx-background-radius: 10;
+    -fx-padding: 10 14; -fx-font-size: 13px; -fx-text-fill: #111827; -fx-prompt-text-fill: #9ca3af;
+}
+.text-area:focused { -fx-border-color: #3563e9; -fx-background-color: white; }
+.search-field {
+    -fx-background-color: #f3f4f6; -fx-border-color: transparent;
+    -fx-border-radius: 22; -fx-background-radius: 22;
+    -fx-padding: 10 18; -fx-font-size: 13px; -fx-pref-height: 42;
+    -fx-prompt-text-fill: #9ca3af;
+}
+.search-field:focused { -fx-background-color: white; -fx-border-color: #3563e9; -fx-border-width: 1.5; }
+.field-error { -fx-border-color: #ef4444; -fx-background-color: #fef2f2; }
+.field-error-label { -fx-text-fill: #dc2626; -fx-font-size: 11px; -fx-padding: 2 0 0 4; }
+.form-label { -fx-font-size: 11px; -fx-font-weight: 700; -fx-text-fill: #6b7280; }
+
+/* ============================================================
+   CARDS GENERICOS
+   ============================================================ */
+.card {
+    -fx-background-color: white; -fx-background-radius: 14; -fx-border-radius: 14;
+    -fx-border-color: #e5e7eb; -fx-border-width: 1;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 10, 0, 0, 2); -fx-padding: 20;
+}
+.card-title { -fx-font-size: 15px; -fx-font-weight: 800; -fx-text-fill: #111827; }
+.card-subtitle { -fx-font-size: 12px; -fx-text-fill: #9ca3af; }
+.report-card {
+    -fx-background-color: white; -fx-background-radius: 14; -fx-border-radius: 14;
+    -fx-border-color: #e5e7eb; -fx-border-width: 1;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.04), 8, 0, 0, 2); -fx-padding: 20 24;
+}
+.report-card-title { -fx-font-size: 14px; -fx-font-weight: 700; -fx-text-fill: #111827; }
+.report-card-desc { -fx-font-size: 12px; -fx-text-fill: #9ca3af; }
+
+/* ============================================================
+   SCROLL BARS
+   ============================================================ */
+.scroll-bar { -fx-background-color: transparent; }
+.scroll-bar .thumb { -fx-background-color: #d1d5db; -fx-background-radius: 4; }
+.scroll-bar .thumb:hover { -fx-background-color: #9ca3af; }
+.scroll-bar .track { -fx-background-color: transparent; }
+.scroll-bar .increment-button, .scroll-bar .decrement-button { -fx-background-color: transparent; -fx-pref-width: 0; -fx-pref-height: 0; }
+.content-scroll { -fx-background-color: transparent; -fx-border-color: transparent; }
+.content-scroll > .viewport { -fx-background-color: transparent; }
+.content-scroll .scroll-bar:vertical { -fx-background-color: transparent; -fx-pref-width: 6; }
+.content-scroll .scroll-bar:vertical .thumb { -fx-background-color: #d1d5db; -fx-background-radius: 4; }
+.content-scroll .scroll-bar:vertical .track,
+.content-scroll .scroll-bar:vertical .increment-button,
+.content-scroll .scroll-bar:vertical .decrement-button { -fx-background-color: transparent; -fx-pref-height: 0; -fx-pref-width: 0; -fx-padding: 0; }
+
+/* ============================================================
+   TOOLTIPS
+   ============================================================ */
+.tooltip {
+    -fx-background-color: #111827; -fx-text-fill: white;
+    -fx-background-radius: 8; -fx-padding: 7 12;
+    -fx-font-size: 12px; -fx-font-weight: 600;
+}
+
+/* ============================================================
+   SEPARADORES
+   ============================================================ */
+.separator .line { -fx-border-color: #e5e7eb; -fx-border-width: 1 0 0 0; }
+
+/* ============================================================
+   TEXTOS UTILITARIOS
+   ============================================================ */
+.text-primary   { -fx-text-fill: #111827; }
+.text-secondary { -fx-text-fill: #6b7280; }
+.text-success   { -fx-text-fill: #166534; }
+.text-danger    { -fx-text-fill: #991b1b; }
+.text-warning   { -fx-text-fill: #92400e; }
+.text-muted     { -fx-text-fill: #9ca3af; }
+.text-vip       { -fx-text-fill: #92400e; }
+.font-bold      { -fx-font-weight: bold; }
+
+/* ============================================================
+   CHARTS
+   ============================================================ */
+.chart { -fx-background-color: transparent; -fx-padding: 4 8 4 4; }
+.chart-title { -fx-font-size: 0; -fx-opacity: 0; -fx-padding: 0; }
+.chart-plot-background { -fx-background-color: transparent; }
+.chart-horizontal-grid-lines { -fx-stroke: rgba(229,231,235,0.7); -fx-stroke-dash-array: 6 5; -fx-stroke-width: 1; }
+.chart-vertical-grid-lines { -fx-stroke: transparent; }
+.axis { -fx-tick-label-fill: #9ca3af; -fx-tick-label-font-size: 9.5; -fx-minor-tick-visible: false; -fx-tick-mark-visible: false; }
+.axis-label { -fx-font-size: 10; -fx-font-weight: 600; -fx-text-fill: #9ca3af; }
+.chart-legend { -fx-background-color: transparent; -fx-font-size: 11; -fx-padding: 6 0 0 0; }
+.ingresos-diarios .chart-series-area-fill { -fx-fill: linear-gradient(from 0% 0% to 0% 100%, rgba(53,99,233,0.22), rgba(53,99,233,0.01)); -fx-stroke: transparent; }
+.ingresos-diarios .chart-series-area-line { -fx-stroke: #3563e9; -fx-stroke-width: 2.5; }
+.ingresos-diarios .chart-symbol { -fx-background-color: #3563e9, white; -fx-background-insets: 0, 2.5; -fx-background-radius: 6; -fx-padding: 5; }
+.pie-chart-hotel { -fx-background-color: transparent; }
+.pie-chart-hotel .chart-legend { -fx-background-color: transparent; -fx-font-size: 0; -fx-opacity: 0; }
+.pie-chart-hotel .chart-pie-label { -fx-font-size: 0; -fx-opacity: 0; }
+.pie-chart-hotel .chart-pie-label-line { -fx-stroke: transparent; }
+/* Colores por índice de segmento — sobrescriben el ciclo por defecto de JavaFX */
+.pie-chart-hotel .data0.chart-pie { -fx-pie-color: #3563e9; }
+.pie-chart-hotel .data1.chart-pie { -fx-pie-color: #111827; }
+.pie-chart-hotel .data2.chart-pie { -fx-pie-color: #f59e0b; }
+.pie-chart-hotel .data3.chart-pie { -fx-pie-color: #8b5cf6; }
+.pie-chart-hotel .data4.chart-pie { -fx-pie-color: #6b7280; }
+.bar-chart-hotel { -fx-background-color: transparent; }
+.bar-chart-hotel .chart-bar { -fx-background-radius: 6 6 0 0; -fx-bar-fill: #3563e9; }
+
+/* ============================================================
+   CHATBOT FLOTANTE
+   ============================================================ */
+.btn-chat-flotante {
+    -fx-background-color: #3563e9; -fx-text-fill: white; -fx-font-size: 20px;
+    -fx-min-width: 52; -fx-min-height: 52; -fx-max-width: 52; -fx-max-height: 52;
+    -fx-background-radius: 50%; -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(53,99,233,0.45), 14, 0, 0, 4);
+}
+.btn-chat-flotante:hover { -fx-background-color: #2752d4; -fx-scale-x: 1.06; -fx-scale-y: 1.06; }
+.chat-input-field {
+    -fx-background-color: #f9fafb; -fx-border-color: #e5e7eb; -fx-border-width: 1.5;
+    -fx-border-radius: 20; -fx-background-radius: 20; -fx-padding: 8 14; -fx-font-size: 13;
+}
+.chat-input-field:focused { -fx-border-color: #3563e9; -fx-background-color: white; }
+.btn-enviar-chat {
+    -fx-background-color: #3563e9; -fx-text-fill: white; -fx-font-size: 14px;
+    -fx-min-width: 38; -fx-min-height: 38; -fx-max-width: 38; -fx-max-height: 38;
+    -fx-background-radius: 50%; -fx-cursor: hand;
+}
+.btn-enviar-chat:hover { -fx-background-color: #2752d4; }
+
+/* ============================================================
+   DIALOG
+   ============================================================ */
+.dialog-pane {
+    -fx-background-color: white; -fx-background-radius: 16; -fx-border-radius: 16;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.18), 32, 0, 0, 8); -fx-padding: 0;
+}
+.dialog-pane .header-panel {
+    -fx-background-color: #f9fafb; -fx-border-color: transparent transparent #e5e7eb transparent;
+    -fx-border-width: 0 0 1 0; -fx-padding: 20 24; -fx-background-radius: 16 16 0 0;
+}
+.dialog-pane .button-bar { -fx-padding: 16 24; }
+
+/* ============================================================
+   PROGRESS
+   ============================================================ */
+.progress-bar .track { -fx-background-color: #e5e7eb; -fx-background-radius: 4; }
+.progress-bar .bar { -fx-background-color: #3563e9; -fx-background-radius: 4; -fx-background-insets: 0; }
+.progress-indicator { -fx-progress-color: #3563e9; }
+
+/* Compat nav-item legacy => sidebar-item */
+.nav-item {
+    -fx-background-color: transparent; -fx-text-fill: rgba(255,255,255,0.55); -fx-font-size: 13px;
+    -fx-padding: 10 14; -fx-background-radius: 10; -fx-cursor: hand; -fx-alignment: center-left;
+    -fx-pref-width: 222; -fx-max-width: 222;
+}
+.nav-item:hover { -fx-background-color: rgba(255,255,255,0.08); -fx-text-fill: white; }
+.nav-item.active { -fx-background-color: #0047ab; -fx-text-fill: white; -fx-font-weight: bold; }
+
+/* ============================================================
+   REPORTES — estilos específicos
+   ============================================================ */
+
+/* Card contenedora — actualizada con radio 12 y sin sombra */
+.report-card { -fx-background-color: white; -fx-background-radius: 12; -fx-border-radius: 12; -fx-border-color: #E2E8F0; -fx-border-width: 1; -fx-padding: 18 20; }
+.report-card:hover { -fx-border-color: #94A3B8; }
+
+/* Cuadro de ícono 36×36, radius 9 */
+.report-icon { -fx-min-width: 36; -fx-max-width: 36; -fx-min-height: 36; -fx-max-height: 36; -fx-background-radius: 9; -fx-alignment: center; -fx-font-size: 18; }
+.icon-blue   { -fx-background-color: #DBEAFE; -fx-text-fill: #1D4ED8; }
+.icon-red    { -fx-background-color: #FEE2E2; -fx-text-fill: #B91C1C; }
+.icon-teal   { -fx-background-color: #D1FAE5; -fx-text-fill: #065F46; }
+.icon-amber  { -fx-background-color: #FEF3C7; -fx-text-fill: #92400E; }
+.icon-purple { -fx-background-color: #EDE9FE; -fx-text-fill: #6D28D9; }
+.icon-green  { -fx-background-color: #DCFCE7; -fx-text-fill: #166534; }
+
+/* Tags HTML / PDF */
+.tag-html { -fx-background-color: #DBEAFE; -fx-text-fill: #1D4ED8; -fx-background-radius: 4; -fx-padding: 2 7; -fx-font-size: 9; -fx-font-weight: bold; }
+.tag-pdf  { -fx-background-color: #FEE2E2; -fx-text-fill: #B91C1C; -fx-background-radius: 4; -fx-padding: 2 7; -fx-font-size: 9; -fx-font-weight: bold; }
+
+/* Botones de acción */
+.btn-navy  { -fx-background-color: #1E293B; -fx-text-fill: white; -fx-background-radius: 8; -fx-padding: 0 14; -fx-font-size: 11; -fx-font-weight: bold; -fx-pref-height: 32; -fx-cursor: hand; }
+.btn-navy:hover  { -fx-background-color: #334155; }
+.btn-green { -fx-background-color: #15803D; -fx-text-fill: white; -fx-background-radius: 8; -fx-padding: 0 14; -fx-font-size: 11; -fx-font-weight: bold; -fx-pref-height: 32; -fx-cursor: hand; }
+.btn-green:hover { -fx-background-color: #166534; }
+
+/* Inputs compactos en las cards */
+.report-input { -fx-background-color: #F8FAFC; -fx-border-color: #E2E8F0; -fx-border-width: 1.5; -fx-border-radius: 8; -fx-background-radius: 8; -fx-pref-width: 90; -fx-pref-height: 32; -fx-font-size: 12; }
+.report-input:focused { -fx-border-color: #3B82F6; -fx-background-color: white; }
+
+/* ============================================================
+   EMPLEADOS — estilos específicos
+   ============================================================ */
+
+/* Badge de fecha/turno en el header breadcrumb */
+.header-date-badge {
+    -fx-border-color: #E2E8F0; -fx-border-width: 1; -fx-border-radius: 20;
+    -fx-background-radius: 20; -fx-background-color: white;
+    -fx-padding: 5 14; -fx-font-size: 12; -fx-text-fill: #64748B;
+}
+
+/* Badge resumen total empleados */
+.badge-total-empleados { -fx-border-color: #22C55E; -fx-border-width: 1.5; -fx-border-radius: 25; -fx-background-radius: 25; -fx-background-color: white; -fx-padding: 6 16; -fx-font-size: 12; -fx-font-weight: 600; -fx-text-fill: #15803D; }
+
+/* Celda email con estilo link */
+.email-link { -fx-text-fill: #3B82F6; -fx-cursor: hand; }
+
+/* Tabla Empleados */
+.empleados-table .column-header-background { -fx-background-color: #F8FAFC; -fx-border-color: #E2E8F0; -fx-border-width: 0 0 1.5 0; }
+.empleados-table .column-header .label    { -fx-font-size: 11; -fx-font-weight: 700; -fx-text-fill: #64748B; -fx-padding: 0 10; }
+.empleados-table .table-row-cell          { -fx-pref-height: 55; -fx-background-color: white; -fx-border-color: transparent transparent #F1F5F9 transparent; -fx-border-width: 0 0 1 0; }
+.empleados-table .table-row-cell:hover    { -fx-background-color: #EEF2FF; }
+.empleados-table .table-row-cell:selected { -fx-background-color: #DBEAFE; -fx-border-color: transparent; }
+.empleados-table .table-row-cell:even     { -fx-background-color: white; }
+.empleados-table .table-row-cell:even:hover    { -fx-background-color: #EEF2FF; }
+.empleados-table .table-row-cell:selected:hover{ -fx-background-color: #BFDBFE; }
+
+/* Tabla Clientes */
+.clientes-table .column-header-background { -fx-background-color: #F8FAFC; -fx-border-color: #E2E8F0; -fx-border-width: 0 0 1.5 0; }
+.clientes-table .column-header .label    { -fx-font-size: 11; -fx-font-weight: 700; -fx-text-fill: #64748B; -fx-padding: 0 10; }
+.clientes-table .table-row-cell          { -fx-pref-height: 55; -fx-background-color: white; -fx-border-color: transparent transparent #F1F5F9 transparent; -fx-border-width: 0 0 1 0; }
+.clientes-table .table-row-cell:hover    { -fx-background-color: #EEF2FF; }
+.clientes-table .table-row-cell:selected { -fx-background-color: #DBEAFE; -fx-border-color: transparent; }
+.clientes-table .table-row-cell:even     { -fx-background-color: white; }
+.clientes-table .table-row-cell:even:hover    { -fx-background-color: #EEF2FF; }
+.clientes-table .table-row-cell:selected:hover{ -fx-background-color: #BFDBFE; }
+.clientes-table .table-row-cell.vip-row       { -fx-background-color: white; }
+
+/* ============================================================
+   FACTURACIÓN — estilos específicos
+   ============================================================ */
+
+/* Campo de búsqueda: fondo blanco con borde #E2E8F0, radius 10 */
+.search-field-factura {
+    -fx-background-color: white;
+    -fx-border-color: #E2E8F0; -fx-border-width: 1.5;
+    -fx-border-radius: 10; -fx-background-radius: 10;
+    -fx-padding: 10 18; -fx-font-size: 13; -fx-pref-height: 42;
+    -fx-prompt-text-fill: #9ca3af;
+}
+.search-field-factura:focused { -fx-border-color: #3563e9; -fx-border-width: 2; }
+.search-field-factura:hover   { -fx-border-color: #CBD5E1; }
+
+/* Badges resumen (statsRow) */
+.badge-total   { -fx-border-color: #3B82F6; -fx-border-width: 1.5; -fx-border-radius: 25; -fx-background-radius: 25; -fx-background-color: white; -fx-padding: 6 16; -fx-font-size: 12; -fx-font-weight: 600; -fx-text-fill: #1D4ED8; }
+.badge-pagadas { -fx-border-color: #22C55E; -fx-border-width: 1.5; -fx-border-radius: 25; -fx-background-radius: 25; -fx-background-color: white; -fx-padding: 6 16; -fx-font-size: 12; -fx-font-weight: 600; -fx-text-fill: #15803D; }
+
+/* Badges de estado de pago en la columna ESTADO PAGO */
+.estado-pagada   { -fx-background-color: #DCFCE7; -fx-text-fill: #15803D; -fx-background-radius: 20; -fx-padding: 4 14; -fx-font-size: 11; -fx-font-weight: bold; }
+.estado-pendiente{ -fx-background-color: #FEF3C7; -fx-text-fill: #A16207; -fx-background-radius: 20; -fx-padding: 4 14; -fx-font-size: 11; -fx-font-weight: bold; }
+.estado-cancelada{ -fx-background-color: #FEE2E2; -fx-text-fill: #DC2626; -fx-background-radius: 20; -fx-padding: 4 14; -fx-font-size: 11; -fx-font-weight: bold; }
+
+/* Tabla Facturacion: override de table-view con clases CSS para hover/selected correctos */
+.factura-table .column-header-background { -fx-background-color: #F8FAFC; -fx-border-color: #E2E8F0; -fx-border-width: 0 0 1.5 0; }
+.factura-table .column-header .label    { -fx-font-size: 11; -fx-font-weight: 700; -fx-text-fill: #64748B; -fx-padding: 0 10; }
+.factura-table .table-row-cell          { -fx-pref-height: 55; -fx-background-color: white; -fx-border-color: transparent transparent #F1F5F9 transparent; -fx-border-width: 0 0 1 0; }
+.factura-table .table-row-cell:hover    { -fx-background-color: #EEF2FF; }
+.factura-table .table-row-cell:selected { -fx-background-color: #DBEAFE; -fx-border-color: transparent; }
+.factura-table .table-row-cell:even     { -fx-background-color: white; }
+.factura-table .table-row-cell:even:hover    { -fx-background-color: #EEF2FF; }
+.factura-table .table-row-cell:selected:hover{ -fx-background-color: #BFDBFE; }
+
+/* Colores de fila por estado de pago (usan CSS class, no inline style) */
+.factura-table .table-row-cell.row-pagada    { -fx-background-color: white; }
+.factura-table .table-row-cell.row-pendiente { -fx-background-color: white; }
+.factura-table .table-row-cell.row-anulada   { -fx-background-color: white; }
+
+/* ============================================================
+   TOPBAR — botones de ventana y reloj
+   ============================================================ */
+.btn-window { -fx-background-color: transparent; -fx-border-color: #E2E8F0; -fx-border-width: 1; -fx-border-radius: 6; -fx-background-radius: 6; -fx-min-width: 30; -fx-max-width: 30; -fx-min-height: 30; -fx-max-height: 30; -fx-text-fill: #64748B; -fx-font-size: 12; -fx-cursor: hand; -fx-padding: 0; }
+.btn-window:hover { -fx-background-color: #F0F2F5; }
+.btn-close:hover  { -fx-background-color: #FEE2E2; -fx-text-fill: #DC2626; }
+.lbl-reloj { -fx-font-size: 13; -fx-text-fill: #64748B; -fx-font-weight: 500; }
+
+/* ============================================================
+   FACTURA TÉRMICA — vista previa
+   ============================================================ */
+.factura-header { -fx-background-color: white; -fx-border-color: transparent transparent #E2E8F0 transparent; -fx-border-width: 0 0 1 0; -fx-padding: 8 16; -fx-pref-height: 40; }
+.factura-papel  { -fx-background-color: white; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 12, 0, 0, 4); -fx-padding: 30 24; -fx-pref-width: 350; -fx-max-width: 350; }
+.factura-mono   { -fx-font-family: "Courier New"; -fx-font-size: 11; -fx-text-fill: #1E293B; }
+.factura-separador { -fx-text-fill: #CBD5E1; -fx-font-family: "Courier New"; -fx-font-size: 10; -fx-alignment: center; }
+.factura-total  { -fx-font-family: "Courier New"; -fx-font-size: 15; -fx-font-weight: bold; -fx-text-fill: #1E293B; }
+.btn-imprimir   { -fx-background-color: white; -fx-border-color: #3B82F6; -fx-border-width: 1.5; -fx-border-radius: 8; -fx-background-radius: 8; -fx-text-fill: #3B82F6; -fx-font-size: 12; -fx-font-weight: bold; -fx-padding: 8 20; -fx-cursor: hand; }
+.btn-imprimir:hover   { -fx-background-color: #EEF2FF; }
+.btn-guardar-pdf      { -fx-background-color: #15803D; -fx-background-radius: 8; -fx-text-fill: white; -fx-font-size: 12; -fx-font-weight: bold; -fx-padding: 8 20; -fx-cursor: hand; }
+.btn-guardar-pdf:hover{ -fx-background-color: #166534; }
+.btn-cerrar-factura   { -fx-background-color: white; -fx-border-color: #EF4444; -fx-border-width: 1.5; -fx-border-radius: 8; -fx-background-radius: 8; -fx-text-fill: #DC2626; -fx-font-size: 12; -fx-font-weight: bold; -fx-padding: 8 20; -fx-cursor: hand; }
+.btn-cerrar-factura:hover { -fx-background-color: #FEE2E2; }

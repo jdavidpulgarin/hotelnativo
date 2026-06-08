@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.*?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
+
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.hotel.ui.controllers.CheckInOutController"
+      spacing="0" styleClass="main-bg">
+
+    <!-- ── Header: título + breadcrumb ── -->
+    <HBox style="-fx-padding:24 24 12 24;" alignment="CENTER_LEFT" spacing="0">
+        <VBox spacing="3" HBox.hgrow="ALWAYS">
+            <Label text="Check-in / Check-out" styleClass="section-title"/>
+            <Label text="Check-in / Check-out / Gestión de entrada y salida" styleClass="section-subtitle"/>
+        </VBox>
+        <!-- Fecha + Turno -->
+        <HBox spacing="10" alignment="CENTER_RIGHT">
+            <Label fx:id="lblFecha"
+                   style="-fx-font-size:13px; -fx-font-weight:600; -fx-text-fill:#3563e9;
+                          -fx-background-color:#eef2ff; -fx-background-radius:20;
+                          -fx-padding:5 14;"/>
+            <Label fx:id="lblTurno"
+                   style="-fx-font-size:12px; -fx-font-weight:600; -fx-text-fill:#7c3aed;
+                          -fx-background-color:#f5f3ff; -fx-background-radius:20;
+                          -fx-padding:5 14;"/>
+        </HBox>
+    </HBox>
+
+    <!-- ── Toolbar ── -->
+    <HBox style="-fx-padding:0 24 12 24;" spacing="10" alignment="CENTER_LEFT">
+        <!-- Búsqueda ancha -->
+        <TextField fx:id="searchField"
+                   promptText="🔍  Buscar por cliente, habitación o ID..."
+                   styleClass="search-field"
+                   prefWidth="480"
+                   onKeyReleased="#filtrar"/>
+        <Region HBox.hgrow="ALWAYS"/>
+
+        <!-- Check-in: azul -->
+        <Button mnemonicParsing="false" styleClass="btn-circle,btn-primary" onAction="#hacerCheckin">
+            <graphic><FontIcon iconLiteral="fas-sign-in-alt" iconSize="15" iconColor="white"/></graphic>
+            <tooltip><Tooltip text="Nuevo Check-in" styleClass="tooltip"/></tooltip>
+        </Button>
+
+        <!-- Check-out: verde -->
+        <Button mnemonicParsing="false" styleClass="btn-circle,btn-success" onAction="#hacerCheckout">
+            <graphic><FontIcon iconLiteral="fas-sign-out-alt" iconSize="15" iconColor="white"/></graphic>
+            <tooltip><Tooltip text="Realizar Check-out" styleClass="tooltip"/></tooltip>
+        </Button>
+
+        <!-- Extender estadía: naranja -->
+        <Button mnemonicParsing="false" styleClass="btn-circle,btn-warning" onAction="#autoCheckout">
+            <graphic><FontIcon iconLiteral="fas-clock" iconSize="14" iconColor="white"/></graphic>
+            <tooltip><Tooltip text="Checkout automático 11AM" styleClass="tooltip"/></tooltip>
+        </Button>
+
+        <!-- Separador -->
+        <Region styleClass="action-toolbar-separator"/>
+
+        <!-- Refrescar: gris -->
+        <Button mnemonicParsing="false" styleClass="btn-circle,btn-outline" onAction="#cargarDatos">
+            <graphic><FontIcon iconLiteral="fas-sync-alt" iconSize="14" iconColor="#6b7280"/></graphic>
+            <tooltip><Tooltip text="Refrescar" styleClass="tooltip"/></tooltip>
+        </Button>
+    </HBox>
+
+    <!-- ── Badges resumen ── -->
+    <HBox fx:id="statsRow" spacing="8"
+          style="-fx-padding:0 24 14 24;" alignment="CENTER_LEFT"/>
+
+    <!-- ── Tabla ── -->
+    <VBox VBox.vgrow="ALWAYS" style="-fx-padding:0 24 24 24;">
+        <VBox styleClass="table-container" VBox.vgrow="ALWAYS">
+            <TableView fx:id="tabla" VBox.vgrow="ALWAYS" styleClass="table-view"
+                       onMouseClicked="#handleDobleClick">
+                <columns>
+                    <TableColumn fx:id="colId"       text="ID"          prefWidth="60"/>
+                    <TableColumn fx:id="colCliente"  text="CLIENTE"     prefWidth="150"/>
+                    <TableColumn fx:id="colHab"      text="HABITACIÓN"  prefWidth="100"/>
+                    <TableColumn fx:id="colEntrada"  text="F. ENTRADA"  prefWidth="110"/>
+                    <TableColumn fx:id="colSalida"   text="F. SALIDA"   prefWidth="110"/>
+                    <TableColumn fx:id="colEmpleado" text="EMPLEADO"    prefWidth="140"/>
+                    <TableColumn fx:id="colHoraCheckin"  text="CHECK-IN"    prefWidth="145"/>
+                    <TableColumn fx:id="colHoraCheckout" text="CHECK-OUT"   prefWidth="145"/>
+                    <TableColumn fx:id="colEstado"   text="ESTADO"      prefWidth="120"/>
+                </columns>
+                <placeholder>
+                    <Label text="Sin registros de check-in / check-out" styleClass="text-muted"/>
+                </placeholder>
+            </TableView>
+        </VBox>
+    </VBox>
+
+    <ProgressBar fx:id="progressBar" maxWidth="Infinity" visible="false"
+                 style="-fx-accent:#3563e9; -fx-pref-height:3px;"/>
+</VBox> 
