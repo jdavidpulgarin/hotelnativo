@@ -1,10 +1,5 @@
-
 package com.hotel.dao.interfaces;
 
-/**
- *
- * @author rober
- */
 import com.hotel.model.Mantenimiento;
 import java.util.List;
 import java.util.Optional;
@@ -20,7 +15,7 @@ public interface IMantenimientoDAO {
 
     Optional<Mantenimiento> buscarPorId(int id);
 
-    List<Mantenimiento> listarPorHabitacion(int idHabitacion);
+    List<Mantenimiento> listarPorHabitacion(String numero);
 
     List<Mantenimiento> listarPendientes();
 

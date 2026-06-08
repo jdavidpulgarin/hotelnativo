@@ -1,10 +1,5 @@
-
 package com.hotel.dao.interfaces;
 
-/**
- *
- * @author rober
- */
 import com.hotel.model.Reserva;
 import java.time.LocalDate;
 import java.util.List;
@@ -27,12 +22,12 @@ public interface IReservaBusqueda {
      * Busca reservas que se solapan con un rango de fechas para una habitación.
      * Usado para validar disponibilidad antes de crear una reserva.
      *
-     * @param idHabitacion   habitación a verificar
-     * @param fechaEntrada   inicio del periodo solicitado
-     * @param fechaSalida    fin del periodo solicitado
+     * @param numeroHabitacion PK de HABITACION en v3, ej. "101", "202"
+     * @param fechaEntrada     inicio del periodo solicitado
+     * @param fechaSalida      fin del periodo solicitado
      * @return reservas que se solapan con el periodo dado
      */
-    List<Reserva> buscarReservasSolapadas(int idHabitacion, LocalDate fechaEntrada, LocalDate fechaSalida);
+    List<Reserva> buscarReservasSolapadas(String numeroHabitacion, LocalDate fechaEntrada, LocalDate fechaSalida);
 
     /**
      * Lista reservas cuyo check-in cae dentro del rango de fechas dado.

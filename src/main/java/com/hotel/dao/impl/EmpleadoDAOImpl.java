@@ -163,8 +163,7 @@ public class EmpleadoDAOImpl extends BaseDAO implements IEmpleadoDAO {
             }
         });
     }
-
-    @Override
+   @Override
     public void aumentarSalarios(int idCargo, double porcentaje) {
         // PKG_HOTEL.aumento_salarios valida el porcentaje y actualiza CARGO.salario_base
         Connection conn = obtener();

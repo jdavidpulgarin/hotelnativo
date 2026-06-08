@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.hotel.service;
 
 import com.hotel.dao.interfaces.IFacturaDAO;
@@ -16,8 +12,9 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- *
- * @author Pulgarin
+ * Lógica de negocio para generación y gestión de facturas. GRASP: Alta Cohesión
+ * — responsabilidad única: ciclo de vida de facturas. SOLID: S — facturación
+ * separada de reservas y check-in/out.
  */
 public class FacturaService {
 
@@ -31,6 +28,26 @@ public class FacturaService {
 
     /**
      * Genera la factura con detalles completos del pago.
+     *
+     * <ul>
+     * <li><b>EFECTIVO</b>: {@code montoRecibido} debe ser ≥ total. Si > 0 y
+     * menor al total se lanza {@code PAGO_INSUFICIENTE}. El cambio (vuelto) se
+     * calcula y almacena en la factura.</li>
+     * <li><b>TARJETA_CREDITO / TARJETA_DEBITO</b>: {@code franquicia} ("VISA",
+     * "MASTERCARD", …). Solo crédito usa {@code numCuotas}.</li>
+     * <li><b>TRANSFERENCIA</b>: {@code referencia} es el número de confirmación
+     * bancaria.</li>
+     * </ul>
+     *
+     * @param idReserva reserva COMPLETADA a facturar
+     * @param metodoPago forma de pago
+     * @param montoRecibido efectivo entregado por el cliente (0 si no aplica)
+     * @param franquicia franquicia de tarjeta, null si no aplica
+     * @param numCuotas cuotas (1 = contado); ignorado si no es crédito
+     * @param referencia número de referencia bancaria, null si no aplica
+     * @return factura generada y persistida (con detalles de pago en memoria)
+     * @throws ExcepcionNegocio si la reserva no está completada, ya tiene
+     * factura, o el monto en efectivo es insuficiente
      */
     public Factura generarFactura(int idReserva, Factura.MetodoPago metodoPago,
             double montoRecibido, String franquicia, int numCuotas, String referencia)
@@ -132,6 +149,10 @@ public class FacturaService {
         return facturaDAO.listarPorCliente(idCliente);
     }
 
+    public List<Factura> listarTodasLasFacturas() {
+        return facturaDAO.listarTodas();
+    }
+
     // ── Métodos privados de apoyo ─────────────────────────────────────────────
     private Reserva obtenerReservaCompletadaOLanzarError(int idReserva) throws ExcepcionNegocio {
         Reserva reserva = reservaDAO.buscarPorId(idReserva)
@@ -153,3 +174,4 @@ public class FacturaService {
         }
     }
 }
+

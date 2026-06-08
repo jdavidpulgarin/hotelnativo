@@ -1,10 +1,5 @@
-
 package com.hotel.dao.interfaces;
 
-/**
- *
- * @author rober
- */
 import com.hotel.model.Cargo;
 import com.hotel.model.Empleado;
 import java.util.List;
@@ -40,4 +35,13 @@ public interface IEmpleadoDAO {
      * false = el empleado ya cambió su contraseña y no debe ser forzado de nuevo.
      */
     boolean actualizarDebeCambiarPassword(int idEmpleado, boolean debe);
+
+    /**
+     * Aplica un aumento porcentual al salario_base del cargo indicado.
+     * Delega a PKG_HOTEL.aumento_salarios — la lógica de negocio vive en Oracle.
+     *
+     * @param idCargo     ID numérico del cargo (se formatea internamente como CARxx)
+     * @param porcentaje  porcentaje de aumento, p.ej. 10.0 para 10 %
+     */
+    void aumentarSalarios(int idCargo, double porcentaje);
 }

@@ -1,9 +1,10 @@
+package com.hotel.service;
 
+import com.hotel.dao.interfaces.IEmpleadoDAO;
 import com.hotel.exception.ExcepcionNegocio;
 import com.hotel.exception.ExcepcionValidacion;
 import com.hotel.model.Cargo;
 import com.hotel.model.Empleado;
-import com.hotel.service.AuthService;
 import com.hotel.util.ValidadorEntradas;
 
 import java.time.LocalDate;
@@ -13,28 +14,28 @@ import java.util.Optional;
 /**
  * Lógica de negocio para gestión de empleados del hotel.
  *
- * NUEVO: Esta clase faltaba completamente en el proyecto. Sin ella,
- * EmpleadoDAOImpl no tenía capa de servicio que la usara, y la vista de
- * empleados (EmpleadoView) no tenía a qué conectarse.
+ * NUEVO: Esta clase faltaba completamente en el proyecto.
+ * Sin ella, EmpleadoDAOImpl no tenía capa de servicio que la usara,
+ * y la vista de empleados (EmpleadoView) no tenía a qué conectarse.
  *
- * Responsabilidades: - CRUD completo de empleados con validaciones. -
- * Integración con AuthService para registrar credenciales al crear. - Búsqueda
- * por cargo.
+ * Responsabilidades:
+ *  - CRUD completo de empleados con validaciones.
+ *  - Integración con AuthService para registrar credenciales al crear.
+ *  - Búsqueda por cargo.
  *
- * GRASP: Alta Cohesión – solo maneja operaciones de empleados. GRASP:
- * Controlador – coordina los casos de uso de empleados. SOLID: S –
- * responsabilidad única: lógica de negocio de empleados. SOLID: D – depende de
- * IEmpleadoDAO, no de la implementación concreta.
+ * GRASP: Alta Cohesión – solo maneja operaciones de empleados.
+ * GRASP: Controlador – coordina los casos de uso de empleados.
+ * SOLID: S – responsabilidad única: lógica de negocio de empleados.
+ * SOLID: D – depende de IEmpleadoDAO, no de la implementación concreta.
  */
 public class EmpleadoService {
 
     private final IEmpleadoDAO empleadoDAO;
-    private final AuthService authService;
+    private final AuthService  authService;
 
     /**
-     * @param empleadoDAO repositorio de empleados
-     * @param authService servicio de autenticación (para registrar
-     * credenciales)
+     * @param empleadoDAO  repositorio de empleados
+     * @param authService  servicio de autenticación (para registrar credenciales)
      */
     public EmpleadoService(IEmpleadoDAO empleadoDAO, AuthService authService) {
         this.empleadoDAO = empleadoDAO;
@@ -42,29 +43,28 @@ public class EmpleadoService {
     }
 
     /**
-     * Registra un nuevo empleado y su contraseña inicial en el sistema de
-     * autenticación.
+     * Registra un nuevo empleado y su contraseña inicial en el sistema de autenticación.
      *
-     * @param nombre nombre del empleado
-     * @param apellido apellido
-     * @param email correo (usado como login)
-     * @param telefono teléfono
-     * @param idCargo ID del cargo asignado
-     * @param passwordInicial contraseña inicial (se almacena como hash SHA-256)
+     * @param nombre            nombre del empleado
+     * @param apellido          apellido
+     * @param email             correo (usado como login)
+     * @param telefono          teléfono
+     * @param idCargo           ID del cargo asignado
+     * @param passwordInicial   contraseña inicial (se almacena como hash SHA-256)
      * @return empleado creado con ID generado por la BD
-     * @throws ExcepcionNegocio si el email ya está registrado
+     * @throws ExcepcionNegocio   si el email ya está registrado
      * @throws ExcepcionValidacion si algún campo es inválido
      */
     public Empleado registrarEmpleado(String cedula,
-            String nombre, String segundoNombre,
-            String apellido, String apellido2,
-            String email, String telefono,
-            int idCargo, String passwordInicial,
-            double salario, String tipoContrato,
-            String tipoPago, LocalDate fechaFinContrato)
+                                       String nombre, String segundoNombre,
+                                       String apellido, String apellido2,
+                                       String email, String telefono,
+                                       int idCargo, String passwordInicial,
+                                       double salario, String tipoContrato,
+                                       String tipoPago, LocalDate fechaFinContrato)
             throws ExcepcionNegocio {
         ValidadorEntradas.validarCampoRequerido(cedula, "cedula");
-        ValidadorEntradas.validarLargoNombre(nombre, "nombre");
+        ValidadorEntradas.validarLargoNombre(nombre,   "nombre");
         ValidadorEntradas.validarLargoNombre(apellido, "apellido");
         ValidadorEntradas.validarFormatoEmail(email);
         ValidadorEntradas.validarFormatoTelefono(telefono);
@@ -80,10 +80,8 @@ public class EmpleadoService {
         cargoRef.setId(idCargo);
 
         int idNumerico = 0;
-        try {
-            idNumerico = Integer.parseInt(cedula.trim());
-        } catch (NumberFormatException ignored) {
-        }
+        try { idNumerico = Integer.parseInt(cedula.trim()); }
+        catch (NumberFormatException ignored) {}
 
         Empleado nuevoEmpleado = new Empleado(idNumerico, nombre, apellido, email,
                 telefono, cargoRef, LocalDate.now());
@@ -107,20 +105,20 @@ public class EmpleadoService {
     }
 
     /**
-     * Actualiza los datos de un empleado existente. No modifica contraseña
-     * (usar resetearPassword para eso).
+     * Actualiza los datos de un empleado existente.
+     * No modifica contraseña (usar resetearPassword para eso).
      *
      * @throws ExcepcionNegocio si el empleado no existe
      */
     public Empleado actualizarEmpleado(int idEmpleado, String nombre, String segundoNombre,
-            String apellido, String apellido2,
-            String email, String telefono, int idCargo,
-            LocalDate fechaContratacion,
-            double salario, String tipoContrato,
-            String tipoPago, LocalDate fechaFinContrato)
+                                        String apellido, String apellido2,
+                                        String email, String telefono, int idCargo,
+                                        LocalDate fechaContratacion,
+                                        double salario, String tipoContrato,
+                                        String tipoPago, LocalDate fechaFinContrato)
             throws ExcepcionNegocio {
         ValidadorEntradas.validarIdPositivo(idEmpleado, "empleado");
-        ValidadorEntradas.validarLargoNombre(nombre, "nombre");
+        ValidadorEntradas.validarLargoNombre(nombre,   "nombre");
         ValidadorEntradas.validarLargoNombre(apellido, "apellido");
         ValidadorEntradas.validarFormatoEmail(email);
         ValidadorEntradas.validarFormatoTelefono(telefono);
@@ -145,9 +143,7 @@ public class EmpleadoService {
         empleado.setEmail(email);
         empleado.setTelefono(telefono);
         empleado.setCargo(cargoRef);
-        if (fechaContratacion != null) {
-            empleado.setFechaContratacion(fechaContratacion);
-        }
+        if (fechaContratacion != null) empleado.setFechaContratacion(fechaContratacion);
         empleado.setSalario(salario);
         empleado.setTipoContrato(tipoContrato);
         empleado.setTipoPago(tipoPago);
@@ -169,8 +165,8 @@ public class EmpleadoService {
     }
 
     /**
-     * Resetea la contraseña de un empleado. Solo puede ejecutarlo un
-     * administrador (verificar permiso en la vista).
+     * Resetea la contraseña de un empleado.
+     * Solo puede ejecutarlo un administrador (verificar permiso en la vista).
      *
      * @throws ExcepcionNegocio si el empleado no existe
      */
@@ -189,8 +185,7 @@ public class EmpleadoService {
     }
 
     /**
-     * Persiste en BD un hash ya calculado (usado por LoginController tras
-     * cambio de primer login).
+     * Persiste en BD un hash ya calculado (usado por LoginController tras cambio de primer login).
      */
     public void persistirHashEnBD(int idEmpleado, String hash) throws ExcepcionNegocio {
         ValidadorEntradas.validarIdPositivo(idEmpleado, "empleado");
@@ -198,8 +193,8 @@ public class EmpleadoService {
     }
 
     /**
-     * Persiste el flag debe_cambiar_password en BD. Llamar con {@code false}
-     * tras un cambio de contraseña exitoso para no volver a pedirlo.
+     * Persiste el flag debe_cambiar_password en BD.
+     * Llamar con {@code false} tras un cambio de contraseña exitoso para no volver a pedirlo.
      */
     public void actualizarDebeCambiarPassword(int idEmpleado, boolean debe) throws ExcepcionNegocio {
         ValidadorEntradas.validarIdPositivo(idEmpleado, "empleado");
@@ -225,9 +220,10 @@ public class EmpleadoService {
     }
 
     // ── Métodos privados ──────────────────────────────────────────────────────
+
     private Empleado obtenerEmpleadoOLanzarError(int idEmpleado) throws ExcepcionNegocio {
         return empleadoDAO.buscarPorId(idEmpleado)
                 .orElseThrow(() -> new ExcepcionNegocio("EMPLEADO_NOT_FOUND",
-                "No se encontró el empleado con ID: " + idEmpleado));
+                        "No se encontró el empleado con ID: " + idEmpleado));
     }
 }
